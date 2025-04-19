@@ -10,13 +10,9 @@ use App\Http\Controllers\Controller;
 
 class FinanceUserController extends Controller
 {
-    //
-
-
     public function user($id)
     {
         $locale = App::getLocale();
-
         $user = DB::table('finance_users as u')
             ->where('u.id', $id)
             ->join('model_job_trans as mjt', function ($join) use ($locale) {
@@ -99,42 +95,46 @@ class FinanceUserController extends Controller
         $tr = [];
         $perPage = $request->input('per_page', 10); // Number of records per page
         $page = $request->input('page', 1); // Current page
+        $role_id = $request->user()->role_id;
+        $includeRole = [];
 
-
-        $request->user()->role_id;
-
-        $includeRole = [RoleEnum::finance_user->value];
-
-        if ($request->user()->role_id  === RoleEnum::epi_super->value) {
-            $includeRole = [RoleEnum::finance_admin->value, RoleEnum::epi_user->value];
+        if ($role_id === RoleEnum::finance_super->value) {
+            array_push($includeRole, RoleEnum::finance_admin->value);
+            array_push($includeRole, RoleEnum::finance_user->value);
+        } else if ($role_id === RoleEnum::finance_admin->value) {
+            array_push($includeRole, RoleEnum::finance_user->value);
+        } else {
+            return response()->json([
+                'message' => __('app_translation.unauthorized'),
+            ], 401, [], JSON_UNESCAPED_UNICODE);
         }
 
 
         // Start building the query
-        $query = DB::table('finance_users as usr')
-            ->whereIn('usr.role_id', $includeRole)
-            ->leftJoin('contacts as c', 'c.id', '=', 'usr.contact_id')
-            ->join('emails as e', 'e.id', '=', 'usr.email_id')
-            ->join('roles as r', 'r.id', '=', 'usr.role_id')
+        $query = DB::table('finance_users as fu')
+            ->whereIn('fu.role_id', $includeRole)
+            ->leftJoin('contacts as c', 'c.id', '=', 'fu.contact_id')
+            ->join('emails as e', 'e.id', '=', 'fu.email_id')
+            ->join('roles as r', 'r.id', '=', 'fu.role_id')
             ->leftjoin('destination_trans as dt', function ($join) use ($locale) {
-                $join->on('dt.destination_id', '=', 'usr.destination_id')
+                $join->on('dt.destination_id', '=', 'fu.destination_id')
                     ->where('dt.language_name', $locale);
             })
             ->leftjoin('zone_trans as zt', function ($join) use ($locale) {
-                $join->on('zt.zone_id', '=', 'usr.zone_id')
+                $join->on('zt.zone_id', '=', 'fu.zone_id')
                     ->where('zt.language_name', $locale);
             })
             ->leftjoin('model_job_trans as mjt', function ($join) use ($locale) {
-                $join->on('mjt.model_job_id', '=', 'usr.job_id')
+                $join->on('mjt.model_job_id', '=', 'fu.job_id')
                     ->where('mjt.language_name', $locale);
             })
             ->select(
-                "usr.id",
-                "usr.registeration_number",
-                "usr.full_name",
-                "usr.username",
-                "usr.profile",
-                "usr.created_at",
+                "fu.id",
+                "fu.registeration_number",
+                "fu.full_name",
+                "fu.username",
+                "fu.profile",
+                "fu.created_at",
                 "e.value AS email",
                 "c.value AS contact",
                 "zt.value AS zone",
@@ -158,8 +158,6 @@ class FinanceUserController extends Controller
         );
     }
 
-
-
     protected function applyDate($query, $request)
     {
         // Apply date filtering conditionally if provided
@@ -167,10 +165,10 @@ class FinanceUserController extends Controller
         $endDate = $request->input('filters.date.endDate');
 
         if ($startDate) {
-            $query->where('n.created_at', '>=', $startDate);
+            $query->where('fu.created_at', '>=', $startDate);
         }
         if ($endDate) {
-            $query->where('n.created_at', '<=', $endDate);
+            $query->where('fu.created_at', '<=', $endDate);
         }
     }
     // search function 
@@ -181,12 +179,11 @@ class FinanceUserController extends Controller
 
         if ($searchColumn && $searchValue) {
             $allowedColumns = [
-                'registration_no' => 'usr.registration_no',
-                'full_name' => 'usr.full_name',
+                'registration_number' => 'fu.registeration_number',
+                'username' => 'fu.username',
                 'contact' => 'c.value',
                 'email' => 'e.value',
                 'zone' => 'zt.value',
-                'destination' => 'dt.value'
             ];
             // Ensure that the search column is allowed
             if (in_array($searchColumn, array_keys($allowedColumns))) {
@@ -200,13 +197,33 @@ class FinanceUserController extends Controller
         $sort = $request->input('filters.sort'); // Sorting column
         $order = $request->input('filters.order', 'asc'); // Sorting order (default 
         $allowedColumns = [
-            'full_name' => 'usr.full_name',
-            'contact' => 'c.value',
-            'zone' => 'zt.value'
-
+            'username' => 'fu.username',
+            'email' => 'e.value',
+            'zone' => 'zt.value',
+            'job' => 'mjt.value',
+            'destination' => 'dt.value'
         ];
         if (in_array($sort, array_keys($allowedColumns))) {
             $query->orderBy($allowedColumns[$sort], $order);
         }
+    }
+    public function userCount()
+    {
+        $statistics = DB::select("
+            SELECT
+                COUNT(*) AS userCount,
+                (SELECT COUNT(*) FROM finance_users WHERE DATE(created_at) = CURDATE()) AS todayCount,
+                (SELECT COUNT(*) FROM finance_users WHERE status = 1) AS activeUserCount,
+                (SELECT COUNT(*) FROM finance_users WHERE status = 0) AS inActiveUserCount
+            FROM users
+        ");
+        return response()->json([
+            'counts' => [
+                "userCount" => $statistics[0]->userCount,
+                "todayCount" => $statistics[0]->todayCount,
+                "activeUserCount" => $statistics[0]->activeUserCount,
+                "inActiveUserCount" =>  $statistics[0]->inActiveUserCount
+            ],
+        ], 200, [], JSON_UNESCAPED_UNICODE);
     }
 }

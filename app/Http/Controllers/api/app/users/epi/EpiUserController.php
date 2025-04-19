@@ -13,10 +13,6 @@ use Illuminate\Support\Facades\Auth;
 
 class EpiUserController extends Controller
 {
-    //
-
-
-
     public function user($id)
     {
         $locale = App::getLocale();
@@ -161,8 +157,6 @@ class EpiUserController extends Controller
         );
     }
 
-
-
     protected function applyDate($query, $request)
     {
         // Apply date filtering conditionally if provided
@@ -211,5 +205,24 @@ class EpiUserController extends Controller
         if (in_array($sort, array_keys($allowedColumns))) {
             $query->orderBy($allowedColumns[$sort], $order);
         }
+    }
+    public function userCount()
+    {
+        $statistics = DB::select("
+            SELECT
+                COUNT(*) AS userCount,
+                (SELECT COUNT(*) FROM epi_users WHERE DATE(created_at) = CURDATE()) AS todayCount,
+                (SELECT COUNT(*) FROM epi_users WHERE status = 1) AS activeUserCount,
+                (SELECT COUNT(*) FROM epi_users WHERE status = 0) AS inActiveUserCount
+            FROM users
+        ");
+        return response()->json([
+            'counts' => [
+                "userCount" => $statistics[0]->userCount,
+                "todayCount" => $statistics[0]->todayCount,
+                "activeUserCount" => $statistics[0]->activeUserCount,
+                "inActiveUserCount" =>  $statistics[0]->inActiveUserCount
+            ],
+        ], 200, [], JSON_UNESCAPED_UNICODE);
     }
 }

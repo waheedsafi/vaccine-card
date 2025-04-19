@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Http\Middleware\api\template\user\sub;
+namespace App\Http\Middleware\api\template\finance\sub;
 
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response;
 
-class UserHasSubAddPermissionMiddleware
+class FinanceHasSubDeletePermissionMiddleware
 {
     /**
      * Handle an incoming request.
@@ -17,16 +17,17 @@ class UserHasSubAddPermissionMiddleware
     public function handle(Request $request, Closure $next, $permission = null, $subPermission = null): Response
     {
         $authUser = $request->user();
+
         if ($authUser) {
             // 1. Check user has user permission
-            $permission = DB::table("user_permissions as up")
-                ->where("user_id", "=", $authUser->id)
+            $permission = DB::table("finance_permissions as fp")
+                ->where("finance_user_id", "=", $authUser->id)
                 ->where("permission", $permission)
-                ->join("user_permission_subs as ups", function ($join) use ($subPermission) {
-                    return $join->on('ups.user_permission_id', '=', 'up.id')
-                        ->where('ups.sub_permission_id', $subPermission)
-                        ->where('ups.add', true);
-                })->select("ups.id")->first();
+                ->join("finance_permission_subs as fps", function ($join) use ($subPermission) {
+                    return $join->on('fps.finance_permission_id', '=', 'fp.id')
+                        ->where('fps.sub_permission_id', $subPermission)
+                        ->where('fps.delete', true);
+                })->select("fps.id")->first();
 
             if ($permission) {
                 return $next($request);
