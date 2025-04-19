@@ -12,16 +12,11 @@ use App\Http\Controllers\Controller;
 
 class ZoneController extends Controller
 {
-    //
-
 
     public function zones()
     {
-
         $locale = App()->getLocale();
         $zones =    ZoneTrans::select('value as name', 'zone_id as id')->where('language_name', $locale)->get();
-
-
         return response()->json([
             "zone" => $zones
         ], 200, [], JSON_UNESCAPED_UNICODE);
