@@ -1,17 +1,17 @@
 <?php
 
-namespace App\Http\Requests\app\epiuser;
+namespace App\Http\Requests\app\finance_user;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class EpiUserStoreRequest extends FormRequest
+class FinanceUserStoreRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return true;
+        return ture;
     }
 
     /**
