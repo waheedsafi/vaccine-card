@@ -7,4 +7,5 @@ use Illuminate\Database\Eloquent\Model;
 class VaccinePayment extends Model
 {
     //
+    protected $guarded = [];
 }

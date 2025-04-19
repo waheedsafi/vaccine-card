@@ -22,8 +22,6 @@ return new class extends Migration
             $table->foreign('language_name')->references('name')->on('languages')
                 ->onUpdate('cascade')
                 ->onDelete('no action');
-            
-
             $table->timestamps();
         });
     }

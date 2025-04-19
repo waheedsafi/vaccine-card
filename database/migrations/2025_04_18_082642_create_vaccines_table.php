@@ -29,7 +29,6 @@ return new class extends Migration
             $table->foreign('epi_user_id')->references('id')->on('epi_users')
                 ->onUpdate('cascade')
                 ->onDelete('no action');    
-        
             $table->unsignedBigInteger('visit_id');
             $table->foreign('visit_id')->references('id')->on('visits')
                 ->onUpdate('cascade')
