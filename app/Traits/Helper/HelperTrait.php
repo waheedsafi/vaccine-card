@@ -69,19 +69,24 @@ trait HelperTrait
     {
         return unlink(storage_path() . "/app/{$filePath}");
     }
+
+
+    public function userFolder($user_type, $user_id, $check_list_id)
+    {
+        return storage_path() . "/app/private/user/{$user_type}/{$user_type}_{$user_id}/checlist_{$check_list_id}/";
+    }
+    public function userDBPath($user_type, $user_id, $check_list_id, $fileName)
+    {
+        return "user/{$user_type}/{$user_type}_{$user_id}/checlist_{$check_list_id}/" . $fileName;
+    }
+
     public function ngoRegisterFolder($ngo_id, $agreement_id, $check_list_id)
     {
         return storage_path() . "/app/private/ngos/ngo_{$ngo_id}/register/agreement_{$agreement_id}/checlist_{$check_list_id}/";
     }
 
-    public function epiUserFolder($user_type, $user_id, $check_list_id)
-    {
-        return storage_path() . "/app/private/user/{$user_type}/{$user_type}_{$user_id}/checlist_{$check_list_id}/";
-    }
-    public function epiUserDBPath($user_type, $user_id, $check_list_id, $fileName)
-    {
-        return "user/{$user_type}/{$user_type}_{$user_id}/checlist_{$check_list_id}/" . $fileName;
-    }
+
+
     public function ngoRegisterDBPath($ngo_id, $agreement_id, $check_list_id, $fileName)
     {
         return "ngos/ngo_{$ngo_id}/register/agreement_{$agreement_id}/checlist_{$check_list_id}/" . $fileName;

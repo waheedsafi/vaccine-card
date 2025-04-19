@@ -19,10 +19,9 @@ class FileController extends Controller
 
     public function __construct(
         PendingTaskRepositoryInterface $pendingTaskRepository,
-        NgoRepositoryInterface $ngoRepository
+
     ) {
         $this->pendingTaskRepository = $pendingTaskRepository;
-        $this->ngoRepository = $ngoRepository;
     }
     public function checklistUploadFile(Request $request)
     {
