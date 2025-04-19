@@ -6,6 +6,8 @@ use Illuminate\Support\Facades\Route;
 use App\Enums\SubPermissionEnum;
 use App\Http\Controllers\api\app\users\epi\EpiUserController;
 
+
+Route::get('/users', [EpiUserController::class, "users"]);
 Route::prefix('v1')->middleware(['api.key', "authorized:" . 'user:api'])->group(function () {
     Route::get('/users/record/count', [EpiUserController::class, "userCount"])->middleware(["userHasMainViewPermission:" . PermissionEnum::users->value]);
     Route::get('/users', [EpiUserController::class, "users"])->middleware(["userHasMainViewPermission:" . PermissionEnum::users->value]);

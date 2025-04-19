@@ -19,6 +19,8 @@ return new class extends Migration
                 ->onDelete('no action');
             $table->string('visited_date');
             $table->timestamps();
+            $table->index([ "people_id"]);
+
         });
     }
 

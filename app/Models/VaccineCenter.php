@@ -7,4 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class VaccineCenter extends Model
 {
     //
+    protected $guarded = [];
+
+    
 }

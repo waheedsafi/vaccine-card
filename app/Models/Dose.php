@@ -10,6 +10,7 @@ class Dose extends Model
 
     protected $guarded = [];
 
+    
     public function vaccine()
     {
         return $this->belongsTo(Vaccine::class, 'vaccine_id');

@@ -19,6 +19,7 @@ return new class extends Migration
                 ->onDelete('no action');
             $table->string('description');
             $table->timestamps();
+            
         });
     }
 
