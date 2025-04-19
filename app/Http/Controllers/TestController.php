@@ -2,9 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\RoleEnum;
+use App\Enums\ZoneEnum;
+use App\Models\FinanceUser;
 use Illuminate\Http\Request;
 use App\Traits\Helper\HelperTrait;
 use App\Traits\Address\AddressTrait;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
 use App\Repositories\User\UserRepositoryInterface;
@@ -100,6 +104,22 @@ class TestController extends Controller
     public function index(Request $request)
     {
 
+        FinanceUser::factory()->create([
+            "id" => RoleEnum::finance_super->value,
+            "registeration_number" => 'finance-2025-1',
+            'username' => 'Finance Your username',
+            'full_name' => 'Finance Super',
+            'password' =>  Hash::make("123123123"),
+            'email_id' =>  1,
+            'status' =>  true,
+            'zone_id' =>  ZoneEnum::kabul,
+            'province_id' =>  ZoneEnum::kabul,
+            'gender_id' =>  1,
+            'role_id' =>  RoleEnum::finance_super->value,
+            'job_id' =>  1,
+            'destination_id' =>  1,
+        ]);
+        return 'asa';
         $columns =  Schema::getColumnListing('users');
         $formattedColumns = array_map(fn($column) => ['name' => $column], $columns);
 

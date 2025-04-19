@@ -25,3 +25,4 @@ require __DIR__ . '/api/app/users/financeUser.php';
 
 require __DIR__ . '/api/app/file/file.php';
 require __DIR__ . '/api/app/checklist/checklist.php';
+require __DIR__ . '/api/app/zone/zone.php';
