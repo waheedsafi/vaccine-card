@@ -11,13 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('vaccine_centers', function (Blueprint $table) {
+        Schema::create('nationalities', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('address_id');
-            $table->foreign('address_id')->references('id')->on('addresses')
-                ->onUpdate('cascade')
-                ->onDelete('no action');
-            $table->string('description');
             $table->timestamps();
         });
     }
@@ -27,6 +22,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('vaccine_centers');
+        Schema::dropIfExists('nationalities');
     }
 };

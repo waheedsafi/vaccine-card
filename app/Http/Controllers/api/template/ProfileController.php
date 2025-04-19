@@ -9,19 +9,11 @@ use App\Traits\Helper\HelperTrait;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\App;
 use App\Http\Controllers\Controller;
-use App\Repositories\ngo\NgoRepositoryInterface;
 use App\Http\Requests\template\user\ProfileUpdateRequest;
 
 class ProfileController extends Controller
 {
     use HelperTrait;
-    protected $ngoRepository;
-
-    public function __construct(
-        NgoRepositoryInterface $ngoRepository
-    ) {
-        $this->ngoRepository = $ngoRepository;
-    }
 
     public function deleteProfilePicture(Request $request)
     {
@@ -126,15 +118,15 @@ class ProfileController extends Controller
     {
         $locale = App::getLocale();
 
-        $data = $this->ngoRepository->ngoProfileInfo($ngo_id, $locale);
-        if (!$data) {
-            return response()->json([
-                'message' => __('app_translation.ngo_not_found'),
-            ], 404);
-        }
+        // $data = $this->ngoRepository->ngoProfileInfo($ngo_id, $locale);
+        // if (!$data) {
+        //     return response()->json([
+        //         'message' => __('app_translation.ngo_not_found'),
+        //     ], 404);
+        // }
 
-        return response()->json([
-            'ngo' => $data,
-        ], 200, [], JSON_UNESCAPED_UNICODE);
+        // return response()->json([
+        //     'ngo' => $data,
+        // ], 200, [], JSON_UNESCAPED_UNICODE);
     }
 }

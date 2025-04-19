@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('doses', function (Blueprint $table) {
             $table->id();
             $table->string('batch_number');
-            $table->date('vaccine_date');
+            $table->string('vaccine_date');
             $table->unsignedBigInteger('vaccine_id');
             $table->foreign('vaccine_id')->references('id')->on('vaccines')
                 ->onUpdate('cascade')
@@ -22,8 +22,7 @@ return new class extends Migration
             $table->unsignedBigInteger('epi_user_id');
             $table->foreign('epi_user_id')->references('id')->on('epi_users')
                 ->onUpdate('cascade')
-                ->onDelete('no action');    
-
+                ->onDelete('no action');
             $table->timestamps();
         });
     }

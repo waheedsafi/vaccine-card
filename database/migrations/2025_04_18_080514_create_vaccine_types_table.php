@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('vaccine_types', function (Blueprint $table) {
             $table->id();
             $table->string('description');
-            $table->integer('number_of_dose');
+            $table->integer('number_of_doses');
             $table->timestamps();
         });
     }

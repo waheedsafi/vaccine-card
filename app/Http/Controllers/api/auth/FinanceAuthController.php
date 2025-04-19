@@ -230,9 +230,6 @@ class FinanceAuthController extends Controller
         $request->validated();
         $authUser = $request->user();
         DB::beginTransaction();
-        $request->validate([
-            "old_password" => ["required", "min:8", "max:45"],
-        ]);
         if (!Hash::check($request->old_password, $authUser->password)) {
             return response()->json([
                 'errors' => ['old_password' => [__('app_translation.incorrect_password')]],
