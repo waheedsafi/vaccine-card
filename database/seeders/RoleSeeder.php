@@ -15,27 +15,27 @@ class RoleSeeder extends Seeder
     {
         Role::factory()->create([
             "id" => RoleEnum::epi_super,
-            "name" => "EPI Super"
+            "name" => "epi Super"
         ]);
         Role::factory()->create([
             "id" => RoleEnum::epi_admin,
-            "name" => "EPI Admin"
+            "name" => "epi Admin"
         ]);
         Role::factory()->create([
             "id" => RoleEnum::epi_user,
-            "name" => "EPI User"
+            "name" => "epi User"
         ]);
         Role::factory()->create([
             "id" => RoleEnum::finance_super,
-            "name" => "Finance Super"
+            "name" => "finance Super"
         ]);
         Role::factory()->create([
             "id" => RoleEnum::finance_admin,
-            "name" => "Finance Admin"
+            "name" => "finance Admin"
         ]);
         Role::factory()->create([
             "id" => RoleEnum::finance_user,
-            "name" => "Finance User"
+            "name" => "finance User"
         ]);
         Role::factory()->create([
             "id" => RoleEnum::debugger,
