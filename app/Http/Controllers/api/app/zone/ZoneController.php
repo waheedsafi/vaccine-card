@@ -17,9 +17,12 @@ class ZoneController extends Controller
     {
         $locale = App()->getLocale();
         $zones =    ZoneTrans::select('value as name', 'zone_id as id')->where('language_name', $locale)->get();
-        return response()->json([
-            "zone" => $zones
-        ], 200, [], JSON_UNESCAPED_UNICODE);
+        return response()->json(
+            $zones,
+            200,
+            [],
+            JSON_UNESCAPED_UNICODE
+        );
     }
 
     public function store(Request $request)

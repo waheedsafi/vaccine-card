@@ -39,7 +39,7 @@ class RoleSeeder extends Seeder
         ]);
         Role::factory()->create([
             "id" => RoleEnum::debugger,
-            "name" => "Debugger"
+            "name" => "debugger"
         ]);
     }
 }
