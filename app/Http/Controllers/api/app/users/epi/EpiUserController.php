@@ -13,17 +13,13 @@ use App\Models\AddressTran;
 use Illuminate\Support\Carbon;
 use App\Enums\Type\TaskTypeEnum;
 use Illuminate\Support\Facades\DB;
-use App\Models\PendingTaskDocument;
 use Illuminate\Support\Facades\App;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Request;
 use App\Http\Requests\app\epiuser\EpiUserStoreRequest;
 use App\Repositories\Storage\StorageRepositoryInterface;
 use App\Repositories\PendingTask\PendingTaskRepositoryInterface;
-
-
+use Illuminate\Http\Request;
 
 
 class EpiUserController extends Controller
@@ -124,42 +120,46 @@ class EpiUserController extends Controller
         $tr = [];
         $perPage = $request->input('per_page', 10); // Number of records per page
         $page = $request->input('page', 1); // Current page
+        $role_id =  $request->user()->role_id;
+        $includeRole = [];
 
-
-        $request->user()->role_id;
-
-        $includeRole = [RoleEnum::epi_user->value];
-
-        if ($request->user()->role_id  === RoleEnum::epi_super->value) {
-            $includeRole = [RoleEnum::epi_admin->value, RoleEnum::epi_user->value];
+        if ($role_id === RoleEnum::epi_super->value) {
+            array_push($includeRole, RoleEnum::epi_admin->value);
+            array_push($includeRole, RoleEnum::epi_user->value);
+        } else if ($role_id === RoleEnum::epi_admin->value) {
+            array_push($includeRole, RoleEnum::epi_user->value);
+        } else {
+            return response()->json([
+                'message' => __('app_translation.unauthorized'),
+            ], 401, [], JSON_UNESCAPED_UNICODE);
         }
 
 
         // Start building the query
-        $query = DB::table('epi_users as usr')
-            ->whereIn('usr.role_id', $includeRole)
-            ->leftJoin('contacts as c', 'c.id', '=', 'usr.contact_id')
-            ->join('emails as e', 'e.id', '=', 'usr.email_id')
-            ->join('roles as r', 'r.id', '=', 'usr.role_id')
+        $query = DB::table('epi_users as eu')
+            ->whereIn('eu.role_id', $includeRole)
+            ->leftJoin('contacts as c', 'c.id', '=', 'eu.contact_id')
+            ->join('emails as e', 'e.id', '=', 'eu.email_id')
+            ->join('roles as r', 'r.id', '=', 'eu.role_id')
             ->leftjoin('destination_trans as dt', function ($join) use ($locale) {
-                $join->on('dt.destination_id', '=', 'usr.destination_id')
+                $join->on('dt.destination_id', '=', 'eu.destination_id')
                     ->where('dt.language_name', $locale);
             })
             ->leftjoin('zone_trans as zt', function ($join) use ($locale) {
-                $join->on('zt.zone_id', '=', 'usr.zone_id')
+                $join->on('zt.zone_id', '=', 'eu.zone_id')
                     ->where('zt.language_name', $locale);
             })
             ->leftjoin('model_job_trans as mjt', function ($join) use ($locale) {
-                $join->on('mjt.model_job_id', '=', 'usr.job_id')
+                $join->on('mjt.model_job_id', '=', 'eu.job_id')
                     ->where('mjt.language_name', $locale);
             })
             ->select(
-                "usr.id",
-                "usr.registeration_number",
-                "usr.full_name",
-                "usr.username",
-                "usr.profile",
-                "usr.created_at",
+                "eu.id",
+                "eu.registeration_number",
+                "eu.full_name",
+                "eu.username",
+                "eu.profile",
+                "eu.created_at",
                 "e.value AS email",
                 "c.value AS contact",
                 "zt.value AS zone",
@@ -184,7 +184,7 @@ class EpiUserController extends Controller
     }
 
 
-    public function storeUser(EpiUserStoreRequest $request)
+    public function store(EpiUserStoreRequest $request)
     {
 
         $validatedData = $request->validated();
@@ -303,10 +303,10 @@ class EpiUserController extends Controller
         $endDate = $request->input('filters.date.endDate');
 
         if ($startDate) {
-            $query->where('n.created_at', '>=', $startDate);
+            $query->where('eu.created_at', '>=', $startDate);
         }
         if ($endDate) {
-            $query->where('n.created_at', '<=', $endDate);
+            $query->where('eu.created_at', '<=', $endDate);
         }
     }
     // search function 
@@ -317,12 +317,11 @@ class EpiUserController extends Controller
 
         if ($searchColumn && $searchValue) {
             $allowedColumns = [
-                'registration_no' => 'usr.registration_no',
-                'full_name' => 'usr.full_name',
+                'registration_number' => 'eu.registeration_number',
+                'username' => 'eu.username',
                 'contact' => 'c.value',
                 'email' => 'e.value',
                 'zone' => 'zt.value',
-                'destination' => 'dt.value'
             ];
             // Ensure that the search column is allowed
             if (in_array($searchColumn, array_keys($allowedColumns))) {
@@ -336,9 +335,11 @@ class EpiUserController extends Controller
         $sort = $request->input('filters.sort'); // Sorting column
         $order = $request->input('filters.order', 'asc'); // Sorting order (default 
         $allowedColumns = [
-            'full_name' => 'usr.full_name',
-            'contact' => 'c.value',
-            'zone' => 'zt.value'
+            'username' => 'eu.username',
+            'email' => 'e.value',
+            'zone' => 'zt.value',
+            'job' => 'mjt.value',
+            'destination' => 'dt.value'
 
         ];
         if (in_array($sort, array_keys($allowedColumns))) {

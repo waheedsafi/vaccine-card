@@ -10,18 +10,8 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\api\template\LocaleMiddleware;
 use App\Http\Middleware\api\template\AccessUserCheckMiddleware;
-use App\Http\Middleware\api\template\epi\main\EpiHasMainAddPermissionMiddleware;
-use App\Http\Middleware\api\template\user\sub\UserHasSubAddPermissionMiddleware;
-use App\Http\Middleware\api\template\epi\main\EpiHasMainEditPermissionMiddleware;
-use App\Http\Middleware\api\template\epi\main\EpiHasMainViewPermissionMiddleware;
-use App\Http\Middleware\api\template\user\sub\UserHasSubEditPermissionMiddleware;
-use App\Http\Middleware\api\template\user\sub\UserHasSubViewPermissionMiddleware;
-use App\Http\Middleware\api\template\epi\main\EpiHasMainDeletePermissionMiddleware;
-use App\Http\Middleware\api\template\user\sub\UserHasSubDeletePermissionMiddleware;
-use App\Http\Middleware\api\template\finance\main\FinanceHasMainAddPermissionMiddleware;
-use App\Http\Middleware\api\template\finance\main\FinanceHasMainEditPermissionMiddleware;
-use App\Http\Middleware\api\template\finance\main\FinanceHasMainViewPermissionMiddleware;
-use App\Http\Middleware\api\template\finance\main\FinanceHasMainDeletePermissionMiddleware;
+use App\Http\Middleware\api\template\epi\main\EpiHasMainPermissionMiddleware;
+use App\Http\Middleware\api\template\finance\main\FinanceHasMainPermissionMiddleware;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -33,14 +23,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->append(LocaleMiddleware::class)
             ->alias([
-                'financeHasMainViewPermission' => FinanceHasMainViewPermissionMiddleware::class,
-                'financeHasMainDeletePermission' => FinanceHasMainDeletePermissionMiddleware::class,
-                'financeHasMainEditPermission' => FinanceHasMainEditPermissionMiddleware::class,
-                'financeHasMainAddPermission' => FinanceHasMainAddPermissionMiddleware::class,
-                'epiHasMainViewPermission' => EpiHasMainViewPermissionMiddleware::class,
-                'epiHasMainDeletePermission' => EpiHasMainDeletePermissionMiddleware::class,
-                'epiHasMainEditPermission' => EpiHasMainEditPermissionMiddleware::class,
-                'epiHasMainAddPermission' => EpiHasMainAddPermissionMiddleware::class,
+                'financeHasMainPermission' => FinanceHasMainPermissionMiddleware::class,
+                'epiHasMainPermission' => EpiHasMainPermissionMiddleware::class,
                 'accessUserCheck'  => AccessUserCheckMiddleware::class,
             ]);
     })

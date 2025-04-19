@@ -7,21 +7,21 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response;
 
-class EpiHasMainAddPermissionMiddleware
+class EpiHasMainPermissionMiddleware
 {
     /**
      * Handle an incoming request.
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next, $permission = null): Response
+    public function handle(Request $request, Closure $next, $permission = null, $column = null): Response
     {
         $authUser = $request->user();
         if ($authUser) {
             // 1. Check user has user permission
             $permission = DB::table('epi_permissions')->where("epi_user_id", "=", $authUser->id)
                 ->where("permission", '=', $permission)
-                ->where('add', true)
+                ->where($column, true)
                 ->select('id')
                 ->first();
             if ($permission) {
