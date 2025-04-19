@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('vaccine_centers', function (Blueprint $table) {
             $table->id();
-            $table->string('address_id');
+            $table->unsignedBigInteger('address_id');
             $table->foreign('address_id')->references('id')->on('addresses')
                 ->onUpdate('cascade')
-                ->onDelete('cascade');
+                ->onDelete('no action');
             $table->string('description');
             $table->timestamps();
             

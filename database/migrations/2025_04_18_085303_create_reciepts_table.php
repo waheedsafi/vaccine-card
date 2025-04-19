@@ -13,24 +13,20 @@ return new class extends Migration
     {
         Schema::create('reciepts', function (Blueprint $table) {
             $table->id();
-            $table->integer('retry_count');
-            $table->date('issue_date');
-            $table->boolean('is_download');
-            $table->unsignedBigInteger('vaccine_payment_id')->unique();
-            $table->foreign('vaccine_payment_id')->references('id')->on('vaccine_payments')
-                ->onUpdate('cascade')
-                ->onDelete('no action');
+            $table->integer('download_count');
+            $table->string('issue_date');
+            $table->boolean('is_downloaded')->default(false);
+            $table->decimal('paid_amount', 15, 2);
             $table->unsignedBigInteger('finance_user_id');
             $table->foreign('finance_user_id')->references('id')->on('finance_users')
                 ->onUpdate('cascade')
                 ->onDelete('no action');
-            $table->unsignedBigInteger('document_id');
-            $table->foreign('document_id')->references('id')->on('documents')
+            $table->unsignedBigInteger('vaccine_payment_id');
+            $table->foreign('vaccine_payment_id')->references('id')->on('vaccine_payments')
                 ->onUpdate('cascade')
                 ->onDelete('no action');
             $table->timestamps();
-            $table->index(["vaccine_payment_id"]);
-
+            $table->index(["vaccine_payment_id", 'finance_user_id'], 'vaccine_payment_finance_user_id');
         });
     }
 

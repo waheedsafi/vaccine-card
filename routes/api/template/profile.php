@@ -8,10 +8,10 @@ Route::prefix('v1')->middleware(['api.key', "authorized:" . 'user:api'])->group(
     Route::post('/user/profile/picture-update', [ProfileController::class, 'updateUserPicture']);
     Route::post('/user/profile/info/update', [ProfileController::class, 'updateUserProfileInfo']);
 });
-Route::prefix('v1')->middleware(['api.key', "authorized:" . 'ngo:api'])->group(function () {
-    Route::post('/ngo/profile/picture-update', [ProfileController::class, 'updateNgoPicture']);
-    Route::post('/ngo/profile/info/update', [ProfileController::class, 'updateNgoProfileInfo']);
-    Route::get('/ngo/profile/info/{id}', [ProfileController::class, 'ngoProfileInfo']);
+Route::prefix('v1')->middleware(["authorized:" . 'finance:api'])->group(function () {
+    Route::post('/finance/profile/picture-update', [ProfileController::class, 'updateNgoPicture']);
+    Route::post('/finance/profile/info/update', [ProfileController::class, 'updateNgoProfileInfo']);
+    Route::get('/finance/profile/info/{id}', [ProfileController::class, 'ngoProfileInfo']);
 });
 
 Route::prefix('v1')->middleware(['api.key', "authorized:" . 'donor:api'])->group(function () {

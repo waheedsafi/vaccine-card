@@ -18,30 +18,28 @@ return new class extends Migration
             $table->string('father_name');
             $table->string('date_of_birth');
             $table->string('phone');
-            $table->string('nid_type_id');
+            $table->unsignedBigInteger('nid_type_id');
             $table->foreign('nid_type_id')->references('id')->on('nid_types')
                 ->onUpdate('cascade')
-                ->onDelete('cascade');
-            $table->string('geneder_id');
-            $table->foreign('geneder_id')->references('id')->on('geneders')
+                ->onDelete('no action');
+            $table->unsignedBigInteger('gender_id');
+            $table->foreign('gender_id')->references('id')->on('genders')
                 ->onUpdate('cascade')
-                ->onDelete('cascade');
-            $table->string('country_id');
-            $table->foreign('country_id')->references('id')->on('countries')
+                ->onDelete('no action');
+            $table->unsignedBigInteger('nationality_id');
+            $table->foreign('nationality_id')->references('id')->on('nationalities')
                 ->onUpdate('cascade')
-                ->onDelete('cascade');
-            $table->string('address_id');
+                ->onDelete('no action');
+            $table->unsignedBigInteger('address_id');
             $table->foreign('address_id')->references('id')->on('addresses')
                 ->onUpdate('cascade')
-                ->onDelete('cascade');
-            $table->string('user_id');
-            $table->foreign('user_id')->references('id')->on('epi_users')
+                ->onDelete('no action');
+            $table->unsignedBigInteger('epi_user_id');
+            $table->foreign('epi_user_id')->references('id')->on('epi_users')
                 ->onUpdate('cascade')
-                ->onDelete('cascade');
+                ->onDelete('no action');
             $table->timestamps();
-            $table->index([ "passport_number"]);
-
-            
+            $table->index(["passport_number"]);
         });
     }
 

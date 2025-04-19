@@ -13,9 +13,11 @@ return new class extends Migration
     {
         Schema::create('visits', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('people_id');
             $table->foreign('people_id')->references('id')->on('people')
                 ->onUpdate('cascade')
-                ->onDelete('cascade');
+                ->onDelete('no action');
+            $table->string('visited_date');
             $table->timestamps();
             $table->index([ "people_id"]);
 

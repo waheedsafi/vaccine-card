@@ -24,7 +24,6 @@ return new class extends Migration
                 ->onDelete('no action');
             $table->timestamps();
             $table->index(["language_name", "vaccine_type_id"]);
-
         });
     }
 
