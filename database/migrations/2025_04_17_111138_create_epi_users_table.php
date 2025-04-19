@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('password');
             $table->string('profile')->nullable();
             $table->boolean('status')->default(false);
+            $table->boolean('disabled_parmanently')->default(false);
             $table->unsignedBigInteger('role_id');
             $table->foreign('role_id')->references('id')->on('roles')
                 ->onUpdate('cascade')

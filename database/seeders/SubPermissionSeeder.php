@@ -16,6 +16,7 @@ class SubPermissionSeeder extends Seeder
     {
         $this->subUserPermissions();
         $this->subVeccineCertificatePermissions();
+        $this->subCertificatePaymentPermissions();
         $this->subSettingPermissions();
         $this->subActivityPermissions();
     }
@@ -35,6 +36,16 @@ class SubPermissionSeeder extends Seeder
             SubPermission::factory()->create([
                 "id" => $id,
                 "permission" => PermissionEnum::vaccine_certificate->value,
+                "name" => $role,
+            ]);
+        }
+    }
+    public function subCertificatePaymentPermissions()
+    {
+        foreach (SubPermissionEnum::CERTIFICATE_PAYMENT as $id => $role) {
+            SubPermission::factory()->create([
+                "id" => $id,
+                "permission" => PermissionEnum::certificate_payment->value,
                 "name" => $role,
             ]);
         }

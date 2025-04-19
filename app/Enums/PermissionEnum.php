@@ -7,7 +7,7 @@ enum PermissionEnum: string
     case dashboard = "dashboard";
     case users = "users";
     case vaccine_certificate = "vaccine_certificate";
-    case finance = "finance";
+    case certificate_payment = "certificate_payment";
     case reports = "reports";
     case settings = "settings";
     case logs = "logs";

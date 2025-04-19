@@ -16,7 +16,7 @@ class PermissionSeeder extends Seeder
         $dashboard = 'icons/home.svg';
         $users = 'icons/users-group.svg';
         $vaccine_certificate = 'icons/card.svg';
-        $finance = 'icons/finance.svg';
+        $certificate_payment = 'icons/finance.svg';
         $reports = 'icons/chart.svg';
         $settings = 'icons/settings.svg';
         $logs = 'icons/logs.svg';
@@ -39,8 +39,8 @@ class PermissionSeeder extends Seeder
             "priority" => 3,
         ]);
         Permission::factory()->create([
-            "name" => "finance",
-            "icon" => $finance,
+            "name" => "certificate_payment",
+            "icon" => $certificate_payment,
             "priority" => 4,
         ]);
         Permission::factory()->create([

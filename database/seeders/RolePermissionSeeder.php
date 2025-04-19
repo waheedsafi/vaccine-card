@@ -27,25 +27,25 @@ class RolePermissionSeeder extends Seeder
     public function epiSuperPermissions()
     {
         RolePermission::factory()->create([
-            "role" => RoleEnum::epi_admin,
+            "role" => RoleEnum::epi_super,
             "permission" => "dashboard"
         ]);
         $rolePer = RolePermission::factory()->create([
-            "role" => RoleEnum::epi_admin,
+            "role" => RoleEnum::epi_super,
             "permission" => "users"
         ]);
         $this->epiRolePermissionSubUser($rolePer->id);
         $rolePer = RolePermission::factory()->create([
-            "role" => RoleEnum::epi_admin,
+            "role" => RoleEnum::epi_super,
             "permission" => "settings"
         ]);
         $this->rolePermissionSubSetting($rolePer->id);
         RolePermission::factory()->create([
-            "role" => RoleEnum::epi_admin,
+            "role" => RoleEnum::epi_super,
             "permission" => "reports"
         ]);
         $rolePer = RolePermission::factory()->create([
-            "role" => RoleEnum::epi_admin,
+            "role" => RoleEnum::epi_super,
             "permission" => "activity"
         ]);
         $this->rolePermissionSubActivity($rolePer->id);
@@ -99,25 +99,25 @@ class RolePermissionSeeder extends Seeder
     public function financeSuperPermissions()
     {
         RolePermission::factory()->create([
-            "role" => RoleEnum::finance_admin,
+            "role" => RoleEnum::finance_super,
             "permission" => "dashboard"
         ]);
         $rolePer = RolePermission::factory()->create([
-            "role" => RoleEnum::finance_admin,
+            "role" => RoleEnum::finance_super,
             "permission" => "users"
         ]);
         $this->financeRolePermissionSubUser($rolePer->id);
         $rolePer = RolePermission::factory()->create([
-            "role" => RoleEnum::finance_admin,
+            "role" => RoleEnum::finance_super,
             "permission" => "settings"
         ]);
         $this->rolePermissionSubSetting($rolePer->id);
         RolePermission::factory()->create([
-            "role" => RoleEnum::finance_admin,
+            "role" => RoleEnum::finance_super,
             "permission" => "reports"
         ]);
         $rolePer = RolePermission::factory()->create([
-            "role" => RoleEnum::finance_admin,
+            "role" => RoleEnum::finance_super,
             "permission" => "activity"
         ]);
         $this->rolePermissionSubActivity($rolePer->id);
@@ -150,15 +150,11 @@ class RolePermissionSeeder extends Seeder
     }
     public function financeUserPermissions()
     {
-        RolePermission::factory()->create([
-            "role" => RoleEnum::finance_user,
-            "permission" => "dashboard"
-        ]);
         $rolePer = RolePermission::factory()->create([
             "role" => RoleEnum::finance_user,
-            "permission" => "finance"
+            "permission" => "certificate_payment"
         ]);
-        $this->epiRolePermissionSubVaccineCertificate($rolePer->id);
+        $this->financeUserRolePermissionSubCertificatePayment($rolePer->id);
         $rolePer = RolePermission::factory()->create([
             "role" => RoleEnum::finance_user,
             "permission" => "settings"
@@ -267,6 +263,15 @@ class RolePermissionSeeder extends Seeder
     public function rolePermissionSubActivity($role_permission_id)
     {
         foreach (SubPermissionEnum::ACTIVITY as $id => $role) {
+            RolePermissionSub::factory()->create([
+                "role_permission_id" => $role_permission_id,
+                "sub_permission_id" => $id
+            ]);
+        }
+    }
+    public function financeUserRolePermissionSubCertificatePayment($role_permission_id)
+    {
+        foreach (SubPermissionEnum::CERTIFICATE_PAYMENT as $id => $role) {
             RolePermissionSub::factory()->create([
                 "role_permission_id" => $role_permission_id,
                 "sub_permission_id" => $id

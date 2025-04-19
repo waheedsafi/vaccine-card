@@ -42,6 +42,11 @@ enum SubPermissionEnum: int
         22 => "job",
         23 => "destination",
     ];
+        // Certificate Payment
+    case certificate_payment_info = 31;
+    public const CERTIFICATE_PAYMENT = [
+        31 => "payment_info",
+    ];
         // Activity
     case user_activity = 41;
     case self_activity = 42;

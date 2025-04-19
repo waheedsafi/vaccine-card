@@ -4,5 +4,5 @@ namespace App\Enums;
 
 enum StatusTypeEnum: int
 {
-    case blocked = 5;
+    case blocked = 1;
 }

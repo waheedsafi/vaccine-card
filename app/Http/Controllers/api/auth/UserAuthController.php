@@ -11,9 +11,9 @@ use App\Traits\Helper\HelperTrait;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\App;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\auth\LoginRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use App\Http\Requests\Auth\LoginRequest;
 use App\Repositories\User\UserRepositoryInterface;
 use App\Http\Requests\template\user\UpdateProfilePasswordRequest;
 

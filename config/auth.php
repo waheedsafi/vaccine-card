@@ -79,11 +79,11 @@ return [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', App\Models\User::class),
         ],
-        'epis' => [
+        'epi_users' => [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', App\Models\EpiUser::class),
         ],
-        'finances' => [
+        'finance_users' => [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', App\Models\FinanceUser::class),
         ],

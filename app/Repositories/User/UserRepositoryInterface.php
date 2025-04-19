@@ -11,5 +11,6 @@ interface UserRepositoryInterface
      * @return mix
      */
     public function userAuthFormattedPermissions($user_id);
-    public function ngoAuthFormattedPermissions($user_id);
+    public function financeAuthFormattedPermissions($finance_user_id);
+    public function epiAuthFormattedPermissions($epi_user_id);
 }
