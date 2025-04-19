@@ -31,15 +31,11 @@ class RoleController extends Controller
         }
 
         $tr = Role::whereIn('id', $includeRole)->select("name", 'id')->get();
-        return response()->json();
-    }
-    public function financeRoles()
-    {
-        $excludedIds = [
-            RoleEnum::debugger->value,
-            RoleEnum::epi_admin->value,
-            RoleEnum::epi_user->value,
-        ];
-        return response()->json(Role::whereNotIn('id', $excludedIds)->select("name", 'id', 'created_at as createdAt')->get());
+        return response()->json(
+            $tr,
+            200,
+            [],
+            JSON_UNESCAPED_UNICODE
+        );
     }
 }

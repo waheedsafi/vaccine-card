@@ -14,7 +14,7 @@ Route::prefix('v1')->middleware(["authorized:" . 'epi:api'])->group(function () 
     // Route::delete('/user/delete/profile-picture/{id}', [EpiUserController::class, 'deleteProfilePicture'])->middleware(['accessUserCheck', "userHasMainDeletePermission:" . PermissionEnum::users->value]);
     // Route::post('/user/update/profile-picture', [EpiUserController::class, 'updateProfilePicture'])->middleware(['accessUserCheck', "userHasMainEditPermission:" . PermissionEnum::users->value]);
     // Route::post('/user/update/information', [EpiUserController::class, 'updateInformation'])->middleware(['accessUserCheck', "userHasSubEditPermission:" . PermissionEnum::users->value . "," . SubPermissionEnum::user_information->value]);
-    Route::post('/epi/user/store', [EpiUserController::class, 'store'])->middleware(["userHasMainPermission:" . PermissionEnum::users->value . ',' . 'add']);
+    Route::post('/epi/user/store', [EpiUserController::class, 'store'])->middleware(["epiHasMainPermission:" . PermissionEnum::users->value . ',' . 'add']);
     // Route::delete('/user/{id}', [EpiUserController::class, 'destroy'])->middleware(["userHasMainDeletePermission:" . PermissionEnum::users->value]);
     // Route::post('/user/validate/email/contact', [EpiUserController::class, "validateEmailContact"]);
     // Route::post('/user/accpunt/change-password', [EpiUserController::class, 'changePassword'])->middleware(['accessUserCheck']);
