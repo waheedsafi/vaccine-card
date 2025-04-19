@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Http\Middleware\api\template\user\main;
+namespace App\Http\Middleware\api\template\epi\main;
 
 use Closure;
 use Illuminate\Http\Request;
-use App\Models\UserPermission;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response;
 
-class UserHasMainDeletePermissionMiddleware
+class EpiHasMainEditPermissionMiddleware
 {
     /**
      * Handle an incoming request.
@@ -19,9 +19,9 @@ class UserHasMainDeletePermissionMiddleware
         $authUser = $request->user();
         if ($authUser) {
             // 1. Check user has user permission
-            $permission = UserPermission::where("user_id", "=", $authUser->id)
+            $permission = DB::table('epi_permissions')->where("epi_user_id", "=", $authUser->id)
                 ->where("permission", '=', $permission)
-                ->where('delete', true)
+                ->where('edit', true)
                 ->select('id')
                 ->first();
             if ($permission) {

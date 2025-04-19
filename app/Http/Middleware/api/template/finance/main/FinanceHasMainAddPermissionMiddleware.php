@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Http\Middleware\api\template\user\main;
+namespace App\Http\Middleware\api\template\finance\main;
 
-use App\Models\UserPermission;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response;
 
-class UserHasMainViewPermissionMiddleware
+class FinanceHasMainAddPermissionMiddleware
 {
     /**
      * Handle an incoming request.
@@ -19,9 +19,9 @@ class UserHasMainViewPermissionMiddleware
         $authUser = $request->user();
         if ($authUser) {
             // 1. Check user has user permission
-            $permission = UserPermission::where("user_id", "=", $authUser->id)
+            $permission = DB::table('finance_permissions')->where("finance_user_id", "=", $authUser->id)
                 ->where("permission", '=', $permission)
-                ->where('view', true)
+                ->where('add', true)
                 ->select('id')
                 ->first();
             if ($permission) {

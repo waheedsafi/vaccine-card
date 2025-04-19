@@ -28,10 +28,6 @@ use App\Repositories\PendingTask\PendingTaskRepositoryInterface;
 
 class EpiUserController extends Controller
 {
-    //
-
-
-
     protected $pendingTaskRepository;
     protected $storageRepository;
 
@@ -186,10 +182,6 @@ class EpiUserController extends Controller
             JSON_UNESCAPED_UNICODE
         );
     }
-
-
-
-
 
 
     public function storeUser(EpiUserStoreRequest $request)
@@ -352,5 +344,24 @@ class EpiUserController extends Controller
         if (in_array($sort, array_keys($allowedColumns))) {
             $query->orderBy($allowedColumns[$sort], $order);
         }
+    }
+    public function userCount()
+    {
+        $statistics = DB::select("
+            SELECT
+                COUNT(*) AS userCount,
+                (SELECT COUNT(*) FROM epi_users WHERE DATE(created_at) = CURDATE()) AS todayCount,
+                (SELECT COUNT(*) FROM epi_users WHERE status = 1) AS activeUserCount,
+                (SELECT COUNT(*) FROM epi_users WHERE status = 0) AS inActiveUserCount
+            FROM users
+        ");
+        return response()->json([
+            'counts' => [
+                "userCount" => $statistics[0]->userCount,
+                "todayCount" => $statistics[0]->todayCount,
+                "activeUserCount" => $statistics[0]->activeUserCount,
+                "inActiveUserCount" =>  $statistics[0]->inActiveUserCount
+            ],
+        ], 200, [], JSON_UNESCAPED_UNICODE);
     }
 }

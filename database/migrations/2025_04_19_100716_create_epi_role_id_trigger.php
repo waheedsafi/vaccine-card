@@ -12,26 +12,26 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Trigger to prevent inserting a second user with role_id = 7
+        // Trigger to prevent inserting a second user with role_id = 1
         DB::statement('
-            CREATE TRIGGER prevent_multiple_role_id_7
-            BEFORE INSERT ON users
+            CREATE TRIGGER prevent_multiple_role_id_1
+            BEFORE INSERT ON epi_users
             FOR EACH ROW
             BEGIN
-                IF NEW.role_id = 7 AND (SELECT COUNT(*) FROM users WHERE role_id = 7) >= 1 THEN
-                    SIGNAL SQLSTATE "45000" SET MESSAGE_TEXT = "Only one user can have role_id of 7.";
+                IF NEW.role_id = 1 AND (SELECT COUNT(*) FROM epi_users WHERE role_id = 1) >= 1 THEN
+                    SIGNAL SQLSTATE "45000" SET MESSAGE_TEXT = "Only one epi_users can have role_id of 1.";
                 END IF;
             END;
         ');
 
-        // Trigger to prevent updating to role_id = 7 if another user already has it
+        // Trigger to prevent updating to role_id = 1 if another user already has it
         DB::statement('
-            CREATE TRIGGER prevent_update_role_id_7
-            BEFORE UPDATE ON users
+            CREATE TRIGGER prevent_update_role_id_1
+            BEFORE UPDATE ON epi_users
             FOR EACH ROW
             BEGIN
-                IF NEW.role_id = 7 AND (SELECT COUNT(*) FROM users WHERE role_id = 7 AND id != NEW.id) >= 1 THEN
-                    SIGNAL SQLSTATE "45000" SET MESSAGE_TEXT = "Only one user can have role_id of 7.";
+                IF NEW.role_id = 1 AND (SELECT COUNT(*) FROM epi_users WHERE role_id = 1 AND id != NEW.id) >= 1 THEN
+                    SIGNAL SQLSTATE "45000" SET MESSAGE_TEXT = "Only one epi_users can have role_id of 1.";
                 END IF;
             END;
         ');
