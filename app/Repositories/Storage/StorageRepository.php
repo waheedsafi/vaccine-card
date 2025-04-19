@@ -9,7 +9,7 @@ class StorageRepository implements StorageRepositoryInterface
 {
     use HelperTrait;
 
-    public function documentStore($agreement_id, $ngo_id, $pending_task_id, ?callable $callback)
+    public function documentStore($userType, $user_id, $pending_task_id, ?callable $callback)
     {
         // Get checklist IDs
         $documents = PendingTaskDocument::join('check_lists', 'check_lists.id', 'pending_task_documents.check_list_id')
@@ -21,13 +21,13 @@ class StorageRepository implements StorageRepositoryInterface
             $baseName = basename($checklist['path']);
             $oldPath = $this->getTempFullPath() . $baseName; // Absolute path of temp file
 
-            $newDirectory = $this->ngoRegisterFolder($ngo_id, $agreement_id, $checklist['check_list_id']);
+            $newDirectory = $this->epiUserFolder($userType, $user_id, $checklist['check_list_id']);
 
             if (!is_dir($newDirectory)) {
                 mkdir($newDirectory, 0775, true);
             }
             $newPath = $newDirectory . $baseName; // Keep original filename
-            $dbStorePath = $this->ngoRegisterDBPath($ngo_id, $agreement_id, $checklist['check_list_id'], $baseName);
+            $dbStorePath = $this->epiUserDBPath($userType, $user_id, $checklist['check_list_id'], $baseName);
             // Move the file
             if (file_exists($oldPath)) {
                 rename($oldPath, $newPath);
@@ -43,7 +43,7 @@ class StorageRepository implements StorageRepositoryInterface
                 'path' => $dbStorePath,
                 'type' => $checklist['extension'],
                 'check_list_id' => $checklist['check_list_id'],
-                'agreement_id' => $agreement_id
+
             ];
             if ($callback) {
                 $callback($documentData);
