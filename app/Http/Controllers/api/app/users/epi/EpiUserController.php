@@ -2,12 +2,27 @@
 
 namespace App\Http\Controllers\api\app\users\epi;
 
+use App\Models\Email;
 use App\Enums\RoleEnum;
-use Illuminate\Http\Request;
+use App\Models\Address;
+use App\Models\Contact;
+use App\Models\EpiUser;
+use App\Models\Document;
+use App\Enums\LanguageEnum;
+use App\Models\AddressTran;
+use Illuminate\Support\Carbon;
+use App\Enums\Type\TaskTypeEnum;
 use Illuminate\Support\Facades\DB;
+use App\Models\PendingTaskDocument;
 use Illuminate\Support\Facades\App;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Request;
+use App\Http\Requests\app\epiuser\EpiUserStoreRequest;
+use App\Repositories\Storage\StorageRepositoryInterface;
+use App\Repositories\PendingTask\PendingTaskRepositoryInterface;
+
 
 
 
@@ -16,6 +31,17 @@ class EpiUserController extends Controller
     //
 
 
+
+    protected $pendingTaskRepository;
+    protected $storageRepository;
+
+    public function __construct(
+        PendingTaskRepositoryInterface $pendingTaskRepository,
+        StorageRepositoryInterface $storageRepository
+    ) {
+        $this->pendingTaskRepository = $pendingTaskRepository;
+        $this->storageRepository = $storageRepository;
+    }
 
     public function user($id)
     {
@@ -161,6 +187,121 @@ class EpiUserController extends Controller
         );
     }
 
+
+
+
+
+
+    public function storeUser(EpiUserStoreRequest $request)
+    {
+
+        $validatedData = $request->validated();
+
+        $role_id = $request->role_id;
+        $zone_id = $request->zone_id;
+        if ($request->user()->role_id != RoleEnum::epi_super->value) {
+            $role_id = RoleEnum::epi_user->value;
+            $zone_id = $request->user()->zone_id;
+        }
+
+        // Create email
+        $email = Email::where('value', '=', $validatedData['email'])->first();
+        if ($email) {
+            return response()->json([
+                'message' => __('app_translation.email_exist'),
+            ], 400, [], JSON_UNESCAPED_UNICODE);
+        }
+        $contact = Contact::where('value', '=', $validatedData['contact'])->first();
+        if ($contact) {
+            return response()->json([
+                'message' => __('app_translation.contact_exist'),
+            ], 400, [], JSON_UNESCAPED_UNICODE);
+        }
+        DB::beginTransaction();
+        // create email or contact
+        $email = Email::create(['value' => $validatedData['email']]);
+        $contact = Contact::create(['value' => $validatedData['contact']]);
+
+        // create address 
+
+        $address = Address::create([
+            'district_id' => $validatedData['district_id'],
+            'province_id' => $validatedData['province_id'],
+        ]);
+
+
+        // * Translations
+        foreach (LanguageEnum::LANGUAGES as $code => $name) {
+            AddressTran::create([
+                'address_id' => $address->id,
+                'area' => $validatedData["area_{$name}"],
+                'language_name' =>  $code,
+            ]);
+        }
+
+        $user = EpiUser::create([
+            "registeration_number" => '',
+            "full_name" => $request->full_name,
+            "username" => $request->username,
+            "email_id" => $email->id,
+            "password" => Hash::make($validatedData['password']),
+            "status" => 1,
+            "role_id" => $role_id,
+            "contact_id" => $contact->id,
+            "zone_id" => $zone_id,
+            "province_id" => $request->province_id,
+            "gender_id" => $request->gender,
+            "job_id" => $request->job_id,
+            "destnation_id" => $request->destination_id,
+
+        ]);
+        $user->registration_number = "EPI-" . Carbon::now()->year . '-' . $user->id;
+
+        $task = $this->pendingTaskRepository->pendingTaskExist(
+            $request->user(),
+            TaskTypeEnum::epi_user_registration->value,
+            null
+        );
+
+
+        if (!$task) {
+            return response()->json([
+                'message' => __('app_translation.task_not_found')
+            ], 404);
+        }
+        $document_id = '';
+
+        $this->storageRepository->documentStore("EPI", $user->id, $task->id, function ($documentData) use (&$document_id) {
+            $checklist_id = $documentData['check_list_id'];
+            $document = Document::create([
+                'actual_name' => $documentData['actual_name'],
+                'size' => $documentData['size'],
+                'path' => $documentData['path'],
+                'type' => $documentData['type'],
+                'check_list_id' => $checklist_id,
+            ]);
+            array_push($documentsId, $document->id);
+            $document_id = $document->id;
+        });
+        $user->user_letter_of_introduction_id  = $document_id;
+
+        $user->save();
+        $this->pendingTaskRepository->destroyPendingTask(
+            $request->user(),
+            TaskTypeEnum::epi_user_registration->value,
+            null
+        );
+        DB::commit();
+
+        return response()->json(
+            [
+                "message" => __('app_translation.success'),
+            ],
+            200,
+            [],
+            JSON_UNESCAPED_UNICODE
+        );
+    }
 
 
     protected function applyDate($query, $request)
