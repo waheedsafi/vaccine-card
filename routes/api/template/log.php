@@ -3,12 +3,15 @@
 
 use App\Enums\PermissionEnum;
 use App\Enums\SubPermissionEnum;
+use App\Http\Controllers\api\template\log\UserLoginLogController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\api\template\LogController;
 
 
 
 
+
+Route::get('/user/login/logs', [UserLoginLogController::class, 'userLoginLogs']);
 
 Route::prefix('v1')->middleware("authorized:" . 'user:api')->group(function () {
     Route::get('/file-logs', [LogController::class, "fileLogs"]);
