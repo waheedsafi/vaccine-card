@@ -18,40 +18,23 @@ class EpiLoginLogController extends Controller
         $perPage = $request->input('per_page', 10);
         $page = $request->input('page', 1);
 
-        $join_table = '';
-        $user_type = '';
 
-        $admin = '';
+        $includeRole = [];
 
-        // Determine user type based on role
-        if ($request->user()->role_id === RoleEnum::epi_super->value) {
-            $join_table = 'epi_users';
-            $user_type = EpiUser::class;
-            $admin = RoleEnum::epi_user->value;
-
-            if ($request->admin == true) {
-                $admin = RoleEnum::epi_admin->value;
-            }
-        } elseif ($request->user()->role_id === RoleEnum::finance_super->value) {
-            $join_table = 'finance_users';
-            $user_type = FinanceUser::class;
-
-            $admin = RoleEnum::finance_user->value;
-
-            if ($request->admin == true) {
-                $admin = RoleEnum::finance_admin->value;
-            }
+        if ($request->admin  === true) {
+            array_push($includeRole, RoleEnum::epi_admin->value);
+            array_push($includeRole, RoleEnum::epi_super->value);
         } else {
-            return response()->json([
-                "message" => __("app_translation.invalid_user_type"),
-            ], 403);
+            array_push($includeRole, RoleEnum::epi_user->value);
         }
+
+
 
         // Build query
         $query = DB::table('user_login_logs as log')
-            ->leftJoin("{$join_table} as usr", 'usr.id', '=', 'log.userable_id')
-            ->where('userable_type', $user_type)
-            ->where("usr.role_id", $admin)
+            ->leftJoin("epi_users as usr", 'usr.id', '=', 'log.userable_id')
+            ->where('userable_type', 'App\Models\EpiUser')
+            ->where("usr.role_id", $includeRole)
             ->select(
                 "log.id",
                 "usr.username",
