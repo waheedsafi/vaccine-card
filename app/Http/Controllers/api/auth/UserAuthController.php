@@ -101,7 +101,7 @@ class UserAuthController extends Controller
         if ($loggedIn) {
             // Get the auth user
             $user = $loggedIn['user'];
-            if ($user->status == StatusTypeEnum::blocked) {
+            if ($user->status != 1) {
                 return response()->json([
                     'message' => __('app_translation.account_is_lock'),
                 ], 401, [], JSON_UNESCAPED_UNICODE);

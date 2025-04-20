@@ -175,6 +175,7 @@ class EpiUserController extends Controller
                 "eu.username",
                 "eu.profile",
                 "eu.created_at",
+                "eu.status",
                 "e.value AS email",
                 "c.value AS contact",
                 "zt.value AS zone",
@@ -369,7 +370,7 @@ class EpiUserController extends Controller
             $user->province_id = $request->province_id;
             $user->gender_id = $request->gender_id;
             $user->zone_id = $request->zone_id;
-            $user->status = $request->status == true;
+            $user->status = $request->status == 'true';
             $user->save();
 
             DB::commit();
