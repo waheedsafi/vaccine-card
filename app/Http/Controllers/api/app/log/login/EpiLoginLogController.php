@@ -22,7 +22,7 @@ class EpiLoginLogController extends Controller
 
         $includeRole = [];
 
-        if ($request->admin === true) {
+        if ($request->admin === "true") {
             $includeRole[] = RoleEnum::epi_admin->value;
             $includeRole[] = RoleEnum::epi_super->value;
         } else {
@@ -32,7 +32,7 @@ class EpiLoginLogController extends Controller
         // Build query
         $query = DB::table('user_login_logs as log')
             ->leftJoin("epi_users as usr", 'usr.id', '=', 'log.userable_id')
-            ->where('userable_type', 'App\Models\EpiUser')
+            ->where('userable_type', 'EpiUser')
             ->whereIn("usr.role_id", $includeRole) // Use whereIn for multiple roles
             ->select(
                 "log.id",

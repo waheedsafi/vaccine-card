@@ -12,29 +12,33 @@ class FinanceLoginLogController extends Controller
 {
     //
 
+    /**
+     * Get user login logs.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+
     public function userLoginLogs(Request $request)
     {
         $locale = App::getLocale();
         $perPage = $request->input('per_page', 10);
         $page = $request->input('page', 1);
 
-
         $includeRole = [];
 
-        if ($request->admin  === true) {
-            array_push($includeRole, RoleEnum::finance_admin->value);
-            array_push($includeRole, RoleEnum::finance_super->value);
+        if ($request->admin === "true") {
+            $includeRole[] = RoleEnum::finance_admin->value;
+            $includeRole[] = RoleEnum::finance_super->value;
         } else {
-            array_push($includeRole, RoleEnum::finance_user->value);
+            $includeRole[] = RoleEnum::finance_user->value;
         }
-
-
 
         // Build query
         $query = DB::table('user_login_logs as log')
             ->leftJoin("finance_users as usr", 'usr.id', '=', 'log.userable_id')
-            ->where('userable_type', 'App\Models\FinanceUser')
-            ->where("usr.role_id", $includeRole)
+            ->where('userable_type', 'FinanceUser')
+            ->whereIn("usr.role_id", $includeRole) // Use whereIn for multiple roles
             ->select(
                 "log.id",
                 "usr.username",
@@ -45,11 +49,8 @@ class FinanceLoginLogController extends Controller
                 "log.browser",
                 "log.device",
                 "log.created_at as date"
-            );
-
-
-
-        $query->orderBy('log.created_at', 'desc');
+            )
+            ->orderBy('log.created_at', 'desc');
 
         // Pagination
         $logs = $query->paginate($perPage, ['*'], 'page', $page);
