@@ -108,6 +108,7 @@ class EpiUserController extends Controller
             [
                 "user" => [
                     "id" => $user->id,
+                    "registration_number" => $user->registeration_number,
                     "full_name" => $user->full_name,
                     "username" => $user->username,
                     'email' => $user->email,
@@ -362,11 +363,13 @@ class EpiUserController extends Controller
             // 4. Update User other attributes
             $user->full_name = $request->full_name;
             $user->username = $request->username;
-            $user->role_id = $request->role;
-            $user->job_id = $request->job;
-            $user->destination_id = $request->destination;
-            $user->status = $request->status === "true" ? true : false;
-            $user->grant_permission = $request->grant === "true" ? true : false;
+            $user->role_id = $request->role_id;
+            $user->job_id = $request->job_id;
+            $user->destination_id = $request->destination_id;
+            $user->province_id = $request->province_id;
+            $user->gender_id = $request->gender_id;
+            $user->zone_id = $request->zone_id;
+            $user->status = $request->status;
             $user->save();
 
             DB::commit();

@@ -28,6 +28,7 @@ class CheckEpiAccessMiddleware
                 'message' => __('app_translation.unauthorized'),
             ], 403, [], JSON_UNESCAPED_UNICODE);
         }
+        $request->attributes->set('validatedUser', $user);
         return $next($request);
     }
 }

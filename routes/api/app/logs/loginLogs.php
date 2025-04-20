@@ -1,0 +1,10 @@
+<?php
+
+use App\Http\Controllers\api\app\log\login\EpiLoginLogController;
+use Illuminate\Support\Facades\Route;
+
+
+
+Route::prefix('v1')->middleware(['api.key', "multiAuthorized:" . 'epi:api,finance:api'])->group(function () {
+    Route::get('epi/login/logs', [EpiLoginLogController::class, 'userLoginLogs']);
+});
