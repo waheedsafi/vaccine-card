@@ -16,7 +16,6 @@ return [
         'numeric' => ':attribute باید حداقل :min باشد.',
         'array' => ':attribute باید حداقل :min مورد داشته باشد.',
     ],
-
     'attributes' => [
         'email' => 'ایمیل',
         'farsi' => 'فارسی',
@@ -35,14 +34,7 @@ return [
         "name_pashto" => "نام پشتو",
         "name_farsi" => "نام فارسی",
         "contact" => "شماره تلفن",
-        "director_contact" => "شماره تماس رئیس",
-        "director_email" => "ایمیل رئیس",
-        "surname_english" => "نام خانوادگی به انگلیسی",
-        "surname_farsi" => "نام خانوادگی به فارسی",
-        "surname_pashto" => "نام خانوادگی به پشتو",
-        "repre_name_english" => "نام نماینده به انگلیسی",
-        "repre_name_farsi" => "نام نماینده به فارسی",
-        "repre_name_pashto" => "نام نماینده به پشتو",
-        "letter_of_intro" => "مکتوب معرفی"
+        "role_id" => "نقش",
+        "zone_id" => "زون",
     ],
 ];

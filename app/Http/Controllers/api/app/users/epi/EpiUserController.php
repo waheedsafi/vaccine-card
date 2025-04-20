@@ -186,14 +186,17 @@ class EpiUserController extends Controller
 
     public function store(EpiUserStoreRequest $request)
     {
-
         $validatedData = $request->validated();
-
         $role_id = $request->role_id;
         $zone_id = $request->zone_id;
         if ($request->user()->role_id != RoleEnum::epi_super->value) {
             $role_id = RoleEnum::epi_user->value;
             $zone_id = $request->user()->zone_id;
+        } else {
+            $request->validate([
+                'role_id' => 'required|exists:roles,id',
+                'zone_id' => 'required|exists:zones,id',
+            ]);
         }
 
         // Create email
