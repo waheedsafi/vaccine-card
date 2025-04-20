@@ -36,5 +36,6 @@ return [
         "contact" => "Contact",
         "role_id" => "Role",
         "zone_id" => "Zone",
+        "job_id" => "Job",
     ],
 ];

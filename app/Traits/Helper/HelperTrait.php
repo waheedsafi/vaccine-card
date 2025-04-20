@@ -73,7 +73,7 @@ trait HelperTrait
 
     public function userFolder($user_type, $user_id, $check_list_id)
     {
-        return storage_path() . "/app/private/user/{$user_type}/{$user_type}_{$user_id}/checlist_{$check_list_id}/";
+        return storage_path() . "/app/private/user/type_{$user_type}/id_{$user_id}/checlist_{$check_list_id}/";
     }
     public function userDBPath($user_type, $user_id, $check_list_id, $fileName)
     {

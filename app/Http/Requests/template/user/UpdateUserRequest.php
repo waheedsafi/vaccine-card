@@ -27,11 +27,13 @@ class UpdateUserRequest extends FormRequest
             "username" => ['required', "string", "min:3", "max:45"],
             "email" => ["required", "email"],
             "contact" => ["required"],
-            "role" => ["required", "string"],
-            "job" => ["required", "string"],
-            "destination" => ["required", "string"],
+            "role_id" => ["required", "string"],
+            "job_id" => ["required", "string"],
+            "destination_id" => ["required", "string"],
             "status" => ["required"],
-            "grant" => ["string", "required"],
+            'province_id' => 'required|exists:provinces,id',
+            'gender_id' => 'required|exists:genders,id',
+            'zone_id' => 'required|exists:zones,id',
         ];
     }
 }

@@ -2,7 +2,8 @@
 
 namespace App\Repositories\Permission;
 
-use App\Models\User;
+use App\Models\EpiPermission;
+use App\Models\EpiPermissionSub;
 use App\Models\UserPermission;
 use App\Models\UserPermissionSub;
 use Illuminate\Support\Facades\DB;
@@ -241,9 +242,85 @@ class PermissionRepository implements PermissionRepositoryInterface
             ->get();
     }
     /*
-    NGO
+    EPI
     */
+    public function storeEpiPermission($user, $permissions)
+    {
+        $rolePermissions = $this->rolePermissions($user->role_id);
+        $formattedRolePermissions = $this->formatRolePermissions($rolePermissions);
+
+        foreach ($permissions as $permission) {
+            $rolePerm = $formattedRolePermissions->where("permission", $permission['permission'])->first();
+            // 1. If permission not found set
+            if (!$rolePerm) {
+                return 401;
+            } else {
+                // 2. Permission exist in role
+                $userPermission = null;
+                if (isset($permission['id'])) {
+                    // UserPermission Found
+                    $userPermission = UserPermission::where('id', $permission['id'])
+                        ->select('id', 'edit', 'delete', 'add', 'view')->first();
+                    if (!$userPermission) {
+                        return 402;
+                    }
+                    $userPermission->edit = $permission['edit'];
+                    $userPermission->delete = $permission['delete'];
+                    $userPermission->add = $permission['add'];
+                    $userPermission->view = $permission['view'];
+                    $userPermission->save();
+                } else {
+                    // UserPermission Not Found
+                    $userPermission = EpiPermission::create([
+                        "edit" => $permission['edit'],
+                        "delete" => $permission['delete'],
+                        "add" => $permission['add'],
+                        "view" => $permission['view'],
+                        "visible" => true,
+                        "epi_user_id" => $user->id,
+                        "permission" => $permission['permission'],
+                    ]);
+                }
+                // 3. Check for any missing Sub Permissions
+                $rolePermSub = $rolePerm->sub;
+                foreach ($permission['sub'] as $subPermission) {
+                    $subFound = false;
+                    $roleSub = null;
+                    for ($i = 0; $i < count($rolePermSub); $i++) {
+                        $roleSub = $rolePermSub[$i];
+                        if ($subPermission['id'] == $roleSub['id']) {
+                            $subFound = true;
+                            break;
+                        }
+                    }
+                    if ($subFound) {
+                        // SubPermission Found
+                        $userPermissionSub = EpiPermissionSub::where("sub_permission_id", $subPermission['id'])
+                            ->where("epi_permission_id", $userPermission->id)
+                            ->select('id', 'edit', 'delete', 'add', 'view')->first();
+                        if ($userPermissionSub) {
+                            $userPermissionSub->edit = $subPermission['edit'];
+                            $userPermissionSub->delete = $subPermission['delete'];
+                            $userPermissionSub->add = $subPermission['add'];
+                            $userPermissionSub->view = $subPermission['view'];
+                            $userPermissionSub->save();
+                        } else {
+                            EpiPermissionSub::create([
+                                "edit" => $subPermission['edit'],
+                                "delete" => $subPermission['delete'],
+                                "add" => $subPermission['add'],
+                                "view" => $subPermission['view'],
+                                "epi_permission_id" => $userPermission['id'],
+                                "sub_permission_id" => $roleSub['id'],
+                            ]);
+                        }
+                    }
+                }
+            }
+        }
+        return 200;
+    }
     /*
-    DONOR
+    FINANCE
     */
 }

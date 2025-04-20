@@ -15,6 +15,7 @@ return [
         "saved_file" => "اړونده کتاب",
         "old_password" => "زوړ پټنوم",
         "new_password" => "نوی پټنوم",
+
         "confirm_password" => "پټنوم تایید کړه"
 
     ],

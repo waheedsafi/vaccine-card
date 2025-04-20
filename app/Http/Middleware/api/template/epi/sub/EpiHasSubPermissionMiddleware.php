@@ -7,14 +7,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response;
 
-class EpiHasSubAddPermissionMiddleware
+class EpiHasSubPermissionMiddleware
 {
     /**
      * Handle an incoming request.
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next, $permission = null, $subPermission = null): Response
+    public function handle(Request $request, Closure $next, $permission = null, $subPermission = null, $column = null): Response
     {
         $authUser = $request->user();
         if ($authUser) {
@@ -22,10 +22,10 @@ class EpiHasSubAddPermissionMiddleware
             $permission = DB::table("epi_permissions as ep")
                 ->where("epi_user_id", "=", $authUser->id)
                 ->where("permission", $permission)
-                ->join("epi_permission_subs as eps", function ($join) use ($subPermission) {
+                ->join("epi_permission_subs as eps", function ($join) use ($subPermission, &$column) {
                     return $join->on('eps.epi_permission_id', '=', 'ep.id')
                         ->where('eps.sub_permission_id', $subPermission)
-                        ->where('eps.add', true);
+                        ->where("eps." . $column, true);
                 })->select("eps.id")->first();
 
             if ($permission) {

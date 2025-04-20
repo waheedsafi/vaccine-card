@@ -4,84 +4,92 @@ namespace App\Http\Controllers\api\app\users\epi;
 
 use App\Models\Email;
 use App\Enums\RoleEnum;
-use App\Models\Address;
 use App\Models\Contact;
 use App\Models\EpiUser;
 use App\Models\Document;
 use App\Enums\LanguageEnum;
-use App\Models\AddressTran;
+use App\Enums\CheckListEnum;
+use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use App\Enums\Type\TaskTypeEnum;
+use App\Enums\CheckListTypeEnum;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\App;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Requests\app\epiuser\EpiUserStoreRequest;
+use App\Http\Requests\template\user\UpdateUserRequest;
 use App\Repositories\Storage\StorageRepositoryInterface;
+use App\Repositories\Permission\PermissionRepositoryInterface;
 use App\Repositories\PendingTask\PendingTaskRepositoryInterface;
-use Illuminate\Http\Request;
 
 
 class EpiUserController extends Controller
 {
     protected $pendingTaskRepository;
     protected $storageRepository;
+    protected $permissionRepository;
 
     public function __construct(
         PendingTaskRepositoryInterface $pendingTaskRepository,
-        StorageRepositoryInterface $storageRepository
+        StorageRepositoryInterface $storageRepository,
+        PermissionRepositoryInterface $permissionRepository
     ) {
         $this->pendingTaskRepository = $pendingTaskRepository;
         $this->storageRepository = $storageRepository;
+        $this->permissionRepository = $permissionRepository;
     }
 
     public function user($id)
     {
         $locale = App::getLocale();
-
-        $user = DB::table('epi_users as u')
-            ->where('u.id', $id)
+        $user = DB::table('epi_users as eu')
+            ->where('eu.id', $id)
             ->join('model_job_trans as mjt', function ($join) use ($locale) {
-                $join->on('mjt.model_job_id', '=', 'u.job_id')
+                $join->on('mjt.model_job_id', '=', 'eu.job_id')
                     ->where('mjt.language_name', $locale);
             })
-            ->leftJoin('contacts as c', 'c.id', '=', 'u.contact_id')
-            ->join('emails as e', 'e.id', '=', 'u.email_id')
-            ->join('roles as r', 'r.id', '=', 'u.role_id')
+            ->leftJoin('contacts as c', 'c.id', '=', 'eu.contact_id')
+            ->join('emails as e', 'e.id', '=', 'eu.email_id')
+            ->join('roles as r', 'r.id', '=', 'eu.role_id')
+            ->join('genders as g', 'g.id', '=', 'eu.gender_id')
             ->join('destination_trans as dt', function ($join) use ($locale) {
-                $join->on('dt.destination_id', '=', 'u.destination_id')
+                $join->on('dt.destination_id', '=', 'eu.destination_id')
                     ->where('dt.language_name', $locale);
             })
             ->leftJoin('zone_trans as zt', function ($join) use ($locale) {
-                $join->on('zt.zone_id', '=', 'u.zone_id')
+                $join->on('zt.zone_id', '=', 'eu.zone_id')
                     ->where('zt.language_name', $locale);
             })
             ->leftJoin('province_trans as prot', function ($join) use ($locale) {
-                $join->on('prot.province_id', '=', 'u.province_id')
+                $join->on('prot.province_id', '=', 'eu.province_id')
                     ->where('zt.language_name', $locale);
             })
             ->select(
-                'u.id',
-                'u.registeration_number',
-                "u.profile",
-                "u.status",
-                'u.full_name',
-                'u.username',
+                'eu.id',
+                'eu.registeration_number',
+                "eu.profile",
+                "eu.status",
+                'eu.full_name',
+                'eu.username',
                 'c.value as contact',
-                'u.contact_id',
+                'eu.contact_id',
                 'e.value as email',
-                'u.email_id',
+                'eu.email_id',
                 'r.name as role_name',
-                'u.role_id',
+                'eu.role_id',
                 'dt.value as destination',
                 'zt.value as zone',
                 'prot.value as province',
                 "mjt.value as job",
-                "u.created_at",
-                "u.province_id",
-                "u.destination_id",
-                "u.job_id",
-                "u.zone_id",
+                "eu.created_at",
+                "eu.province_id",
+                "eu.destination_id",
+                "eu.job_id",
+                "eu.zone_id",
+                "g.id as gender_id",
+                "g.name_en",
+                "g.name_ps",
+                "g.name_fa",
 
             )
             ->first();
@@ -90,11 +98,17 @@ class EpiUserController extends Controller
                 'message' => __('app_translation.user_not_found'),
             ], 404, [], JSON_UNESCAPED_UNICODE);
         }
-
+        $gender = $user->name_en;
+        if ($locale == LanguageEnum::farsi->value) {
+            $gender = $user->name_fa;
+        } else if ($locale == LanguageEnum::pashto->value) {
+            $gender = $user->name_ps;
+        }
         return response()->json(
             [
                 "user" => [
                     "id" => $user->id,
+                    "registration_number" => $user->registeration_number,
                     "full_name" => $user->full_name,
                     "username" => $user->username,
                     'email' => $user->email,
@@ -102,7 +116,8 @@ class EpiUserController extends Controller
                     "status" => $user->status == 1,
                     "role" => ['id' => $user->role_id, 'name' => $user->role_name],
                     "zone" => ['id' => $user->zone_id, 'name' => $user->zone],
-                    "provine" => ['id' => $user->province_id, 'name' => $user->province],
+                    "gender" => ['id' => $user->gender_id, 'name' => $gender],
+                    "province" => ['id' => $user->province_id, 'name' => $user->province],
                     'contact' => $user->contact,
                     "destination" => ["id" => $user->destination_id, "name" => $user->destination],
                     "job" => ["id" => $user->job_id, "name" => $user->job],
@@ -183,7 +198,6 @@ class EpiUserController extends Controller
         );
     }
 
-
     public function store(EpiUserStoreRequest $request)
     {
         $validatedData = $request->validated();
@@ -200,39 +214,27 @@ class EpiUserController extends Controller
         }
 
         // Create email
-        $email = Email::where('value', '=', $validatedData['email'])->first();
+        $email = Email::where('value', '=', $request->email)->first();
         if ($email) {
             return response()->json([
                 'message' => __('app_translation.email_exist'),
             ], 400, [], JSON_UNESCAPED_UNICODE);
         }
-        $contact = Contact::where('value', '=', $validatedData['contact'])->first();
-        if ($contact) {
-            return response()->json([
-                'message' => __('app_translation.contact_exist'),
-            ], 400, [], JSON_UNESCAPED_UNICODE);
+        // 2. Check contact
+        $contact = null;
+        if ($request->contact) {
+            $contact = Contact::where('value', '=', $request->contact)->first();
+            if ($contact) {
+                return response()->json([
+                    'message' => __('app_translation.contact_exist'),
+                ], 400, [], JSON_UNESCAPED_UNICODE);
+            }
         }
         DB::beginTransaction();
-        // create email or contact
-        $email = Email::create(['value' => $validatedData['email']]);
-        $contact = Contact::create(['value' => $validatedData['contact']]);
-
-        // create address 
-
-        $address = Address::create([
-            'district_id' => $validatedData['district_id'],
-            'province_id' => $validatedData['province_id'],
+        // Add email and contact
+        $email = Email::create([
+            "value" => $request->email
         ]);
-
-
-        // * Translations
-        foreach (LanguageEnum::LANGUAGES as $code => $name) {
-            AddressTran::create([
-                'address_id' => $address->id,
-                'area' => $validatedData["area_{$name}"],
-                'language_name' =>  $code,
-            ]);
-        }
 
         $user = EpiUser::create([
             "registeration_number" => '',
@@ -242,22 +244,20 @@ class EpiUserController extends Controller
             "password" => Hash::make($validatedData['password']),
             "status" => 1,
             "role_id" => $role_id,
-            "contact_id" => $contact->id,
+            "contact_id" => $contact ? $contact->id : $contact,
             "zone_id" => $zone_id,
             "province_id" => $request->province_id,
-            "gender_id" => $request->gender,
+            "gender_id" => $request->gender_id,
             "job_id" => $request->job_id,
-            "destnation_id" => $request->destination_id,
-
+            "destination_id" => $request->destination_id,
         ]);
-        $user->registration_number = "EPI-" . Carbon::now()->year . '-' . $user->id;
+        $user->registeration_number = "EPI-" . Carbon::now()->year . '-' . $user->id;
 
         $task = $this->pendingTaskRepository->pendingTaskExist(
             $request->user(),
-            TaskTypeEnum::epi_user_registration->value,
-            null
+            CheckListTypeEnum::epi->value,
+            CheckListEnum::epi_user_letter_of_introduction->value
         );
-
 
         if (!$task) {
             return response()->json([
@@ -266,7 +266,7 @@ class EpiUserController extends Controller
         }
         $document_id = '';
 
-        $this->storageRepository->documentStore("EPI", $user->id, $task->id, function ($documentData) use (&$document_id) {
+        $this->storageRepository->documentStore(CheckListTypeEnum::epi->value, $user->id, $task->id, function ($documentData) use (&$document_id) {
             $checklist_id = $documentData['check_list_id'];
             $document = Document::create([
                 'actual_name' => $documentData['actual_name'],
@@ -275,17 +275,32 @@ class EpiUserController extends Controller
                 'type' => $documentData['type'],
                 'check_list_id' => $checklist_id,
             ]);
-            array_push($documentsId, $document->id);
             $document_id = $document->id;
         });
         $user->user_letter_of_introduction_id  = $document_id;
-
         $user->save();
+
         $this->pendingTaskRepository->destroyPendingTask(
             $request->user(),
-            TaskTypeEnum::epi_user_registration->value,
-            null
+            CheckListTypeEnum::epi->value,
+            CheckListEnum::epi_user_letter_of_introduction->value
         );
+
+        // 4. Add user permissions
+        $result = $this->permissionRepository->storeEpiPermission($user, $request->permissions);
+        if ($result == 400) {
+            return response()->json([
+                'message' => __('app_translation.user_not_found'),
+            ], 404, [], JSON_UNESCAPED_UNICODE);
+        } else if ($result == 401) {
+            return response()->json([
+                'message' => __('app_translation.unauthorized_role_per'),
+            ], 403, [], JSON_UNESCAPED_UNICODE);
+        } else if ($result == 402) {
+            return response()->json([
+                'message' => __('app_translation.per_not_found'),
+            ], 404, [], JSON_UNESCAPED_UNICODE);
+        }
         DB::commit();
 
         return response()->json(
@@ -297,8 +312,75 @@ class EpiUserController extends Controller
             JSON_UNESCAPED_UNICODE
         );
     }
+    public function updateInformation(UpdateUserRequest $request)
+    {
+        $request->validated();
+        // 1. User is passed from middleware
+        DB::beginTransaction();
+        $user = $request->get('validatedUser');
+        if ($user) {
+            $email = Email::where('value', $request->email)
+                ->select('id')->first();
+            // Email Is taken by someone
+            if ($email) {
+                if ($email->id == $user->email_id) {
+                    $email->value = $request->email;
+                    $email->save();
+                } else {
+                    return response()->json([
+                        'message' => __('app_translation.email_exist'),
+                    ], 409, [], JSON_UNESCAPED_UNICODE);
+                }
+            } else {
+                $email = Email::where('id', $user->email_id)->first();
+                $email->value = $request->email;
+                $email->save();
+            }
+            if (isset($request->contact)) {
+                $contact = Contact::where('value', $request->contact)
+                    ->select('id')->first();
+                if ($contact) {
+                    if ($contact->id == $user->contact_id) {
+                        $contact->value = $request->contact;
+                        $contact->save();
+                    } else {
+                        return response()->json([
+                            'message' => __('app_translation.contact_exist'),
+                        ], 409, [], JSON_UNESCAPED_UNICODE);
+                    }
+                } else {
+                    if (isset($user->contact_id)) {
+                        $contact = Contact::where('id', $user->contact_id)->first();
+                        $contact->value = $request->contact;
+                        $contact->save();
+                    } else {
+                        $contact = Contact::create(['value' => $request->contact]);
+                        $user->contact_id = $contact->id;
+                    }
+                }
+            }
 
+            // 4. Update User other attributes
+            $user->full_name = $request->full_name;
+            $user->username = $request->username;
+            $user->role_id = $request->role_id;
+            $user->job_id = $request->job_id;
+            $user->destination_id = $request->destination_id;
+            $user->province_id = $request->province_id;
+            $user->gender_id = $request->gender_id;
+            $user->zone_id = $request->zone_id;
+            $user->status = $request->status;
+            $user->save();
 
+            DB::commit();
+            return response()->json([
+                'message' => __('app_translation.success'),
+            ], 200, [], JSON_UNESCAPED_UNICODE);
+        }
+        return response()->json([
+            'message' => __('app_translation.user_not_found'),
+        ], 404, [], JSON_UNESCAPED_UNICODE);
+    }
     protected function applyDate($query, $request)
     {
         // Apply date filtering conditionally if provided
