@@ -66,6 +66,8 @@ class CountrySeeder extends Seeder
                             "Kushki Kuhna" => ["fa" => "کُشک کهنه", "ps" => "کُشک کهنه"],
                             "Obe" => ["fa" => "اوبه", "ps" => "اوبه"],
                             "Zinda Jan" => ["fa" => "زنده‌جان", "ps" => "زنده‌جان"],
+                            "Adraskan" => ["fa" => "ادرسکان", "ps" => "ادرسکان"],
+                            "Koshk Roobat Sangi" => ["fa" => "کوشک روبات سنګي", "ps" => "کوشک روبات سنګي"],
 
 
                         ]
@@ -92,6 +94,7 @@ class CountrySeeder extends Seeder
                             "Sholgara" => ["fa" => "شولگره", "ps" => "شولگره"],
                             "Shortepa" => ["fa" => "شورتپه", "ps" => "شورتپه"],
                             "Marmul" => ["fa" => "مارمَل", "ps" => "مارمَل"],
+                            "Balkh" => ["fa" => "بلخ", "ps" => "بلخ"],
 
 
                         ]
@@ -115,6 +118,9 @@ class CountrySeeder extends Seeder
                             "Reg" => ["fa" => "ریگستان", "ps" => "ریگستان"],
                             "Shorabak" => ["fa" => "شورابَک", "ps" => "شورابَک"],
                             "Spin Boldak" => ["fa" => "سپین‌بولدَک", "ps" => "سپین‌بولدَک"],
+                            "Nish" => ["fa" => "نیش", "ps" => "نیش"],
+                            "Takhta pul" => ["fa" => "تخته پل", "ps" => "تخته پل"],
+                            "Zhary" => ["fa" => "زهری ", "ps" => "زهری"],
 
 
                         ]
@@ -190,6 +196,7 @@ class CountrySeeder extends Seeder
                             "Rashidan" => ["fa" => "رشیدان", "ps" => "راشیدان"],
                             "Waghaz" => ["fa" => "وغاز", "ps" => "وغاز"],
                             "Zana Khan" => ["fa" => "زنه خان", "ps" => "زنه‌خان"],
+                            "Wali-Mohammad Shahid" => ["fa" => " ولي محمد شهید", "ps" => "ولی محمد شهید"],
                         ]
                     ],
                     "Badakhshan" => [
@@ -222,6 +229,10 @@ class CountrySeeder extends Seeder
                             "Yaftali Sufla" => ["fa" => "یفتلِ پایین", "ps" => "یفتال سفله"],
                             "Yamgan" => ["fa" => "یَمَگان", "ps" => "یمگان "],
                             "Zebak" => ["fa" => "زیباک", "ps" => "زېباک"],
+                            "Maymy	" => ["fa" => "میمی ", "ps" => "میمی "],
+                            "Nussai	" => ["fa" => "نوسی ", "ps" => "نوسی "],
+                            "Koof	" => ["fa" => "کوف ", "ps" => "کوف"],
+                            "Khash	" => ["fa" => "خاش ", "ps" => "خاش"],
                         ]
                     ],
                     "Bamyan" => [
@@ -277,6 +288,8 @@ class CountrySeeder extends Seeder
                             "Namak Ab" => ["fa" => "نمک‌آب", "ps" => "نمک آب"],
                             "Rustaq" => ["fa" => "روستاق", "ps" => "رستاق"],
                             "Warsaj" => ["fa" => "ورساج", "ps" => "ورساج"],
+                            "Chaal" => ["fa" => "چال", "ps" => "چال"],
+                            "hazar Somuch " => ["fa" => "هزار سموچ", "ps" => "هزار سموچ"],
 
                         ]
                     ],
@@ -298,6 +311,8 @@ class CountrySeeder extends Seeder
                             "Zadran" => ["fa" => "زَدران", "ps" => "ځدران"],
                             "Zazi " => ["fa" => "جاجی", "ps" => "ځاځي"],
                             "Zurmat" => ["fa" => "زرمت", "ps" => "زرمت"],
+                            "Jaji Ali Khil" => ["fa" => "ځاځي علي خیل", "ps" => "ځاځي علي خیل"],
+                            "laja Mangal" => ["fa" => "لجه منگل", "ps" => "لژه منګل"],
 
 
                         ]
@@ -320,6 +335,7 @@ class CountrySeeder extends Seeder
                             "Spera" => ["fa" => "سپیره", "ps" => "سپېره"],
                             "Tani" => ["fa" => "تَنی", "ps" => "تڼۍ"],
                             "Tirazayi" => ["fa" => "تیریزائی", "ps" => "تېره زی"],
+                            "Matun" => ["fa" => "متون", "ps" => "متون"],
                         ]
                     ],
                     "Paktika" => [
@@ -346,6 +362,8 @@ class CountrySeeder extends Seeder
                             "Yahyakhel" => ["fa" => "یخیی خېل ", "ps" => "یخیی خېل "],
                             "Yusufkhel" => ["fa" => "یوسف خېل ", "ps" => "یوسف خېل "],
                             "Zerok" => ["fa" => "زیروک", "ps" => "زیروک"],
+                            "Deela wa Khosmand" => ["fa" => "خوشمند", "ps" => "دیله او خوشمند "],
+                            "Khosmand" => ["fa" => "خوشمند", "ps" => "خوشمند"],
 
 
 
@@ -364,7 +382,7 @@ class CountrySeeder extends Seeder
                             "Chahar Burjak" => ["fa" => "چهاربُرجک", "ps" => "چاربورجک"],
                             "Chakhansur" => ["fa" => "چَخانسور", "ps" => "چخانسور"],
                             "Kang" => ["fa" => "کَنگ", "ps" => "کنگ"],
-
+                            "Delaram" => ["fa" => "دل آرام", "ps" => "دل آرام"],
                         ]
                     ],
                     "Urozgan" => [
@@ -376,7 +394,9 @@ class CountrySeeder extends Seeder
                             "Chora" => ["fa" => "چوره", "ps" => "چوره"],
                             "Khas Uruzgan" => ["fa" => "خاص‌ارزگان", "ps" => "خاص اروزگان"],
                             "Shahidi Hassas" => ["fa" => "شهید حساس", "ps" => "شهيدې حساس"],
-
+                            "Gizab" => ["fa" => "گیزاب", "ps" => "ګیزاب"],
+                            "Chinar Tu" => ["fa" => "چنار تو", "ps" => "چنار تو"],
+                            "Chahar Chinai" => ["fa" => "چهار چینایی", "ps" => "چهار چینایی"],
                         ]
                     ],
                     "Daykundi" => [
@@ -426,6 +446,7 @@ class CountrySeeder extends Seeder
                             "Shahrak " => ["fa" => "شهرک", "ps" => "شهرک"],
                             "Taywara " => ["fa" => "تیوره", "ps" => "تایواره"],
                             "Tulak " => ["fa" => "تولک", "ps" => "تولک"],
+                            "Feroz Koh " => ["fa" => "فیروز کوه", "ps" => "فیروز کوه"],
                         ]
                     ],
                     "Sar-e Pol" => [
@@ -439,6 +460,10 @@ class CountrySeeder extends Seeder
                             "Sangcharak" => ["fa" => "سانچارک", "ps" => "سنگچارک"],
                             "Sayyad" => ["fa" => "صیاد", "ps" => "سیاد"],
                             "Sozma Qala" => ["fa" => "سرپل", "ps" => "سوزمه کلا"],
+                            "Al jehad" => ["fa" => "الجهاد", "ps" => "الجهاد"],
+                            "Said Abad" => ["fa" => "سید آباد", "ps" => "سید آباد"],
+                            "Al Fath" => ["fa" => "الجهاد", "ps" => "الفتح"],
+                            "Al Badri" => ["fa" => "البدري", "ps" => "البدري"],
 
                         ]
                     ],
@@ -476,7 +501,8 @@ class CountrySeeder extends Seeder
                             "Paryan" => ["fa" => "پریان", "ps" => "پریان"],
                             "Rokha" => ["fa" => "روخه", "ps" => "روخه "],
                             "Shotul" => ["fa" => "شُتُل", "ps" => "شوتل"],
-
+                            "Abshar" => ["fa" => "ابشار", "ps" => "ابشار"],
+                            "Hais Awall" => ["fa" => "حصه اول", "ps" => "اوله حصه"],
                         ]
                     ],
                     "Parwan" => [
@@ -494,6 +520,7 @@ class CountrySeeder extends Seeder
                             "Sheikh Ali" => ["fa" => " شیخ علي", "ps" => " شیخ علي"],
                             "Shinwari" => ["fa" => "شینواری", "ps" => "شینواري"],
                             "Surkhi Parsa" => ["fa" => "سرخِ پارسا", "ps" => "سرخ پارسا"],
+                            "Sia Gerd " => ["fa" => "سیاه گرد", "ps" => "تور گرد"],
 
 
 
@@ -550,6 +577,10 @@ class CountrySeeder extends Seeder
                             "Nawzad" => ["fa" => "نوزاد", "ps" => "نوزاد"],
                             "Sangin" => ["fa" => "سَنگین", "ps" => "سنگین"],
                             "Washir" => ["fa" => "واشیر", "ps" => "واشېر"],
+                            "Marjah" => ["fa" => "مرجح", "ps" => "مرجح"],
+                            "Nahr -E- Seraj" => ["fa" => "نهر سراج", "ps" => "نهر سراج"],
+                            "Naw mish" => ["fa" => "ناو میش", "ps" => "ناو میش"],
+                            "Nawa" => ["fa" => "ناوه", "ps" => "ناوه"],
 
 
                         ]
@@ -569,7 +600,7 @@ class CountrySeeder extends Seeder
                             "Shamulzayi" => ["fa" => "شمولزی", "ps" => " شمولزی"],
                             " Shinkay" => ["fa" => "شینکی", "ps" => " شینکی"],
                             "Tarnak Wa Jaldak" => ["fa" => "ترنک او جلدک", "ps" => "ترنک او جلدک "],
-
+                            "Shah joyi" => ["fa" => "شاه جویی", "ps" => "شاه جویي "],
 
 
                         ]
@@ -606,6 +637,8 @@ class CountrySeeder extends Seeder
                             "Mihtarlam" => ["fa" => "مهترلام", "ps" => "مهترلام "],
                             "Dawlat Shah " => ["fa" => "دولت‌شاه ", "ps" => "دولتشاه "],
                             "Qarghayi" => ["fa" => "قرغیي", "ps" => "قرغیي"],
+                            "Bad pokh" => ["fa" => "باد پوخ", "ps" => "باد پوښ"],
+                            "Spinghar" => ["fa" => "سپین غر", "ps" => "سپین غر"],
 
 
                         ]
@@ -629,6 +662,8 @@ class CountrySeeder extends Seeder
                             "Shaigal" => ["fa" => "شیگل", "ps" => "شیگل "],
                             "Sirkanai " => ["fa" => "سرکانی", "ps" => "سرکاڼو"],
                             "Wata Pur " => ["fa" => "وَتَه‌پور", "ps" => "وټه پور"],
+                            "Ghazi Abad" => ["fa" => "غازي اباد", "ps" => "غازي آباد"],
+                            "Narang" => ["fa" => "نارنج", "ps" => "نارنج "],
 
 
                         ]
@@ -708,7 +743,11 @@ class CountrySeeder extends Seeder
                             "Nahrin" => ["fa" => "نهرین", "ps" => "ناهرين "],
                             "Puli Hisar" => ["fa" => "پل حصار", "ps" => "پل حصار "],
                             "Puli Khumri" => ["fa" => "	پل خمری", "ps" => "پلخمري "],
-                            "Tala wa Barfak" => ["fa" => "روخه", "ps" => "تاله او برفک "],
+                            "Tala wa Barfak" => ["fa" => "تاله او برفک ", "ps" => "تاله او برفک "],
+                            "Bano" => ["fa" => "بانو", "ps" => "بانو"],
+                            "Doshi" => ["fa" => "دوشی", "ps" => "دوشي"],
+                            "Khwaja Hejran" => ["fa" => "بانخواجه هجرانو", "ps" => "خواجه هجران"],
+
 
 
 

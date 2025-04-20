@@ -6,6 +6,7 @@ return [
     'server_error' => 'Something went wrong please try again later!',
     'contact_exist' => 'Contact already exist!',
     'user_not_found' => 'User not found!',
+    'invalid_user_type' => 'Invalid user Type',
     'user_logged_out_success' => 'User logged out successfully.',
     'email_exist' => 'Email already exist!',
     'incorrect_credentials' => 'Provided credentials are incorrect.',
@@ -42,4 +43,5 @@ return [
     "year" => "year",
     "allowed_file_types" => "Allowed file types: ",
     "file_size_error" => "File size must be between this size: ",
+    "today_visit_not_found" => "Today visit not found.",
 ];
