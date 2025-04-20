@@ -315,9 +315,9 @@ class EpiUserController extends Controller
     public function updateInformation(UpdateUserRequest $request)
     {
         $request->validated();
+        $user = $request->get('validatedUser');
         // 1. User is passed from middleware
         DB::beginTransaction();
-        $user = $request->get('validatedUser');
         if ($user) {
             $email = Email::where('value', $request->email)
                 ->select('id')->first();
@@ -369,7 +369,7 @@ class EpiUserController extends Controller
             $user->province_id = $request->province_id;
             $user->gender_id = $request->gender_id;
             $user->zone_id = $request->zone_id;
-            $user->status = $request->status;
+            $user->status = $request->status == true;
             $user->save();
 
             DB::commit();
