@@ -78,10 +78,6 @@ class RolePermissionSeeder extends Seeder
     }
     public function epiUserPermissions()
     {
-        RolePermission::factory()->create([
-            "role" => RoleEnum::epi_user,
-            "permission" => "dashboard"
-        ]);
         $rolePer = RolePermission::factory()->create([
             "role" => RoleEnum::epi_user,
             "permission" => "vaccine_certificate"

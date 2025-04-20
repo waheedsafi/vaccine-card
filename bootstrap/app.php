@@ -9,7 +9,8 @@ use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\api\template\LocaleMiddleware;
-use App\Http\Middleware\api\template\AccessUserCheckMiddleware;
+use App\Http\Middleware\api\template\CheckEpiAccessMiddleware;
+use App\Http\Middleware\api\template\epi\sub\EpiHasSubPermissionMiddleware;
 use App\Http\Middleware\api\template\epi\main\EpiHasMainPermissionMiddleware;
 use App\Http\Middleware\api\template\finance\main\FinanceHasMainPermissionMiddleware;
 
@@ -25,7 +26,8 @@ return Application::configure(basePath: dirname(__DIR__))
             ->alias([
                 'financeHasMainPermission' => FinanceHasMainPermissionMiddleware::class,
                 'epiHasMainPermission' => EpiHasMainPermissionMiddleware::class,
-                'accessUserCheck'  => AccessUserCheckMiddleware::class,
+                'epiHasSubPermission' => EpiHasSubPermissionMiddleware::class,
+                'checkEpiAccess'  => CheckEpiAccessMiddleware::class,
             ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

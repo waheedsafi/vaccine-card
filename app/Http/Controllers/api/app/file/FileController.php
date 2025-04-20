@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\api\app\file;
 
+use App\Enums\CheckListTypeEnum;
 use Illuminate\Http\Request;
 use App\Traits\Helper\HelperTrait;
 use App\Http\Controllers\Controller;
-use App\Repositories\ngo\NgoRepositoryInterface;
 use Pion\Laravel\ChunkUpload\Receiver\FileReceiver;
 use Pion\Laravel\ChunkUpload\Handler\HandlerFactory;
 use App\Repositories\PendingTask\PendingTaskRepositoryInterface;
@@ -23,49 +23,49 @@ class FileController extends Controller
     ) {
         $this->pendingTaskRepository = $pendingTaskRepository;
     }
-    public function checklistUploadFile(Request $request)
-    {
-        $receiver = new FileReceiver("file", $request, HandlerFactory::classFromRequest($request));
+    // public function checklistUploadFile(Request $request)
+    // {
+    //     $receiver = new FileReceiver("file", $request, HandlerFactory::classFromRequest($request));
 
-        if (!$receiver->isUploaded()) {
-            throw new UploadMissingFileException();
-        }
+    //     if (!$receiver->isUploaded()) {
+    //         throw new UploadMissingFileException();
+    //     }
 
-        $save = $receiver->receive();
+    //     $save = $receiver->receive();
 
-        if ($save->isFinished()) {
-            $task_type = $request->task_type;;
-            $ngo_id = $request->ngo_id;
-            $checklist_id = $request->checklist_id;
-            $file = $save->getFile();
-            // 1. Validate checklist
-            $validationResult = $this->checkFileWithList($file, $request->checklist_id);
-            if ($validationResult !== true) {
-                $filePath = $file->getRealPath();
-                unlink($filePath);
-                return $validationResult; // Return validation errors
-            }
-            // 2. Store document
-            return $this->pendingTaskRepository->fileStore(
-                $file,
-                $request,
-                $task_type,
-                $checklist_id,
-                $ngo_id
-            );
-        }
+    //     if ($save->isFinished()) {
+    //         $task_type = $request->task_type;;
+    //         $ngo_id = $request->ngo_id;
+    //         $checklist_id = $request->checklist_id;
+    //         $file = $save->getFile();
+    //         // 1. Validate checklist
+    //         $validationResult = $this->checkFileWithList($file, $request->checklist_id);
+    //         if ($validationResult !== true) {
+    //             $filePath = $file->getRealPath();
+    //             unlink($filePath);
+    //             return $validationResult; // Return validation errors
+    //         }
+    //         // 2. Store document
+    //         return $this->pendingTaskRepository->fileStore(
+    //             $file,
+    //             $request,
+    //             $task_type,
+    //             $checklist_id,
+    //             $ngo_id
+    //         );
+    //     }
 
-        // If not finished, send current progress.
-        $handler = $save->handler();
+    //     // If not finished, send current progress.
+    //     $handler = $save->handler();
 
-        return response()->json([
-            "done" => $handler->getPercentageDone(),
-            "status" => true,
-        ]);
-    }
+    //     return response()->json([
+    //         "done" => $handler->getPercentageDone(),
+    //         "status" => true,
+    //     ]);
+    // }
 
     // 1. Upload files in case does not have task_id
-    public function singleChecklistFileUpload(Request $request)
+    public function epiFileUpload(Request $request)
     {
         $receiver = new FileReceiver("file", $request, HandlerFactory::classFromRequest($request));
 
@@ -95,7 +95,7 @@ class FileController extends Controller
                 $request,
                 $task_type,
                 $check_list_id,
-                null
+                $check_list_id
             );
         }
 

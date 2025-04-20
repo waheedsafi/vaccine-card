@@ -6,7 +6,9 @@ use App\Http\Controllers\api\app\file\FileController;
 
 
 
-Route::prefix('v1')->middleware(["multiAuthorized:" . 'epi:api,finance:api'])->group(function () {
-  Route::post('checklist/file/upload', [FileController::class, 'checklistUploadFile'])->withoutMiddleware('throttle');
-  Route::post('single/checklist/file/upload', [FileController::class, 'singleChecklistFileUpload'])->withoutMiddleware('throttle');
+Route::prefix('v1')->middleware(["authorized:" . 'finance:api'])->group(function () {
+  Route::post('finance/file/upload', [FileController::class, 'financeFileUpload'])->withoutMiddleware('throttle');
+});
+Route::prefix('v1')->middleware(["authorized:" . 'epi:api'])->group(function () {
+  Route::post('epi/file/upload', [FileController::class, 'epiFileUpload'])->withoutMiddleware('throttle');
 });

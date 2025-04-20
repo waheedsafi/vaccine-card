@@ -26,11 +26,11 @@ class EpiUserStoreRequest extends FormRequest
             "username" => ['required', "string", "min:3", "max:45"],
             "email" => ["required", "email"],
             "password" => ["required", "string", "min:8", "max:25"],
-            "role" => ["required"],
-            "job" => ["required"],
-            "job_id" => ["required"],
-            "destination" => ["required"],
-            "destination_id" => ["required"]
+            "job_id" => ["required", 'exists:model_jobs,id'],
+            "destination_id" => ["required", 'exists:destinations,id'],
+            "gender_id" => ["required", 'exists:genders,id'],
+            "province_id" => ["required", 'exists:provinces,id'],
+            "status" => ["required"],
         ];
     }
 }

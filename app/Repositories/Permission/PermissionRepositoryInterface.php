@@ -55,4 +55,5 @@ interface PermissionRepositoryInterface
      * @return @var mixed $Response
      */
     public function storeUserPermission($user_id, $permissions);
+    public function storeEpiPermission($epi_user_id, $permissions);
 }
