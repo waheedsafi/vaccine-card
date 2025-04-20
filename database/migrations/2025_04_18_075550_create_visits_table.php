@@ -18,9 +18,10 @@ return new class extends Migration
                 ->onUpdate('cascade')
                 ->onDelete('no action');
             $table->string('visited_date');
-            $table->timestamps();
-            $table->index([ "people_id"]);
+            $table->string('certificate_id');
 
+            $table->timestamps();
+            $table->index(["people_id"]);
         });
     }
 

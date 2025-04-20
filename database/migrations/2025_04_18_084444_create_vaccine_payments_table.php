@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('vaccine_payments', function (Blueprint $table) {
             $table->id();
             $table->string('payment_uuid');
-            $table->decimal('paid_amount',15,2);
+            $table->decimal('paid_amount', 15, 2);
             $table->unsignedBigInteger('visit_id')->unique();
             $table->foreign('visit_id')->references('id')->on('visits')
                 ->onUpdate('cascade')

@@ -40,6 +40,7 @@ return [
     'allowed_file_types' => 'اجازه ورکړل شوي د فایل ډولونه:',
     'file_size_error' => 'د فایل اندازه باید د دې ترمنځ وي:',
     'lang_change_failed' => 'ژبه ونه بدله شوه.',
-'account_is_block' => 'ستاسو حساب بند شوی دی.',
-'setting_record_not_found' => 'د تنظیماتو ریکارډ ونه موندل شو.',
+    'account_is_block' => 'ستاسو حساب بند شوی دی.',
+    'setting_record_not_found' => 'د تنظیماتو ریکارډ ونه موندل شو.',
+    'today_visit_not_found' => 'نن ورځ لیدنه ونه موندل شوه.',
 ];
