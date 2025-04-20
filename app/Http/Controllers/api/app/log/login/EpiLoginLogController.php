@@ -12,29 +12,28 @@ use App\Http\Controllers\Controller;
 
 class EpiLoginLogController extends Controller
 {
+
+
     public function userLoginLogs(Request $request)
     {
         $locale = App::getLocale();
         $perPage = $request->input('per_page', 10);
         $page = $request->input('page', 1);
 
-
         $includeRole = [];
 
-        if ($request->admin  === true) {
-            array_push($includeRole, RoleEnum::epi_admin->value);
-            array_push($includeRole, RoleEnum::epi_super->value);
+        if ($request->admin === true) {
+            $includeRole[] = RoleEnum::epi_admin->value;
+            $includeRole[] = RoleEnum::epi_super->value;
         } else {
-            array_push($includeRole, RoleEnum::epi_user->value);
+            $includeRole[] = RoleEnum::epi_user->value;
         }
-
-
 
         // Build query
         $query = DB::table('user_login_logs as log')
             ->leftJoin("epi_users as usr", 'usr.id', '=', 'log.userable_id')
             ->where('userable_type', 'App\Models\EpiUser')
-            ->where("usr.role_id", $includeRole)
+            ->whereIn("usr.role_id", $includeRole) // Use whereIn for multiple roles
             ->select(
                 "log.id",
                 "usr.username",
@@ -45,11 +44,8 @@ class EpiLoginLogController extends Controller
                 "log.browser",
                 "log.device",
                 "log.created_at as date"
-            );
-
-
-
-        $query->orderBy('log.created_at', 'desc');
+            )
+            ->orderBy('log.created_at', 'desc');
 
         // Pagination
         $logs = $query->paginate($perPage, ['*'], 'page', $page);
