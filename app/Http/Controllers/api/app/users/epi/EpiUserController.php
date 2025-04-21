@@ -19,6 +19,8 @@ use Illuminate\Support\Facades\Hash;
 use App\Http\Requests\app\epiuser\EpiUserStoreRequest;
 use App\Http\Requests\template\user\UpdateUserRequest;
 use App\Repositories\Storage\StorageRepositoryInterface;
+use App\Http\Requests\template\user\UpdateUserPasswordRequest;
+use App\Models\EpiUserPasswordChange;
 use App\Repositories\Permission\PermissionRepositoryInterface;
 use App\Repositories\PendingTask\PendingTaskRepositoryInterface;
 
@@ -223,13 +225,16 @@ class EpiUserController extends Controller
         }
         // 2. Check contact
         $contact = null;
-        if ($request->contact) {
+        if (!empty($request->contact)) {
             $contact = Contact::where('value', '=', $request->contact)->first();
             if ($contact) {
                 return response()->json([
                     'message' => __('app_translation.contact_exist'),
                 ], 400, [], JSON_UNESCAPED_UNICODE);
             }
+            $contact = Contact::create([
+                "value" => $request->contact
+            ]);
         }
         DB::beginTransaction();
         // Add email and contact
@@ -257,7 +262,8 @@ class EpiUserController extends Controller
         $task = $this->pendingTaskRepository->pendingTaskExist(
             $request->user(),
             CheckListTypeEnum::epi->value,
-            CheckListEnum::epi_user_letter_of_introduction->value
+            CheckListEnum::epi_user_letter_of_introduction->value,
+            null
         );
 
         if (!$task) {
@@ -284,7 +290,8 @@ class EpiUserController extends Controller
         $this->pendingTaskRepository->destroyPendingTask(
             $request->user(),
             CheckListTypeEnum::epi->value,
-            CheckListEnum::epi_user_letter_of_introduction->value
+            CheckListEnum::epi_user_letter_of_introduction->value,
+            null
         );
 
         // 4. Add user permissions
@@ -381,6 +388,62 @@ class EpiUserController extends Controller
         return response()->json([
             'message' => __('app_translation.user_not_found'),
         ], 404, [], JSON_UNESCAPED_UNICODE);
+    }
+    public function changePassword(UpdateUserPasswordRequest $request)
+    {
+        $request->validated();
+        $user = $request->get('validatedUser');
+        $authUser = $request->user();
+        // Admin trying to change other zone user password
+        if (($authUser->role_id == RoleEnum::epi_admin->value && $user->zone_id != $authUser->zone_id)
+            || $authUser->role_id == RoleEnum::epi_user->value
+        ) {
+            // 1. Insert Fruad record
+
+            // 2. Lock User
+            $authUser->status = false;
+            $authUser->save();
+            return response()->json([
+                'message' => __('app_translation.account_is_block'),
+            ], 403, [], JSON_UNESCAPED_UNICODE);
+        }
+
+        // 1. Validate document
+        $task = $this->pendingTaskRepository->pendingTaskExist(
+            $request->user(),
+            CheckListTypeEnum::epi->value,
+            CheckListEnum::epi_letter_of_password_change->value,
+            CheckListEnum::epi_letter_of_password_change->value,
+        );
+        if (!$task) {
+            return response()->json([
+                'message' => __('app_translation.task_not_found')
+            ], 404);
+        }
+        DB::beginTransaction();
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+        $document_id = '';
+        $this->storageRepository->documentStore(CheckListTypeEnum::epi->value, $user->id, $task->id, function ($documentData) use (&$document_id) {
+            $checklist_id = $documentData['check_list_id'];
+            $document = Document::create([
+                'actual_name' => $documentData['actual_name'],
+                'size' => $documentData['size'],
+                'path' => $documentData['path'],
+                'type' => $documentData['type'],
+                'check_list_id' => $checklist_id,
+            ]);
+            $document_id = $document->id;
+        });
+        EpiUserPasswordChange::create([
+            'target_user_id' => $authUser->id,
+            'affected_user_id' => $user->id,
+            'document_id' => $document_id,
+        ]);
+        DB::commit();
+        return response()->json([
+            'message' => __('app_translation.success'),
+        ], 200, [], JSON_UNESCAPED_UNICODE);
     }
     protected function applyDate($query, $request)
     {

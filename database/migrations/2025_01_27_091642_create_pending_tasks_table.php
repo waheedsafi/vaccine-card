@@ -17,6 +17,7 @@ return new class extends Migration
             $table->integer('user_type');
             $table->integer('task_type')->comment('epi or finance');
             $table->unsignedBigInteger('task_id')->nullable()->comment('epi Id or finance id');
+            $table->string('unique_identifier')->nullable();
             $table->timestamps();
         });
     }

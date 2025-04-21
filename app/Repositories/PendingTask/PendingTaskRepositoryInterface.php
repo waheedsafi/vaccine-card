@@ -36,7 +36,7 @@ interface PendingTaskRepositoryInterface
      * @param string $task_type_id
      * @return \App\Models\PendingTask
      */
-    public function storeTask($authUser, $task_type, $task_type_id);
+    public function storeTask($authUser, $task_type, $task_type_id, $unique_identifier);
 
     /**
      * Deletes existing task along with the contents and documents.
@@ -49,7 +49,7 @@ interface PendingTaskRepositoryInterface
      * @param string $task_type_id
      * @return boolean Returns true if task is deleted otherwise false.
      */
-    public function destroyPendingTask($authUser, $task_type, $task_type_id);
+    public function destroyPendingTask($authUser, $task_type, $task_type_id, $unique_identifier);
 
     /**
      * Returns the pending task if not exist returns null
@@ -62,7 +62,7 @@ interface PendingTaskRepositoryInterface
      * @param string $task_type_id
      * @return \App\Models\PendingTask
      */
-    public function pendingTaskExist($authUser, $task_type, $task_type_id);
+    public function pendingTaskExist($authUser, $task_type, $task_type_id, $unique_identifier);
     /**
      * Returns the pending task if not exist returns null
      * $pending_task_id: Primary key
@@ -82,7 +82,7 @@ interface PendingTaskRepositoryInterface
      * @return \App\Models\PendingTaskDocument 
      */
     public function pendingTaskDocumentQuery($pending_task_id);
-    public function fileStore(UploadedFile $file, Request $request, $task_type, $check_list_id, $task_type_id);
+    public function fileStore(UploadedFile $file, Request $request, $task_type, $check_list_id, $task_type_id, $unique_identifier);
     public function storePendingDocument($pending_id, $check_list_id, $name, $path, $size, $extension);
     /**
      * 
@@ -91,5 +91,5 @@ interface PendingTaskRepositoryInterface
      * @param string $task_type_id
      * @return \App\Models\PendingTaskDocument 
      */
-    public function pendingTask(Request $request, $task_type, $task_type_id): array;
+    public function pendingTask(Request $request, $task_type, $task_type_id, $unique_identifier): array;
 }

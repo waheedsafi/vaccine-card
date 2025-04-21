@@ -37,7 +37,7 @@ class PendingTaskRepository implements PendingTaskRepositoryInterface
         return $pendingContent;
     }
 
-    public function pendingTaskExist($authUser, $task_type, $task_type_id)
+    public function pendingTaskExist($authUser, $task_type, $task_type_id, $unique_identifier)
     {
         $user_id = $authUser->id;
         $role = $authUser->role_id;
@@ -45,6 +45,7 @@ class PendingTaskRepository implements PendingTaskRepositoryInterface
             ->where('user_type', $role)
             ->where('task_type', $task_type)
             ->where('task_id', $task_type_id)
+            ->where('unique_identifier', $unique_identifier)
             ->first();
 
         return $task;
@@ -59,23 +60,24 @@ class PendingTaskRepository implements PendingTaskRepositoryInterface
         return PendingTaskDocument::where('pending_task_id', $pending_task_id);
     }
 
-    public function storeTask($authUser, $task_type, $task_type_id)
+    public function storeTask($authUser, $task_type, $task_type_id, $unique_identifier)
     {
         $user_id = $authUser->id;
         $role = $authUser->role_id;
 
-        $task = $this->pendingTaskExist($authUser, $task_type, $task_type_id);
+        $task = $this->pendingTaskExist($authUser, $task_type, $task_type_id, $unique_identifier);
         if (!$task) {
             $task =  PendingTask::create([
                 'user_id' => $user_id,
                 'user_type' => $role,
                 'task_type' => $task_type,
-                'task_id' => $task_type_id
+                'task_id' => $task_type_id,
+                'unique_identifier' => $unique_identifier,
             ]);
         }
         return $task;
     }
-    public function fileStore(UploadedFile $file, Request $request, $task_type, $check_list_id, $task_type_id)
+    public function fileStore(UploadedFile $file, Request $request, $task_type, $check_list_id, $task_type_id, $unique_identifier)
     {
         $fileActualName = $file->getClientOriginalName();
         $fileName = $this->createChunkUploadFilename($file);
@@ -90,7 +92,8 @@ class PendingTaskRepository implements PendingTaskRepositoryInterface
         $task = $this->storeTask(
             $user,
             $task_type,
-            $task_type_id
+            $task_type_id,
+            $unique_identifier
         );
 
         $data = [
@@ -142,7 +145,7 @@ class PendingTaskRepository implements PendingTaskRepositoryInterface
         }
         return true;
     }
-    public function destroyPendingTask($authUser, $task_type, $task_type_id)
+    public function destroyPendingTask($authUser, $task_type, $task_type_id, $unique_identifier)
     {
         $user_id = $authUser->id;
         $role = $authUser->role_id;
@@ -150,6 +153,7 @@ class PendingTaskRepository implements PendingTaskRepositoryInterface
             ->where('user_type', $role)
             ->where('task_type', $task_type)
             ->where('task_id', $task_type_id)
+            ->where('unique_identifier', $unique_identifier)
             ->first();
         if ($task) {
             $pending_document = PendingTaskDocument::where(
@@ -169,13 +173,14 @@ class PendingTaskRepository implements PendingTaskRepositoryInterface
         return true;
     }
 
-    public function pendingTask(Request $request, $task_type, $task_type_id): array
+    public function pendingTask(Request $request, $task_type, $task_type_id, $unique_identifier): array
     {
         // Retrieve the first matching pending task
         $task = $this->pendingTaskExist(
             $request->user(),
             $task_type,
             $task_type_id,
+            $unique_identifier
         );
 
         if ($task) {

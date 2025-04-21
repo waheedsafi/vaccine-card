@@ -17,5 +17,5 @@ Route::prefix('v1')->middleware(["authorized:" . 'epi:api'])->group(function () 
     Route::post('/epi/user/store', [EpiUserController::class, 'store'])->middleware(["epiHasMainPermission:" . PermissionEnum::users->value . ',' . 'add']);
     // Route::delete('/user/{id}', [EpiUserController::class, 'destroy'])->middleware(["userHasMainDeletePermission:" . PermissionEnum::users->value]);
     // Route::post('/user/validate/email/contact', [EpiUserController::class, "validateEmailContact"]);
-    // Route::post('/user/accpunt/change-password', [EpiUserController::class, 'changePassword'])->middleware(['accessUserCheck']);
+    Route::post('/epi/user/change/account/password', [EpiUserController::class, 'changePassword'])->middleware(['checkEpiAccess', "epiHasSubPermission:" . PermissionEnum::users->value . "," . SubPermissionEnum::user_password->value . ',' . 'edit']);
 });

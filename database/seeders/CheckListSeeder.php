@@ -24,6 +24,8 @@ class CheckListSeeder extends Seeder
         $this->financeCheckList();
         $this->epiUserCheckList();
         $this->finaceUserCheckList();
+        $this->epiPasswordChangeCheckList();
+        $this->financePasswordChangeCheckList();
     }
 
     protected function CheckListType()
@@ -71,7 +73,7 @@ class CheckListSeeder extends Seeder
     protected function financeCheckList()
     {
         $checklist = CheckList::create([
-            'id' => CheckListEnum::reciept,
+            'id' => CheckListEnum::finance_reciept,
             'check_list_type_id' => CheckListTypeEnum::finance,
             'acceptable_extensions' => "pdf,jpeg,png,jpg",
             'acceptable_mimes' => "application/pdf,image/jpeg,image/png,image/jpg",
@@ -110,17 +112,17 @@ class CheckListSeeder extends Seeder
         ]);
         CheckListTrans::create([
             'check_list_id' => $checklist->id,
-            'value' => "epi letter of introduction",
+            'value' => "Letter of introduction",
             'language_name' => LanguageEnum::default,
         ]);
         CheckListTrans::create([
             'check_list_id' => $checklist->id,
-            'value' => "epi معرفی نامه",
+            'value' => "معرفی نامه",
             'language_name' => LanguageEnum::farsi,
         ]);
         CheckListTrans::create([
             'check_list_id' => $checklist->id,
-            'value' => "د تعارف لیک finance",
+            'value' => "د تعارف لیک",
             'language_name' => LanguageEnum::pashto,
         ]);
     }
@@ -128,6 +130,34 @@ class CheckListSeeder extends Seeder
     {
         $checklist = CheckList::create([
             'id' => CheckListEnum::finance_user_letter_of_introduction,
+            'check_list_type_id' => CheckListTypeEnum::finance,
+            'acceptable_extensions' => "pdf,jpeg,png,jpg",
+            'acceptable_mimes' => "application/pdf,image/jpeg,image/png,image/jpg",
+            'accept' => ".pdf,.jpeg,.png,.jpg",
+            'description' => "",
+            'file_size' => 3048,
+            'user_id' => RoleEnum::debugger,
+        ]);
+        CheckListTrans::create([
+            'check_list_id' => $checklist->id,
+            'value' => "Letter of introduction",
+            'language_name' => LanguageEnum::default,
+        ]);
+        CheckListTrans::create([
+            'check_list_id' => $checklist->id,
+            'value' => "معرفی نامه",
+            'language_name' => LanguageEnum::farsi,
+        ]);
+        CheckListTrans::create([
+            'check_list_id' => $checklist->id,
+            'value' => "د تعارف لیک",
+            'language_name' => LanguageEnum::pashto,
+        ]);
+    }
+    protected function epiPasswordChangeCheckList()
+    {
+        $checklist = CheckList::create([
+            'id' => CheckListEnum::epi_letter_of_password_change,
             'check_list_type_id' => CheckListTypeEnum::epi,
             'acceptable_extensions' => "pdf,jpeg,png,jpg",
             'acceptable_mimes' => "application/pdf,image/jpeg,image/png,image/jpg",
@@ -138,17 +168,45 @@ class CheckListSeeder extends Seeder
         ]);
         CheckListTrans::create([
             'check_list_id' => $checklist->id,
-            'value' => "finance letter of introduction",
+            'value' => "Letter of password change",
             'language_name' => LanguageEnum::default,
         ]);
         CheckListTrans::create([
             'check_list_id' => $checklist->id,
-            'value' => "finance معرفی نامه",
+            'value' => "نامه تغییر رمز عبور",
             'language_name' => LanguageEnum::farsi,
         ]);
         CheckListTrans::create([
             'check_list_id' => $checklist->id,
-            'value' => "د تعارف لیک finance",
+            'value' => "د پټنوم د بدلون لیک",
+            'language_name' => LanguageEnum::pashto,
+        ]);
+    }
+    protected function financePasswordChangeCheckList()
+    {
+        $checklist = CheckList::create([
+            'id' => CheckListEnum::finance_letter_of_password_change,
+            'check_list_type_id' => CheckListTypeEnum::epi,
+            'acceptable_extensions' => "pdf,jpeg,png,jpg",
+            'acceptable_mimes' => "application/pdf,image/jpeg,image/png,image/jpg",
+            'accept' => ".pdf,.jpeg,.png,.jpg",
+            'description' => "",
+            'file_size' => 3048,
+            'user_id' => RoleEnum::debugger,
+        ]);
+        CheckListTrans::create([
+            'check_list_id' => $checklist->id,
+            'value' => "Letter of password change",
+            'language_name' => LanguageEnum::default,
+        ]);
+        CheckListTrans::create([
+            'check_list_id' => $checklist->id,
+            'value' => "نامه تغییر رمز عبور",
+            'language_name' => LanguageEnum::farsi,
+        ]);
+        CheckListTrans::create([
+            'check_list_id' => $checklist->id,
+            'value' => "د پټنوم د بدلون لیک",
             'language_name' => LanguageEnum::pashto,
         ]);
     }
