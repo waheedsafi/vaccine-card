@@ -4,8 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Enums\RoleEnum;
 use App\Enums\ZoneEnum;
+use App\Models\Address;
 use App\Models\FinanceUser;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Models\VaccineCenter;
+use App\Models\VaccineCenterTran;
 use App\Traits\Helper\HelperTrait;
 use App\Traits\Address\AddressTrait;
 use Illuminate\Support\Facades\Hash;
@@ -133,5 +137,53 @@ class TestController extends Controller
         $device = $this->detectDevice('');
 
         return $this->extractDeviceInfo($userAgent);
+    }
+
+
+    public function vaccineCenterStore()
+    {
+        // Path to the Excel file
+        $filePath = storage_path('app/private/vaccine_center_name.xlsx');
+
+        // Check if the file exists
+        if (!file_exists($filePath)) {
+
+            return 'file not found';
+        }
+
+        // Load the Excel file
+        $data = Excel::toArray([], $filePath);
+
+        return $data;
+        return response()->json([
+            'preview' => $data[0], // returns the first sheet data
+        ]);
+
+        // Loop through the rows and insert into the database
+        foreach ($data[0] as $row) {
+            // Skip the header row
+            if ($row[0] === 'S/N') {
+                continue;
+            }
+
+            // Create Address and Vaccine Center records
+            $address = Address::create([
+                'district_id' => $row[2], // District column
+                'province_id' => $row[1], // Province column
+            ]);
+
+            $vaccineCenter = VaccineCenter::create([
+                'description' => $row[3], // Type of Health Facility column
+                'address_id' => $address->id,
+            ]);
+
+            VaccineCenterTran::create([
+                'name' => $row[4], // Name of Health Facility column
+                'language_name' => 'en',
+                'vaccine_center_id' => $vaccineCenter->id,
+            ]);
+        }
+
+        // $this->command->info('Vaccine centers imported successfully!');
     }
 }

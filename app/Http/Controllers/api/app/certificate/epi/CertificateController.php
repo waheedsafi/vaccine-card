@@ -181,4 +181,28 @@ class CertificateController extends Controller
             'epi_user_id' => $request->user()->id,
         ]);
     }
+
+
+    public function activity($user_id)
+    {
+
+
+        // Build query
+        $complete = VaccineCard::where('user_id', $user_id)
+            ->count();
+
+        $today_count = VaccineCard::where('user_id', $user_id)
+            ->whereDate('created_at', Carbon::today())
+            ->count();
+
+        $data = [
+            "complete_count" => $complete,
+            "today_count" => $today_count,
+        ];
+
+        return response()->json([
+            'data' => $data,
+            'message' => __('app_translation.success'),
+        ], 200, [], JSON_UNESCAPED_UNICODE);
+    }
 }
