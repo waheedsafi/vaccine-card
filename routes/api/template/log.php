@@ -11,8 +11,6 @@ use App\Http\Controllers\api\template\LogController;
 
 
 
-Route::get('/user/login/logs', [UserLoginLogController::class, 'userLoginLogs']);
-
 Route::prefix('v1')->middleware("authorized:" . 'user:api')->group(function () {
     Route::get('/file-logs', [LogController::class, "fileLogs"]);
     Route::get('/database-logs', [LogController::class, "databaseLogs"])->middleware(["userHasMainViewPermission:" . PermissionEnum::logs->value]);

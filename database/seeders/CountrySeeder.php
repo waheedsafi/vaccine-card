@@ -3,13 +3,14 @@
 namespace Database\Seeders;
 
 use App\Models\Country;
-use App\Models\CountryTrans;
 use App\Models\District;
-use App\Models\DistrictTrans;
 use App\Models\Province;
-use App\Models\ProvinceTrans;
 use App\Models\Translate;
+use App\Models\CountryTrans;
+use App\Models\DistrictTrans;
+use App\Models\ProvinceTrans;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class CountrySeeder extends Seeder
@@ -19,6 +20,20 @@ class CountrySeeder extends Seeder
      */
     public function run(): void
     {
+
+        DB::statement('SET FOREIGN_KEY_CHECKS=0');
+
+        // Truncate the tables
+        DB::table('province_trans')->truncate();
+        DB::table('provinces')->truncate();
+        DB::table('district_trans')->truncate();
+        DB::table('districts')->truncate();
+        DB::table('country_trans')->truncate();
+        DB::table('countries')->truncate();
+
+        // Re-enable foreign key checks
+        DB::statement('SET FOREIGN_KEY_CHECKS=1');
+
         $country = [
             "Afghanistan" => [
                 "fa" => "افغانستان",

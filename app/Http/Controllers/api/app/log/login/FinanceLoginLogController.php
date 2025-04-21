@@ -3,16 +3,21 @@
 namespace App\Http\Controllers\api\app\log\login;
 
 use App\Enums\RoleEnum;
-use App\Models\EpiUser;
-use App\Models\FinanceUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\App;
 use App\Http\Controllers\Controller;
 
-class EpiLoginLogController extends Controller
+class FinanceLoginLogController extends Controller
 {
+    //
 
+    /**
+     * Get user login logs.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
 
     public function userLoginLogs(Request $request)
     {
@@ -23,16 +28,16 @@ class EpiLoginLogController extends Controller
         $includeRole = [];
 
         if ($request->admin === "true") {
-            $includeRole[] = RoleEnum::epi_admin->value;
-            $includeRole[] = RoleEnum::epi_super->value;
+            $includeRole[] = RoleEnum::finance_admin->value;
+            $includeRole[] = RoleEnum::finance_super->value;
         } else {
-            $includeRole[] = RoleEnum::epi_user->value;
+            $includeRole[] = RoleEnum::finance_user->value;
         }
 
         // Build query
         $query = DB::table('user_login_logs as log')
-            ->leftJoin("epi_users as usr", 'usr.id', '=', 'log.userable_id')
-            ->where('userable_type', 'EpiUser')
+            ->leftJoin("finance_users as usr", 'usr.id', '=', 'log.userable_id')
+            ->where('userable_type', 'FinanceUser')
             ->whereIn("usr.role_id", $includeRole) // Use whereIn for multiple roles
             ->select(
                 "log.id",

@@ -107,10 +107,14 @@ class CertificateController extends Controller
 
         // visit
         // * Create Visit
+
         $visit = Visit::create([
             'people_id' => $person->id,
             'visited_date' => Carbon::today()
         ]);
+
+        $vis = str_pad($visit->id, 5, '0', STR_PAD_LEFT);
+        $visit->certificate_id  = 'MoPH-' . Carbon::now()->format('Y') . '-' . $vis;
 
         // * Create Vaccines
         foreach ($validatedData['vaccines'] as $vaccineData) {
@@ -180,5 +184,29 @@ class CertificateController extends Controller
             'vaccine_payment_id' => $payment->id,
             'epi_user_id' => $request->user()->id,
         ]);
+    }
+
+
+    public function activity($user_id)
+    {
+
+
+        // Build query
+        $complete = VaccineCard::where('user_id', $user_id)
+            ->count();
+
+        $today_count = VaccineCard::where('user_id', $user_id)
+            ->whereDate('created_at', Carbon::today())
+            ->count();
+
+        $data = [
+            "complete_count" => $complete,
+            "today_count" => $today_count,
+        ];
+
+        return response()->json([
+            'data' => $data,
+            'message' => __('app_translation.success'),
+        ], 200, [], JSON_UNESCAPED_UNICODE);
     }
 }
