@@ -225,7 +225,7 @@ class EpiUserController extends Controller
         }
         // 2. Check contact
         $contact = null;
-        if (!empty($request->contact)) {
+        if ($request->contact !== null && !empty($request->contact)) {
             $contact = Contact::where('value', '=', $request->contact)->first();
             if ($contact) {
                 return response()->json([
@@ -344,7 +344,7 @@ class EpiUserController extends Controller
                 $email->value = $request->email;
                 $email->save();
             }
-            if (isset($request->contact)) {
+            if ($request->contact !== null && !empty($request->contact)) {
                 $contact = Contact::where('value', $request->contact)
                     ->select('id')->first();
                 if ($contact) {
