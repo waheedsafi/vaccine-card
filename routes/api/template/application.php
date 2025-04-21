@@ -10,4 +10,5 @@ Route::prefix('v1')->group(function () {
     Route::get('/nid/types', [ApplicationController::class, "nidTypes"]);
     Route::get('/genders', [ApplicationController::class, "genders"]);
     Route::post('/user/validate/email/contact', [ApplicationController::class, "validateEmailContact"]);
+    Route::get('/nationalities', [ApplicationController::class, "nationalities"]);
 });

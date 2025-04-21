@@ -495,8 +495,19 @@ class EpiUserController extends Controller
             $query->orderBy($allowedColumns[$sort], $order);
         }
     }
+
     public function userCount()
     {
+
+        $user = request()->user();
+        $zone_id = null;
+
+        if ($user->role_id == RoleEnum::epi_admin->value) {
+            $zone_id = $user->zone_id;
+        }
+
+        $zoneFilter = $zone_id ? "WHERE zone_id = $zone_id" : "";
+
         $statistics = DB::select("
             SELECT
                 COUNT(*) AS userCount,
@@ -505,6 +516,7 @@ class EpiUserController extends Controller
                 (SELECT COUNT(*) FROM epi_users WHERE status = 0) AS inActiveUserCount
             FROM users
         ");
+
         return response()->json([
             'counts' => [
                 "userCount" => $statistics[0]->userCount,
