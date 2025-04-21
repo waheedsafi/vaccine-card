@@ -17,11 +17,189 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Traits\Card\VaccineCardTrait;
 use App\Http\Requests\app\certificate\PersonStoreRequest;
+use App\Models\CountryTrans;
+use App\Models\District;
+use App\Models\DistrictTrans;
+use App\Models\ProvinceTrans;
+use App\Models\TravelTypeTran;
+use Maatwebsite\Excel\Files\Disk;
 
 class CertificateController extends Controller
 {
     //
     use VaccineCardTrait;
+
+    public function searchCertificate(Request $request)
+    {
+
+        $request->validate([
+            'passport_number' => 'required|string',
+        ]);
+        $person = Person::where('passport_number', $request->passport_number)
+            ->select('id', 'full_name', 'father_name', 'passport_number')->first();
+        if (!$person) {
+            return response()->json([
+                "message" => __("app_translation.not_found"),
+            ], 404);
+        }
+        $visit = Visit::where('people_id', $person->id)
+            ->whereDate('visited_date', Carbon::today())
+            ->orderBy('id', 'desc')
+            ->first();
+        if (!$visit) {
+            return response()->json([
+                "message" => __("app_translation.today_visit_not_found"),
+            ], 404);
+        }
+        $data = [
+            'id' => $person->id,
+            'full_name' => $person->full_name,
+            'father_name' => $person->father_name,
+            'passport_number' => $person->passport_number,
+            'visit_date' => $visit->visited_date,
+            'visit_id' => $visit->id,
+
+        ];
+        return response()->json([
+            "message" => __("app_translation.success"),
+            "data" => $data
+        ], 200);
+    }
+
+    public function personalInformation($visit_id)
+    {
+
+        $locale = app()->getLocale();
+
+        $visit = DB::table('visits')
+            ->join('people', 'visits.people_id', '=', 'people.id')
+            ->join('addresses add', 'people.address_id', '=', 'add.id')
+            ->join('address_trans', function ($join) use ($locale) {
+                $join->on('add.id', '=', 'address_trans.address_id')
+                    ->where('address_trans.language_name', '=', $locale);
+            })
+            ->join('district_trans', function ($join) use ($locale) {
+                $join->on('add.district_id', '=', 'district_trans.district_id')
+                    ->where('district_trans.language_name', '=', $locale);
+            })
+            ->join('province_trans', function ($join) use ($locale) {
+                $join->on('add.province_id', '=', 'province_trans.province_id')
+                    ->where('province_trans.language_name', '=', $locale);
+            })
+            ->join('travel_type_trans', function ($join) use ($locale) {
+                $join->on('visits.travel_type_id', '=', 'travel_type_trans.travel_type_id')
+                    ->where('travel_type_trans.language_name', '=', $locale);
+            })
+            ->join('country_trans', function ($join) use ($locale) {
+                $join->on('visits.country_id', '=', 'country_trans.country_id')
+                    ->where('country_trans.language_name', '=', $locale);
+            })
+            ->where('visits.people_id', $visit_id)
+            ->whereDate('visits.visited_date', Carbon::today())
+            ->orderByDesc('visits.id')
+            ->select([
+                'people.full_name',
+                'people.father_name',
+                'people.passport_number',
+                'people.date_of_birth',
+                'people.phone',
+                'people.nid_type_id',
+                'visits.visited_date as visit_date',
+                'travel_type_trans.value as travel_type',
+                'visits.travel_type_id',
+                'add.district_id',
+                'add.province_id',
+                'country_trans.value as country',
+                'visits.country_id',
+                'district_trans.value as district',
+                'province_trans.value as province',
+                'address_trans.area as area',
+            ])
+            ->first();
+
+        $data = [
+            'full_name' => $visit->full_name,
+            'father_name' => $visit->father_name,
+            'passport_number' => $visit->passport_number,
+            'date_of_birth' => $visit->date_of_birth,
+            'phone' => $visit->phone,
+            'nid_type_id' => $visit->nid_type_id,
+            'visited_date' => $visit->visit_date,
+            'country_id' => ['id' => $visit->country_id, 'name' => $visit->country],
+            'travel_type' => ['id' => $visit->travel_type_id, 'name' => $visit->travel_type],
+            'district' => ['id' => $visit->district_id, 'name' => $visit->district],
+            'province' => ['id' => $visit->province_id, 'name' => $visit->province],
+            'area' => $visit->area,
+            'province_id' => $visit->province_id,
+            'address_id' => $visit->address_id,
+        ];
+
+        return response()->json([
+            "message" => __("app_translation.success"),
+            "data" => $data
+        ], 200);
+    }
+
+    public function vaccineInformation($visit_id)
+    {
+
+        $vaccine =    Vaccine::join('doses as d', 'vaccines.id', '=', 'd.vaccine_id')
+            ->join('vaccine_centers as vc', 'vaccines.vaccine_center_id', '=', 'vc.id')
+            ->join('vaccine_type_trans as vtt', function ($join) {
+                $join->on('vaccines.vaccine_type_id', '=', 'vtt.vaccine_type_id')
+                    ->where('vtt.language_name', '=', 'en');
+            })
+            ->leftJoin('vaccine_center_trans vct',  function ($join) {
+                $join->on('vaccines.vaccine_center_id', '=', 'vct.vaccine_center_id')
+                    ->where('vct.language_name', '=', 'en');
+            })
+            ->where('vaccines.visit_id', $visit_id)
+            ->select([
+                'vaccines.registration_number',
+                'vaccines.registration_date',
+                'vaccines.volume',
+                'vaccines.page',
+                'vaccines.id as vaccine_id',
+                'vaccines.vaccine_center_id',
+                'vct.name as vaccine_center_name',
+                'vaccines.vaccine_type_id',
+                'vtt.name as vaccine_type_name',
+                'd.id as dose_id',
+                'd.batch_number',
+                'd.vaccine_date',
+
+            ])
+            ->get();
+
+
+        // Group vaccines and their doses
+        $vaccines = $vaccine->groupBy('vaccine_id')->map(function ($vaccineRecords) {
+            // Map doses for the vaccine
+
+
+
+            $doses = $vaccineRecords->map(function ($dose) {
+                return [
+                    'dose_id' => $dose->dose_id,
+                    'vaccine_date' => $dose->vaccine_date,
+                    'batch_number' => $dose->batch_number,
+                ];
+            });
+
+            return [
+                'registration_number' => $vaccineRecords->first()->registration_number,
+                'registration_date' => $vaccineRecords->first()->registration_date,
+                'vaccine_type_name' => ['id' => $vaccineRecords->first()->vaccine_type_id, 'name' => $vaccineRecords->first()->vaccine_type_name],
+                'vaccine_center' => ['id' => $vaccineRecords->first()->vaccine_center_id, 'name' => $vaccineRecords->first()->vaccine_center_name],
+                'vaccine_id' => $vaccineRecords->first()->vaccine_id,
+                'doses' => $doses->values(),
+            ];
+        });
+
+        return response()->json([
+            $data = $vaccines
+        ], 200);
+    }
 
     public function certificate(Request $request)
     {
@@ -98,7 +276,9 @@ class CertificateController extends Controller
 
         $visit = Visit::create([
             'people_id' => $person->id,
-            'visited_date' => Carbon::today()
+            'visited_date' => Carbon::today(),
+            'travel_type_id' => $validatedData['travel_type_id'],
+            'country_id' => $validatedData['country_id'],
         ]);
 
         $vis = str_pad($visit->id, 5, '0', STR_PAD_LEFT);

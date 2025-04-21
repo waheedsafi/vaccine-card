@@ -15,6 +15,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
+use App\Models\Nationality;
+use App\Models\NationalityTrans;
 
 class ApplicationController extends Controller
 {
@@ -91,6 +93,17 @@ class ApplicationController extends Controller
         return response()->json([
             'email_found' => $emailExists,
             'contact_found' => $contactExists,
+        ], 200, [], JSON_UNESCAPED_UNICODE);
+    }
+
+    public function nationalities()
+    {
+        $locale = App::getLocale();
+        $nationality = NationalityTrans::select('nationality_id ad id', "name")
+            ->where('langauge_name', $locale)->get();
+
+        return  response()->json([
+            'data' => $nationality,
         ], 200, [], JSON_UNESCAPED_UNICODE);
     }
 }

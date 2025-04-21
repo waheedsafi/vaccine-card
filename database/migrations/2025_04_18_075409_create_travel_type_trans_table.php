@@ -11,24 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('visits', function (Blueprint $table) {
+        Schema::create('travel_type_trans', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('people_id');
-            $table->foreign('people_id')->references('id')->on('people')
-                ->onUpdate('cascade')
-                ->onDelete('no action');
-            $table->string('visited_date');
-            $table->string('certificate_id');
+            $table->string('value');
             $table->unsignedBigInteger('travel_type_id');
             $table->foreign('travel_type_id')->references('id')->on('travel_types')
                 ->onUpdate('cascade')
                 ->onDelete('no action');
-            $table->unsignedBigInteger('country_id');
-            $table->foreign('country_id')->references('id')->on('countries')
+            $table->string('language_name');
+            $table->foreign('language_name')->references('name')->on('languages')
                 ->onUpdate('cascade')
                 ->onDelete('no action');
+
             $table->timestamps();
-            $table->index(["people_id"]);
         });
     }
 
@@ -37,6 +32,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('visits');
+        Schema::dropIfExists('travel_type_trans');
     }
 };
