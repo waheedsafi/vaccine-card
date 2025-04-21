@@ -154,30 +154,7 @@ class DatabaseSeeder extends Seeder
             "nid_type_id" => $nid->id
         ]);
     }
-    public function statusType()
-    {
-        $statustype = StatusType::factory()->create([
-            'id' => StatusTypeEnum::blocked,
-        ]);
-        DB::table('status_type_trans')->insert([
-            'status_type_id' => $statustype->id,
-            'language_name' => 'en',
-            'name' => 'Blocked'
-
-        ]);
-        DB::table('status_type_trans')->insert([
-            'status_type_id' => $statustype->id,
-            'language_name' => 'fa',
-            'name' => 'مسدود'
-
-        ]);
-        DB::table('status_type_trans')->insert([
-            'status_type_id' => $statustype->id,
-            'language_name' => 'ps',
-            'name' => 'بند'
-
-        ]);
-    }
+    public function statusType() {}
 
     protected function gender()
     {

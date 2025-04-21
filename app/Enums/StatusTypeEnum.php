@@ -2,7 +2,4 @@
 
 namespace App\Enums;
 
-enum StatusTypeEnum: int
-{
-    case blocked = 1;
-}
+enum StatusTypeEnum: int {}
