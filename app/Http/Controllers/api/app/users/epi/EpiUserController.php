@@ -371,7 +371,6 @@ class EpiUserController extends Controller
             // 4. Update User other attributes
             $user->full_name = $request->full_name;
             $user->username = $request->username;
-            $user->role_id = $request->role_id;
             $user->job_id = $request->job_id;
             $user->destination_id = $request->destination_id;
             $user->province_id = $request->province_id;

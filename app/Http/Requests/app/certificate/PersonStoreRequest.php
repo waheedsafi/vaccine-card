@@ -25,7 +25,6 @@ class PersonStoreRequest extends FormRequest
         return [
             'district_id' => 'required|integer',
             'province_id' => 'required|integer',
-            'area' => 'required|string',
             'passport_number' => 'required|string|unique:people,passport_number',
             'full_name' => 'required|string',
             'father_name' => 'required|string',

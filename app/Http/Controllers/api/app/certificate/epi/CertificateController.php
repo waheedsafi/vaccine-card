@@ -25,19 +25,15 @@ class CertificateController extends Controller
 
     public function certificate(Request $request)
     {
-
         $request->validate([
             'passport_number' => 'required|string'
         ]);
-
         $person =  Person::where('passport_number', $request->passport_number)->first();
         if (!$person) {
             return response()->json([
                 "message" => __("app_translation.not_found"),
             ], 404);
         }
-
-
         $visit = Visit::where('people_id', $person->id)
             ->whereDate('visited_date', Carbon::today())
             ->orderBy('id', 'desc')
@@ -48,11 +44,7 @@ class CertificateController extends Controller
             ], 404);
         }
 
-
-
-
         $path = $this->generateCard($visit->id);
-
         $count = VaccineCard::join('vaccine_payments as vp', 'vp.id', '=', 'vaccine_cards.vaccine_payment_id')
             ->where('vs.visit_id', $visit->id)
             ->select('vaccine_card.download_count')
@@ -68,14 +60,10 @@ class CertificateController extends Controller
         ]);
     }
 
-    public function storePerson(PersonStoreRequest $request)
+    public function storeCertificateDetail(PersonStoreRequest $request)
     {
-
         $validatedData = $request->validated();
-
-
         DB::beginTransaction();
-
         $address = Address::create([
             'district_id' => $validatedData['district_id'],
             'province_id' => $validatedData['province_id'],
