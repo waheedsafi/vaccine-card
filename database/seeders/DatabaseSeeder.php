@@ -54,6 +54,7 @@ class DatabaseSeeder extends Seeder
         $this->languages();
         $this->gender();
         $this->call(CountrySeeder::class);
+        $this->call(VaccineCenterSeeder::class);
         $this->call(DestinationSeederSecond::class);
         $this->zones();
         $this->call(RoleSeeder::class);
