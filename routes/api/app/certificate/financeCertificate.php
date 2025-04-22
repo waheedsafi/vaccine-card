@@ -6,6 +6,9 @@ use Illuminate\Support\Facades\Route;
 
 
 
+
+
+Route::get('/search/certificate', [CertificatePaymentController::class, 'searchCertificate']);
 Route::get('/reciept', [CertificatePaymentController::class, 'payment']);
 
 
