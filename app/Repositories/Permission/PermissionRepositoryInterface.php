@@ -6,14 +6,32 @@ interface PermissionRepositoryInterface
 {
 
     /**
-     * Retrieve NGO data when registeration is completed.
+     * Retrieve User Assigned Permissions
      * 
      *
      * @param string $user_id
      * @param string $role_id
      * @return @var \Illuminate\Support\Collection<int, \stdClass|null> $formattedPermissions
      */
-    public function assigningPermissions($user_id, $role_id);
+    public function assignedPermissions($user_id, $role_id);
+    /**
+     * Retrieve EPI Assigned Permissions
+     * 
+     *
+     * @param string $user_id
+     * @param string $role_id
+     * @return @var \Illuminate\Support\Collection<int, \stdClass|null> $formattedPermissions
+     */
+    public function assignedEpiPermissions($epi_user_id, $role_id);
+    /**
+     * Retrieve Finance Assigned Permissions
+     * 
+     *
+     * @param string $user_id
+     * @param string $role_id
+     * @return @var \Illuminate\Support\Collection<int, \stdClass|null> $formattedPermissions
+     */
+    public function assignedFinancePermissions($finance_user_id, $role_id);
     /**
      * Retrieve User permissions.
      * 
@@ -30,6 +48,7 @@ interface PermissionRepositoryInterface
      * @return @var mixed $formattedPermissions
      */
     public function formatUserPermissions($permissions);
+
     /**
      * Retrieve Role permissions.
      * 
@@ -56,4 +75,5 @@ interface PermissionRepositoryInterface
      */
     public function storeUserPermission($user_id, $permissions);
     public function storeEpiPermission($epi_user_id, $permissions);
+    public function storeFinancePermission($finance_user_id, $permissions);
 }

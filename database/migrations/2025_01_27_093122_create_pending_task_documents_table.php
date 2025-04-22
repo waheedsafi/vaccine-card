@@ -23,7 +23,7 @@ return new class extends Migration
                 ->onDelete('no action');
             $table->string('size', 32);
             $table->string('path', 256);
-            $table->string('actual_name', 64);
+            $table->string('actual_name', 100);
             $table->string('extension', 32);
             $table->timestamps();
         });

@@ -4,87 +4,93 @@ namespace App\Http\Controllers\api\app\users\finance;
 
 use App\Models\Email;
 use App\Enums\RoleEnum;
-use App\Models\Address;
 use App\Models\Contact;
-use App\Models\EpiUser;
 use App\Models\Document;
 use App\Enums\LanguageEnum;
-use App\Models\AddressTran;
 use App\Models\FinanceUser;
+use App\Enums\CheckListEnum;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use App\Enums\Type\TaskTypeEnum;
+use App\Enums\CheckListTypeEnum;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\App;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
+use App\Http\Requests\template\user\UpdateUserRequest;
 use App\Repositories\Storage\StorageRepositoryInterface;
-use App\Http\Requests\app\finance_user\FinanceUserStoreRequest;
+use App\Http\Requests\app\finance\FinanceUserStoreRequest;
+use App\Http\Requests\template\user\UpdateUserPasswordRequest;
+use App\Models\FinanceUserPasswordChange;
+use App\Repositories\Permission\PermissionRepositoryInterface;
 use App\Repositories\PendingTask\PendingTaskRepositoryInterface;
 
 class FinanceUserController extends Controller
 {
-
-
     protected $pendingTaskRepository;
     protected $storageRepository;
+    protected $permissionRepository;
 
     public function __construct(
         PendingTaskRepositoryInterface $pendingTaskRepository,
-        StorageRepositoryInterface $storageRepository
+        StorageRepositoryInterface $storageRepository,
+        PermissionRepositoryInterface $permissionRepository
     ) {
         $this->pendingTaskRepository = $pendingTaskRepository;
         $this->storageRepository = $storageRepository;
+        $this->permissionRepository = $permissionRepository;
     }
-
-
 
     public function user($id)
     {
         $locale = App::getLocale();
-        $user = DB::table('finance_users as u')
-            ->where('u.id', $id)
+        $user = DB::table('finance_users as fu')
+            ->where('fu.id', $id)
             ->join('model_job_trans as mjt', function ($join) use ($locale) {
-                $join->on('mjt.model_job_id', '=', 'u.job_id')
+                $join->on('mjt.model_job_id', '=', 'fu.job_id')
                     ->where('mjt.language_name', $locale);
             })
-            ->leftJoin('contacts as c', 'c.id', '=', 'u.contact_id')
-            ->join('emails as e', 'e.id', '=', 'u.email_id')
-            ->join('roles as r', 'r.id', '=', 'u.role_id')
+            ->leftJoin('contacts as c', 'c.id', '=', 'fu.contact_id')
+            ->join('emails as e', 'e.id', '=', 'fu.email_id')
+            ->join('roles as r', 'r.id', '=', 'fu.role_id')
+            ->join('genders as g', 'g.id', '=', 'fu.gender_id')
             ->join('destination_trans as dt', function ($join) use ($locale) {
-                $join->on('dt.destination_id', '=', 'u.destination_id')
+                $join->on('dt.destination_id', '=', 'fu.destination_id')
                     ->where('dt.language_name', $locale);
             })
             ->leftJoin('zone_trans as zt', function ($join) use ($locale) {
-                $join->on('zt.zone_id', '=', 'u.zone_id')
+                $join->on('zt.zone_id', '=', 'fu.zone_id')
                     ->where('zt.language_name', $locale);
             })
             ->leftJoin('province_trans as prot', function ($join) use ($locale) {
-                $join->on('prot.province_id', '=', 'u.province_id')
+                $join->on('prot.province_id', '=', 'fu.province_id')
                     ->where('zt.language_name', $locale);
             })
             ->select(
-                'u.id',
-                'u.registeration_number',
-                "u.profile",
-                "u.status",
-                'u.full_name',
-                'u.username',
+                'fu.id',
+                'fu.registeration_number',
+                "fu.profile",
+                "fu.status",
+                'fu.full_name',
+                'fu.username',
                 'c.value as contact',
-                'u.contact_id',
+                'fu.contact_id',
                 'e.value as email',
-                'u.email_id',
+                'fu.email_id',
                 'r.name as role_name',
-                'u.role_id',
+                'fu.role_id',
                 'dt.value as destination',
                 'zt.value as zone',
                 'prot.value as province',
                 "mjt.value as job",
-                "u.created_at",
-                "u.province_id",
-                "u.destination_id",
-                "u.job_id",
-                "u.zone_id",
+                "fu.created_at",
+                "fu.province_id",
+                "fu.destination_id",
+                "fu.job_id",
+                "fu.zone_id",
+                "g.id as gender_id",
+                "g.name_en",
+                "g.name_ps",
+                "g.name_fa",
 
             )
             ->first();
@@ -93,11 +99,17 @@ class FinanceUserController extends Controller
                 'message' => __('app_translation.user_not_found'),
             ], 404, [], JSON_UNESCAPED_UNICODE);
         }
-
+        $gender = $user->name_en;
+        if ($locale == LanguageEnum::farsi->value) {
+            $gender = $user->name_fa;
+        } else if ($locale == LanguageEnum::pashto->value) {
+            $gender = $user->name_ps;
+        }
         return response()->json(
             [
                 "user" => [
                     "id" => $user->id,
+                    "registration_number" => $user->registeration_number,
                     "full_name" => $user->full_name,
                     "username" => $user->username,
                     'email' => $user->email,
@@ -105,7 +117,8 @@ class FinanceUserController extends Controller
                     "status" => $user->status == 1,
                     "role" => ['id' => $user->role_id, 'name' => $user->role_name],
                     "zone" => ['id' => $user->zone_id, 'name' => $user->zone],
-                    "provine" => ['id' => $user->province_id, 'name' => $user->province],
+                    "gender" => ['id' => $user->gender_id, 'name' => $gender],
+                    "province" => ['id' => $user->province_id, 'name' => $user->province],
                     'contact' => $user->contact,
                     "destination" => ["id" => $user->destination_id, "name" => $user->destination],
                     "job" => ["id" => $user->job_id, "name" => $user->job],
@@ -117,14 +130,13 @@ class FinanceUserController extends Controller
             JSON_UNESCAPED_UNICODE
         );
     }
-
     public function users(Request $request)
     {
         $locale = App::getLocale();
         $tr = [];
         $perPage = $request->input('per_page', 10); // Number of records per page
         $page = $request->input('page', 1); // Current page
-        $role_id = $request->user()->role_id;
+        $role_id =  $request->user()->role_id;
         $includeRole = [];
 
         if ($role_id === RoleEnum::finance_super->value) {
@@ -164,6 +176,7 @@ class FinanceUserController extends Controller
                 "fu.username",
                 "fu.profile",
                 "fu.created_at",
+                "fu.status",
                 "e.value AS email",
                 "c.value AS contact",
                 "zt.value AS zone",
@@ -187,54 +200,51 @@ class FinanceUserController extends Controller
         );
     }
 
-
-
-    public function storeUser(FinanceUserStoreRequest $request)
+    public function store(FinanceUserStoreRequest $request)
     {
-
         $validatedData = $request->validated();
-
+        $request->validate([
+            'zone' => 'required',
+            'job' => 'required',
+            'destination' => 'required',
+        ]);
         $role_id = $request->role_id;
         $zone_id = $request->zone_id;
         if ($request->user()->role_id != RoleEnum::finance_super->value) {
             $role_id = RoleEnum::finance_user->value;
             $zone_id = $request->user()->zone_id;
+        } else {
+            $request->validate([
+                'role_id' => 'required|exists:roles,id',
+                'zone_id' => 'required|exists:zones,id',
+            ]);
         }
 
         // Create email
-        $email = Email::where('value', '=', $validatedData['email'])->first();
+        $email = Email::where('value', '=', $request->email)->first();
         if ($email) {
             return response()->json([
                 'message' => __('app_translation.email_exist'),
             ], 400, [], JSON_UNESCAPED_UNICODE);
         }
-        $contact = Contact::where('value', '=', $validatedData['contact'])->first();
-        if ($contact) {
-            return response()->json([
-                'message' => __('app_translation.contact_exist'),
-            ], 400, [], JSON_UNESCAPED_UNICODE);
-        }
-        DB::beginTransaction();
-        // create email or contact
-        $email = Email::create(['value' => $validatedData['email']]);
-        $contact = Contact::create(['value' => $validatedData['contact']]);
-
-        // create address 
-
-        $address = Address::create([
-            'district_id' => $validatedData['district_id'],
-            'province_id' => $validatedData['province_id'],
-        ]);
-
-
-        // * Translations
-        foreach (LanguageEnum::LANGUAGES as $code => $name) {
-            AddressTran::create([
-                'address_id' => $address->id,
-                'area' => $validatedData["area_{$name}"],
-                'language_name' =>  $code,
+        // 2. Check contact
+        $contact = null;
+        if ($request->contact !== null && !empty($request->contact)) {
+            $contact = Contact::where('value', '=', $request->contact)->first();
+            if ($contact) {
+                return response()->json([
+                    'message' => __('app_translation.contact_exist'),
+                ], 400, [], JSON_UNESCAPED_UNICODE);
+            }
+            $contact = Contact::create([
+                "value" => $request->contact
             ]);
         }
+        DB::beginTransaction();
+        // Add email and contact
+        $email = Email::create([
+            "value" => $request->email
+        ]);
 
         $user = FinanceUser::create([
             "registeration_number" => '',
@@ -244,22 +254,21 @@ class FinanceUserController extends Controller
             "password" => Hash::make($validatedData['password']),
             "status" => 1,
             "role_id" => $role_id,
-            "contact_id" => $contact->id,
+            "contact_id" => $contact ? $contact->id : $contact,
             "zone_id" => $zone_id,
             "province_id" => $request->province_id,
-            "gender_id" => $request->gender,
+            "gender_id" => $request->gender_id,
             "job_id" => $request->job_id,
-            "destnation_id" => $request->destination_id,
-
+            "destination_id" => $request->destination_id,
         ]);
-        $user->registration_number = "Finance-" . Carbon::now()->year . '-' . $user->id;
+        $user->registeration_number = "FINANCE-" . Carbon::now()->year . '-' . $user->id;
 
         $task = $this->pendingTaskRepository->pendingTaskExist(
             $request->user(),
-            TaskTypeEnum::finance_user_registration->value,
+            CheckListTypeEnum::finance->value,
+            CheckListEnum::finance_user_letter_of_introduction->value,
             null
         );
-
 
         if (!$task) {
             return response()->json([
@@ -268,7 +277,7 @@ class FinanceUserController extends Controller
         }
         $document_id = '';
 
-        $this->storageRepository->documentStore("Finance", $user->id, $task->id, function ($documentData) use (&$document_id) {
+        $this->storageRepository->documentStore(CheckListTypeEnum::finance->value, $user->id, $task->id, function ($documentData) use (&$document_id) {
             $checklist_id = $documentData['check_list_id'];
             $document = Document::create([
                 'actual_name' => $documentData['actual_name'],
@@ -277,21 +286,52 @@ class FinanceUserController extends Controller
                 'type' => $documentData['type'],
                 'check_list_id' => $checklist_id,
             ]);
-            array_push($documentsId, $document->id);
             $document_id = $document->id;
         });
         $user->user_letter_of_introduction_id  = $document_id;
-
         $user->save();
+
         $this->pendingTaskRepository->destroyPendingTask(
             $request->user(),
-            TaskTypeEnum::epi_user_registration->value,
+            CheckListTypeEnum::finance->value,
+            CheckListEnum::finance_user_letter_of_introduction->value,
             null
         );
+
+        // 4. Add user permissions
+        $result = $this->permissionRepository->storeFinancePermission($user, $request->permissions);
+        if ($result == 400) {
+            return response()->json([
+                'message' => __('app_translation.user_not_found'),
+            ], 404, [], JSON_UNESCAPED_UNICODE);
+        } else if ($result == 401) {
+            return response()->json([
+                'message' => __('app_translation.unauthorized_role_per'),
+            ], 403, [], JSON_UNESCAPED_UNICODE);
+        } else if ($result == 402) {
+            return response()->json([
+                'message' => __('app_translation.per_not_found'),
+            ], 404, [], JSON_UNESCAPED_UNICODE);
+        }
         DB::commit();
+
 
         return response()->json(
             [
+                "user" => [
+                    "id" => $user->id,
+                    "registeration_number" => $user->registeration_number,
+                    "full_name" => $user->full_name,
+                    "username" => $user->username,
+                    "profile" => $user->profile,
+                    "created_at" => $user->created_at,
+                    "status" => $user->status,
+                    "email" => $request->email,
+                    "contact" => $request->contact,
+                    "zone" => $request->zone,
+                    "destination" => $request->destination,
+                    "job" => $request->job,
+                ],
                 "message" => __('app_translation.success'),
             ],
             200,
@@ -299,10 +339,172 @@ class FinanceUserController extends Controller
             JSON_UNESCAPED_UNICODE
         );
     }
+    public function updateInformation(UpdateUserRequest $request)
+    {
+        $request->validated();
+        $user = $request->get('validatedUser');
+        // 1. User is passed from middleware
+        DB::beginTransaction();
+        if ($user) {
+            $email = Email::where('value', $request->email)
+                ->select('id')->first();
+            // Email Is taken by someone
+            if ($email) {
+                if ($email->id == $user->email_id) {
+                    $email->value = $request->email;
+                    $email->save();
+                } else {
+                    return response()->json([
+                        'message' => __('app_translation.email_exist'),
+                    ], 409, [], JSON_UNESCAPED_UNICODE);
+                }
+            } else {
+                $email = Email::where('id', $user->email_id)->first();
+                $email->value = $request->email;
+                $email->save();
+            }
+            if ($request->contact !== null && !empty($request->contact)) {
+                $contact = Contact::where('value', $request->contact)
+                    ->select('id')->first();
+                if ($contact) {
+                    if ($contact->id == $user->contact_id) {
+                        $contact->value = $request->contact;
+                        $contact->save();
+                    } else {
+                        return response()->json([
+                            'message' => __('app_translation.contact_exist'),
+                        ], 409, [], JSON_UNESCAPED_UNICODE);
+                    }
+                } else {
+                    if (isset($user->contact_id)) {
+                        $contact = Contact::where('id', $user->contact_id)->first();
+                        $contact->value = $request->contact;
+                        $contact->save();
+                    } else {
+                        $contact = Contact::create(['value' => $request->contact]);
+                        $user->contact_id = $contact->id;
+                    }
+                }
+            }
 
+            // 4. Update User other attributes
+            $user->full_name = $request->full_name;
+            $user->username = $request->username;
+            $user->job_id = $request->job_id;
+            $user->destination_id = $request->destination_id;
+            $user->province_id = $request->province_id;
+            $user->gender_id = $request->gender_id;
+            $user->zone_id = $request->zone_id;
+            $user->status = $request->status == 'true';
+            $user->save();
 
+            DB::commit();
+            return response()->json([
+                'message' => __('app_translation.success'),
+            ], 200, [], JSON_UNESCAPED_UNICODE);
+        }
+        return response()->json([
+            'message' => __('app_translation.user_not_found'),
+        ], 404, [], JSON_UNESCAPED_UNICODE);
+    }
+    public function updateProfilePicture(Request $request)
+    {
+        $request->validate([
+            'profile' => 'nullable|mimes:jpeg,png,jpg|max:2048',
+            'id' => 'required',
+        ]);
+        $user = FinanceUser::find($request->id);
+        if (!$user) {
+            return response()->json([
+                'message' => __('app_translation.user_not_found'),
+            ], 404, [], JSON_UNESCAPED_UNICODE);
+        }
+        $path = $this->storeProfile($request, 'finance-profile');
+        if ($path != null) {
+            // 1. delete old profile
+            $this->deleteDocument($this->getProfilePath($user->profile));
+            // 2. Update the profile
+            $user->profile = $path;
+        }
+        $user->save();
+        return response()->json([
+            'message' => __('app_translation.profile_changed'),
+            "profile" => $user->profile
+        ], 200, [], JSON_UNESCAPED_UNICODE);
+    }
+    public function deleteProfilePicture($id)
+    {
+        $user = FinanceUser::find($id);
+        if (!$user) {
+            return response()->json([
+                'message' => __('app_translation.user_not_found'),
+            ], 404, [], JSON_UNESCAPED_UNICODE);
+        }
+        // 1. delete old profile
+        $this->deleteDocument($this->getProfilePath($user->profile));
+        // 2. Update the profile
+        $user->profile = null;
+        $user->save();
+        return response()->json([
+            'message' => __('app_translation.success')
+        ], 200, [], JSON_UNESCAPED_UNICODE);
+    }
+    public function changePassword(UpdateUserPasswordRequest $request)
+    {
+        $request->validated();
+        $user = $request->get('validatedUser');
+        $authUser = $request->user();
+        // Admin trying to change other zone user password
+        if (($authUser->role_id == RoleEnum::finance_admin->value && $user->zone_id != $authUser->zone_id)
+            || $authUser->role_id == RoleEnum::finance_user->value
+        ) {
+            // 1. Insert Fruad record
 
+            // 2. Lock User
+            $authUser->status = false;
+            $authUser->save();
+            return response()->json([
+                'message' => __('app_translation.account_is_block'),
+            ], 403, [], JSON_UNESCAPED_UNICODE);
+        }
 
+        // 1. Validate document
+        $task = $this->pendingTaskRepository->pendingTaskExist(
+            $request->user(),
+            CheckListTypeEnum::finance->value,
+            CheckListEnum::finance_letter_of_password_change->value,
+            CheckListEnum::finance_letter_of_password_change->value,
+        );
+        if (!$task) {
+            return response()->json([
+                'message' => __('app_translation.task_not_found')
+            ], 404);
+        }
+        DB::beginTransaction();
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+        $document_id = '';
+        $this->storageRepository->documentStore(CheckListTypeEnum::finance->value, $user->id, $task->id, function ($documentData) use (&$document_id) {
+            $checklist_id = $documentData['check_list_id'];
+            $document = Document::create([
+                'actual_name' => $documentData['actual_name'],
+                'size' => $documentData['size'],
+                'path' => $documentData['path'],
+                'type' => $documentData['type'],
+                'check_list_id' => $checklist_id,
+            ]);
+            $document_id = $document->id;
+        });
+        FinanceUserPasswordChange::create([
+            'target_user_id' => $authUser->id,
+            'affected_user_id' => $user->id,
+            'document_id' => $document_id,
+        ]);
+        DB::commit();
+        return response()->json([
+            'message' => __('app_translation.success'),
+        ], 200, [], JSON_UNESCAPED_UNICODE);
+    }
     protected function applyDate($query, $request)
     {
         // Apply date filtering conditionally if provided
@@ -324,8 +526,8 @@ class FinanceUserController extends Controller
 
         if ($searchColumn && $searchValue) {
             $allowedColumns = [
-                'registration_number' => 'fu.registeration_number',
-                'username' => 'fu.username',
+                'registration_number' => 'eu.registeration_number',
+                'username' => 'eu.username',
                 'contact' => 'c.value',
                 'email' => 'e.value',
                 'zone' => 'zt.value',
@@ -342,16 +544,18 @@ class FinanceUserController extends Controller
         $sort = $request->input('filters.sort'); // Sorting column
         $order = $request->input('filters.order', 'asc'); // Sorting order (default 
         $allowedColumns = [
-            'username' => 'fu.username',
+            'username' => 'eu.username',
             'email' => 'e.value',
             'zone' => 'zt.value',
             'job' => 'mjt.value',
             'destination' => 'dt.value'
+
         ];
         if (in_array($sort, array_keys($allowedColumns))) {
             $query->orderBy($allowedColumns[$sort], $order);
         }
     }
+
     public function userCount()
     {
         $user = request()->user();
