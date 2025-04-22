@@ -65,7 +65,7 @@ class FileController extends Controller
     // }
 
     // 1. Upload files in case does not have task_id
-    public function epiNoIdentifierFileUpload(Request $request)
+    public function noIdentifierFileUpload(Request $request)
     {
         $receiver = new FileReceiver("file", $request, HandlerFactory::classFromRequest($request));
 
@@ -108,7 +108,7 @@ class FileController extends Controller
             "status" => true,
         ]);
     }
-    public function epiFileUpload(Request $request)
+    public function fileUpload(Request $request)
     {
         $receiver = new FileReceiver("file", $request, HandlerFactory::classFromRequest($request));
 

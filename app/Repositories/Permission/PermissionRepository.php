@@ -503,12 +503,12 @@ class PermissionRepository implements PermissionRepositoryInterface
     {
         return DB::table('finance_users as fu')
             ->where('fu.id', $finance_user_id)
-            ->join('finance_permissions as fup', 'fu.id', '=', 'fup.epi_user_id')
+            ->join('finance_permissions as fup', 'fu.id', '=', 'fup.finance_user_id')
             ->join('permissions as p', 'fup.permission', '=', 'p.name')
             ->leftJoin('finance_permission_subs as fps', 'fup.id', '=', 'fps.finance_permission_id')
             ->leftJoin('sub_permissions as sp', 'fps.sub_permission_id', '=', 'sp.id')
             ->select(
-                'fup.id as epi_permission_id',
+                'fup.id as finance_permission_id',
                 'p.name as permission',
                 'sp.name',
                 'p.priority',
