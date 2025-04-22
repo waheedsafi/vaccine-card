@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreign('target_user_id')->references('id')->on('epi_users')
                 ->onUpdate('cascade')
                 ->onDelete('no action');
-            $table->unsignedBigInteger('affected_user_id');
+            $table->unsignedBigInteger('affected_user_id')->comment('how changed the password');
             $table->foreign('affected_user_id')->references('id')->on('epi_users')
                 ->onUpdate('cascade')
                 ->onDelete('no action');

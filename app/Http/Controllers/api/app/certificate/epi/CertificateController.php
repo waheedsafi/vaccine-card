@@ -4,7 +4,9 @@ namespace App\Http\Controllers\api\app\certificate\epi;
 
 use Carbon\Carbon;
 use App\Models\Dose;
+use App\Models\Audit;
 use App\Models\Visit;
+use App\Models\People;
 use App\Models\Address;
 use App\Models\Vaccine;
 use App\Enums\LanguageEnum;
@@ -13,9 +15,9 @@ use App\Models\VaccineCard;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\EpiUserPasswordChange;
 use App\Traits\Card\VaccineCardTrait;
 use App\Http\Requests\app\certificate\PersonStoreRequest;
-use App\Models\People;
 
 class CertificateController extends Controller
 {
@@ -348,17 +350,59 @@ class CertificateController extends Controller
     {
 
 
-        // Build query
-        $complete = VaccineCard::where('user_id', $user_id)
-            ->count();
 
-        $today_count = VaccineCard::where('user_id', $user_id)
-            ->whereDate('created_at', Carbon::today())
-            ->count();
+        // Build query
+        $query  = DB::select(
+            "select count(*) as complete_count,
+            (select count(*) from vaccine_cards where epi_user_id = {$user_id} AND DATE(created_at) = CURDATE() ) as today_count
+            from vaccine_cards where epi_user_id ={$user_id}"
+        );
+
+
+        $changePass = EpiUserPasswordChange::join('epi_users as epu', 'epi_user_password_changes.affected_user_id', '=', 'epu.id')
+            ->join('documents as doc', 'epi_user_password_changes.document_id', '=', 'doc.id')
+            ->select('doc.path', 'epu.full_name', 'doc.created_at')->get();
+
+
+
+        $editData = Audit::where('user_type', 'EpiUser')
+            ->where('user_id', $user_id)
+            ->where('event', 'updated')
+            ->where('auditable_type', 'EpiUser')
+            ->select('id', 'old_values', 'new_values', 'created_at')
+            ->get();
+
+
+        $changedFields = $editData->map(function ($item) {
+            $old = json_decode($item->old_values, true) ?? [];
+            $new = json_decode($item->new_values, true) ?? [];
+
+            $changes = [];
+            foreach ($old as $key => $oldValue) {
+                if (array_key_exists($key, $new) && $oldValue != $new[$key]) {
+                    $changes[$key] = [
+                        'old' => $oldValue,
+                        'new' => $new[$key],
+                    ];
+                }
+            }
+
+            return [
+                'id' => $item->id,
+                'changed_fields' => $changes,
+                'changed_at' => $item->created_at,
+            ];
+        })->filter(fn($item) => count($item['changed_fields']) > 0)->values();
+
+
+
 
         $data = [
-            "complete_count" => $complete,
-            "today_count" => $today_count,
+
+            "complete_count" => $query[0]->complete_count,
+            "today_count" => $query[0]->today_count,
+            "password_change" => $changePass,
+            "edit_data" => $changedFields,
         ];
 
         return response()->json([

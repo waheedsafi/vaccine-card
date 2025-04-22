@@ -8,8 +8,10 @@ use App\Models\Person;
 use App\Models\Reciept;
 use Illuminate\Http\Request;
 use App\Models\VaccinePayment;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Traits\Reciept\RecieptTrait;
+use App\Models\FinanceUserPasswordChange;
 use Psy\CodeCleaner\FunctionReturnInWriteContextPass;
 
 class CertificatePaymentController extends Controller
@@ -85,17 +87,28 @@ class CertificatePaymentController extends Controller
     {
 
 
-        // Build query
-        $complete = Reciept::where('user_id', $user_id)
-            ->count();
 
-        $today_count = Reciept::where('user_id', $user_id)
-            ->whereDate('created_at', Carbon::today())
-            ->count();
+        // Build query
+        $query  = DB::select(
+            "select count(*) as complete_count,
+            (select count(*) from receipts where finance_user_id = {$user_id} AND DATE(created_at) = CURDATE() ) as today_count
+            from receipts where finance_user_id ={$user_id}"
+        );
+
+
+        $changePass = FinanceUserPasswordChange::join('finance_users as fiu', 'finance_user_password_changes.affected_user_id', '=', 'fiu.id')
+            ->join('documents as doc', 'finance_user_password_changes.document_id', '=', 'doc.id')
+            ->select('doc.path', 'fiu.full_name', 'doc.created_at')->get();
+
+
+
+
 
         $data = [
-            "complete_count" => $complete,
-            "today_count" => $today_count,
+
+            "complete_count" => $query[0]->complete_count,
+            "today_count" => $query[0]->today_count,
+            "password_change" => $changePass,
         ];
 
         return response()->json([
