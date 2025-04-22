@@ -354,14 +354,27 @@ class FinanceUserController extends Controller
     }
     public function userCount()
     {
+        $user = request()->user();
+        $zone_id = null;
+
+        if ($user->role_id == RoleEnum::epi_admin->value) {
+            $zone_id = $user->zone_id;
+        }
+
+
+        $zoneFilter = $zone_id ? "WHERE zone_id = $zone_id" : "";
+        $zoneFilter1 = $zone_id ? "AND zone_id = $zone_id" : "";
+
+
         $statistics = DB::select("
-            SELECT
-                COUNT(*) AS userCount,
-                (SELECT COUNT(*) FROM finance_users WHERE DATE(created_at) = CURDATE()) AS todayCount,
-                (SELECT COUNT(*) FROM finance_users WHERE status = 1) AS activeUserCount,
-                (SELECT COUNT(*) FROM finance_users WHERE status = 0) AS inActiveUserCount
-            FROM users
+
+                select count(*) as userCount,
+                (select count(*) from finance_users where DATE(created_at) = CURDATE() {$zoneFilter1}) AS todayCount,
+                (select count(*) from finance_users where status = 1 {$zoneFilter1}) AS activeUserCount,
+                (select count(*) from finance_users where status = 0 {$zoneFilter1}) AS inActiveUserCount
+                from finance_users {$zoneFilter}
         ");
+
         return response()->json([
             'counts' => [
                 "userCount" => $statistics[0]->userCount,
