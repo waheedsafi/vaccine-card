@@ -343,7 +343,6 @@ class CertificateController extends Controller
         ]);
     }
 
-
     public function activity($user_id)
     {
 
