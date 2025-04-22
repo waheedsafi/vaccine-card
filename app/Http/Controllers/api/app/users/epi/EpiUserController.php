@@ -16,11 +16,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\App;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
-use App\Http\Requests\app\epiuser\EpiUserStoreRequest;
+use App\Models\EpiUserPasswordChange;
+use App\Http\Requests\app\epi\EpiUserStoreRequest;
 use App\Http\Requests\template\user\UpdateUserRequest;
 use App\Repositories\Storage\StorageRepositoryInterface;
 use App\Http\Requests\template\user\UpdateUserPasswordRequest;
-use App\Models\EpiUserPasswordChange;
 use App\Repositories\Permission\PermissionRepositoryInterface;
 use App\Repositories\PendingTask\PendingTaskRepositoryInterface;
 
@@ -407,6 +407,48 @@ class EpiUserController extends Controller
         return response()->json([
             'message' => __('app_translation.user_not_found'),
         ], 404, [], JSON_UNESCAPED_UNICODE);
+    }
+    public function updateProfilePicture(Request $request)
+    {
+        $request->validate([
+            'profile' => 'nullable|mimes:jpeg,png,jpg|max:2048',
+            'id' => 'required',
+        ]);
+        $user = EpiUser::find($request->id);
+        if (!$user) {
+            return response()->json([
+                'message' => __('app_translation.user_not_found'),
+            ], 404, [], JSON_UNESCAPED_UNICODE);
+        }
+        $path = $this->storeProfile($request, 'epi-profile');
+        if ($path != null) {
+            // 1. delete old profile
+            $this->deleteDocument($this->getProfilePath($user->profile));
+            // 2. Update the profile
+            $user->profile = $path;
+        }
+        $user->save();
+        return response()->json([
+            'message' => __('app_translation.profile_changed'),
+            "profile" => $user->profile
+        ], 200, [], JSON_UNESCAPED_UNICODE);
+    }
+    public function deleteProfilePicture($id)
+    {
+        $user = EpiUser::find($id);
+        if (!$user) {
+            return response()->json([
+                'message' => __('app_translation.user_not_found'),
+            ], 404, [], JSON_UNESCAPED_UNICODE);
+        }
+        // 1. delete old profile
+        $this->deleteDocument($this->getProfilePath($user->profile));
+        // 2. Update the profile
+        $user->profile = null;
+        $user->save();
+        return response()->json([
+            'message' => __('app_translation.success')
+        ], 200, [], JSON_UNESCAPED_UNICODE);
     }
     public function changePassword(UpdateUserPasswordRequest $request)
     {

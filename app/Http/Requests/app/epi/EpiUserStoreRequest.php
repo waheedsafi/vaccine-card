@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests\app\epiuser;
+namespace App\Http\Requests\app\epi;
 
 use Illuminate\Foundation\Http\FormRequest;
 
