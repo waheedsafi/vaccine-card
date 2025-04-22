@@ -34,6 +34,7 @@ class VaccineCenterSeeder extends Seeder
     }
 
 
+
     public function vaccineCenterStore()
     {
         // Path to the Excel file
@@ -50,6 +51,7 @@ class VaccineCenterSeeder extends Seeder
         $data = Excel::toArray([], $filePath);
 
 
+        $COUN = 0;
         // Loop through the rows and insert into the database
         foreach ($data[0] as $row) {
             // Skip the header row
@@ -57,6 +59,7 @@ class VaccineCenterSeeder extends Seeder
                 continue;
             }
 
+            $COUN = $COUN + 1;
             $result = Province::join('province_trans', 'provinces.id', '=', 'province_trans.province_id')
                 ->join('districts', 'provinces.id', '=', 'districts.province_id')
                 ->join('district_trans', 'districts.id', '=', 'district_trans.district_id')
@@ -67,6 +70,11 @@ class VaccineCenterSeeder extends Seeder
                 ->select('provinces.id as province_id', 'districts.id as district_id')
                 ->first();
             // Create Address and Vaccine Center records
+
+            if (!$result->district_id) {
+                $this->command->info("District not found for row $COUN: ");
+                return;
+            }
             $address = Address::create([
 
                 'district_id' => $result->district_id, // District column
