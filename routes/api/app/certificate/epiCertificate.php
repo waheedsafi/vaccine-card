@@ -10,4 +10,5 @@ Route::get('/cert', [CertificateController::class, 'certificate']);
 
 Route::prefix('v1')->middleware(["authorized:" . 'epi:api'])->group(function () {
     Route::post('/epi/certificate/detail/store', [CertificateController::class, 'storeCertificateDetail'])->middleware(["epiHasMainPermission:" . PermissionEnum::vaccine_certificate->value . ',' . 'add']);
+    Route::get('/epi/certificate/search', [CertificateController::class, 'searchCertificate'])->middleware(["epiHasMainPermission:" . PermissionEnum::vaccine_certificate->value . ',' . 'view']);
 });

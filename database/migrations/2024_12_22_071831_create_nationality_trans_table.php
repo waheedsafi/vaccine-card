@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('nationality_trans', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->string('value');
             $table->unsignedBigInteger('nationality_id');
             $table->foreign('nationality_id')->references('id')->on('nationalities')
                 ->onUpdate('cascade')

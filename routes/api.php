@@ -29,3 +29,4 @@ require __DIR__ . '/api/app/zone/zone.php';
 require __DIR__ . '/api/app/certificate/epiCertificate.php';
 require __DIR__ . '/api/app/certificate/financeCertificate.php';
 require __DIR__ . '/api/app/logs/loginLogs.php';
+require __DIR__ . '/api/app/travel/travel.php';

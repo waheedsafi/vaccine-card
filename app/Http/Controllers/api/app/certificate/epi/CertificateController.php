@@ -5,9 +5,7 @@ namespace App\Http\Controllers\api\app\certificate\epi;
 use Carbon\Carbon;
 use App\Models\Dose;
 use App\Models\Visit;
-use App\Models\Person;
 use App\Models\Address;
-use App\Models\Reciept;
 use App\Models\Vaccine;
 use App\Enums\LanguageEnum;
 use App\Models\AddressTran;
@@ -17,58 +15,49 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Traits\Card\VaccineCardTrait;
 use App\Http\Requests\app\certificate\PersonStoreRequest;
-use App\Models\CountryTrans;
-use App\Models\District;
-use App\Models\DistrictTrans;
-use App\Models\ProvinceTrans;
-use App\Models\TravelTypeTran;
-use Maatwebsite\Excel\Files\Disk;
+use App\Models\People;
 
 class CertificateController extends Controller
 {
-    //
     use VaccineCardTrait;
 
     public function searchCertificate(Request $request)
     {
-
         $request->validate([
-            'passport_number' => 'required|string',
+            'filters.search.value' => 'required|string',
         ]);
-        $person = Person::where('passport_number', $request->passport_number)
-            ->select('id', 'full_name', 'father_name', 'passport_number')->first();
-        if (!$person) {
-            return response()->json([
-                "message" => __("app_translation.not_found"),
-            ], 404);
-        }
-        $visit = Visit::where('people_id', $person->id)
-            ->whereDate('visited_date', Carbon::today())
-            ->orderBy('id', 'desc')
-            ->first();
-        if (!$visit) {
-            return response()->json([
-                "message" => __("app_translation.today_visit_not_found"),
-            ], 404);
-        }
-        $data = [
-            'id' => $person->id,
-            'full_name' => $person->full_name,
-            'father_name' => $person->father_name,
-            'passport_number' => $person->passport_number,
-            'visit_date' => $visit->visited_date,
-            'visit_id' => $visit->id,
+        $tr = [];
+        $perPage = $request->input('per_page', 10); // Number of records per page
+        $page = $request->input('page', 1); // Current page
 
-        ];
-        return response()->json([
-            "message" => __("app_translation.success"),
-            "data" => $data
-        ], 200);
+        $query = DB::table('people as p')
+            ->where('p.passport_number', '!=', $request->passport_number)
+            ->join('visits as v', function ($join) {
+                $join->on('v.people_id', '=', 'p.id')
+                    ->latest('v.id');
+            })
+            ->select(
+                "p.id",
+                "p.passport_number",
+                "p.full_name",
+                "p.father_name",
+                "p.created_at",
+                "v.id as visit_id",
+                "v.visited_date as last_visit_date"
+            );
+        $tr = $query->paginate($perPage, ['*'], 'page', $page);
+        return response()->json(
+            [
+                "person_certificates" => $tr,
+            ],
+            200,
+            [],
+            JSON_UNESCAPED_UNICODE
+        );
     }
 
     public function personalInformation($visit_id)
     {
-
         $locale = app()->getLocale();
 
         $visit = DB::table('visits')
@@ -206,7 +195,7 @@ class CertificateController extends Controller
         $request->validate([
             'passport_number' => 'required|string'
         ]);
-        $person =  Person::where('passport_number', $request->passport_number)->first();
+        $person =  People::where('passport_number', $request->passport_number)->first();
         if (!$person) {
             return response()->json([
                 "message" => __("app_translation.not_found"),
@@ -257,7 +246,7 @@ class CertificateController extends Controller
         }
 
         // * Create Person
-        $person =  Person::create([
+        $person =  People::create([
             'passport_number' => $validatedData['passport_number'],
             'full_name' => $validatedData['full_name'],
             'father_name' => $validatedData['father_name'],
@@ -331,7 +320,7 @@ class CertificateController extends Controller
         ]);
 
 
-        $payment = Person::join('visits as vs', 'people.id', '=', 'vs.people_id')
+        $payment = People::join('visits as vs', 'people.id', '=', 'vs.people_id')
             ->join('vaccine_payments as vp', 'vs.id', '=', 'vp.visit_id')
             ->where('people.passport_number', $request->passport_number)
             ->whereDate('vs.visited_date', Carbon::today())

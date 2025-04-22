@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::create('country_trans', function (Blueprint $table) {
             $table->id();
             $table->string('value', 128);
-            $table->string('nationality', 128)->nullable();
             $table->unsignedBigInteger('country_id');
             $table->foreign('country_id')->references('id')->on('countries')
                 ->onUpdate('cascade')

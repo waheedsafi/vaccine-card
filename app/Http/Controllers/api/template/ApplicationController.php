@@ -99,11 +99,14 @@ class ApplicationController extends Controller
     public function nationalities()
     {
         $locale = App::getLocale();
-        $nationality = NationalityTrans::select('nationality_id ad id', "name")
-            ->where('langauge_name', $locale)->get();
+        $nationality = NationalityTrans::select('nationality_id as id', "value as name")
+            ->where('language_name', $locale)->get();
 
-        return  response()->json([
-            'data' => $nationality,
-        ], 200, [], JSON_UNESCAPED_UNICODE);
+        return  response()->json(
+            $nationality,
+            200,
+            [],
+            JSON_UNESCAPED_UNICODE
+        );
     }
 }

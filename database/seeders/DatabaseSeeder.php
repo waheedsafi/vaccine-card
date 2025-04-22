@@ -10,6 +10,8 @@ use App\Models\NidTypeTrans;
 use Illuminate\Database\Seeder;
 use App\Enums\StatusTypeEnum;
 use App\Enums\ZoneEnum;
+use App\Models\TravelType;
+use App\Models\TravelTypeTran;
 use App\Models\Zone;
 use App\Models\ZoneTrans;
 use Illuminate\Support\Facades\DB;
@@ -64,6 +66,60 @@ class DatabaseSeeder extends Seeder
 
         $this->statusType();
         $this->nidTypes();
+        $this->travelTypes();
+    }
+
+    public function travelTypes()
+    {
+        $travel = TravelType::create([]);
+        TravelTypeTran::create([
+            "value" => "حج عمره",
+            "language_name" => "fa",
+            "travel_type_id" => $travel->id
+        ]);
+        TravelTypeTran::create([
+            "value" => "حج عمره",
+            "language_name" => "ps",
+            "travel_type_id" => $travel->id
+        ]);
+        TravelTypeTran::create([
+            "value" => "Hajj Umrah",
+            "language_name" => "en",
+            "travel_type_id" => $travel->id
+        ]);
+
+        $travel = TravelType::create([]);
+        TravelTypeTran::create([
+            "value" => "حج فرضی",
+            "language_name" => "fa",
+            "travel_type_id" => $travel->id
+        ]);
+        TravelTypeTran::create([
+            "value" => "حج فرضی",
+            "language_name" => "ps",
+            "travel_type_id" => $travel->id
+        ]);
+        TravelTypeTran::create([
+            "value" => "Hajj Farzi",
+            "language_name" => "en",
+            "travel_type_id" => $travel->id
+        ]);
+        $travel = TravelType::create([]);
+        TravelTypeTran::create([
+            "value" => "عادی",
+            "language_name" => "fa",
+            "travel_type_id" => $travel->id
+        ]);
+        TravelTypeTran::create([
+            "value" => "عادی",
+            "language_name" => "ps",
+            "travel_type_id" => $travel->id
+        ]);
+        TravelTypeTran::create([
+            "value" => "Normal",
+            "language_name" => "en",
+            "travel_type_id" => $travel->id
+        ]);
     }
 
     public function zones()

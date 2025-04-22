@@ -204,6 +204,11 @@ class EpiUserController extends Controller
     public function store(EpiUserStoreRequest $request)
     {
         $validatedData = $request->validated();
+        $request->validate([
+            'zone' => 'required',
+            'job' => 'required',
+            'destination' => 'required',
+        ]);
         $role_id = $request->role_id;
         $zone_id = $request->zone_id;
         if ($request->user()->role_id != RoleEnum::epi_super->value) {
@@ -311,8 +316,23 @@ class EpiUserController extends Controller
         }
         DB::commit();
 
+
         return response()->json(
             [
+                "user" => [
+                    "id" => $user->id,
+                    "registeration_number" => $user->registeration_number,
+                    "full_name" => $user->full_name,
+                    "username" => $user->username,
+                    "profile" => $user->profile,
+                    "created_at" => $user->created_at,
+                    "status" => $user->status,
+                    "email" => $request->email,
+                    "contact" => $request->contact,
+                    "zone" => $request->zone,
+                    "destination" => $request->destination,
+                    "job" => $request->job,
+                ],
                 "message" => __('app_translation.success'),
             ],
             200,
