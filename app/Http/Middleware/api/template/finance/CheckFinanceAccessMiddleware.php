@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Middleware\api\template\epi;
+namespace App\Http\Middleware\api\template\finance;
 
 use App\Enums\RoleEnum;
 use App\Models\FinanceUser;

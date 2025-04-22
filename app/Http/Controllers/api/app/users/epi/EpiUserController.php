@@ -559,28 +559,21 @@ class EpiUserController extends Controller
 
     public function userCount()
     {
-
         $user = request()->user();
         $zone_id = null;
 
         if ($user->role_id == RoleEnum::epi_admin->value) {
             $zone_id = $user->zone_id;
         }
-
-
         $zoneFilter = $zone_id ? "WHERE zone_id = $zone_id" : "";
         $zoneFilter1 = $zone_id ? "AND zone_id = $zone_id" : "";
-
-
         $statistics = DB::select("
-
                 select count(*) as userCount,
                 (select count(*) from epi_users where DATE(created_at) = CURDATE() {$zoneFilter1}) AS todayCount,
                 (select count(*) from epi_users where status = 1 {$zoneFilter1}) AS activeUserCount,
                 (select count(*) from epi_users where status = 0 {$zoneFilter1}) AS inActiveUserCount
                 from epi_users {$zoneFilter}
         ");
-
 
         return response()->json([
             'counts' => [

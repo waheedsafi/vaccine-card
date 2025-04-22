@@ -10,7 +10,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\api\template\LocaleMiddleware;
 use App\Http\Middleware\api\template\epi\CheckEpiAccessMiddleware;
-use App\Http\Middleware\api\template\epi\CheckFinanceAccessMiddleware;
+use App\Http\Middleware\api\template\finance\CheckFinanceAccessMiddleware;
 use App\Http\Middleware\api\template\epi\sub\EpiHasSubPermissionMiddleware;
 use App\Http\Middleware\api\template\epi\main\EpiHasMainPermissionMiddleware;
 use App\Http\Middleware\api\template\finance\sub\FinanceHasSubPermissionMiddleware;

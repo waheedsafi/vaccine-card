@@ -9,7 +9,6 @@ use Illuminate\Database\Seeder;
 use App\Models\VaccineCenterTran;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class VaccineCenterSeeder extends Seeder
 {
