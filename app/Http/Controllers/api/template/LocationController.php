@@ -25,6 +25,26 @@ class LocationController extends Controller
         return response()->json($tr);
     }
 
+    public function destinactionCountries()
+    {
+
+        $locale = App::getLocale();
+        $afg = DB::table('country_trans')
+            ->select('country_id as id')
+            ->where('language_name', 'en')
+            ->where('value', 'Afghanistan') // You were missing the column name here
+            ->first();
+
+        $tr = DB::table('country_trans as ct')
+            ->where('ct.language_name', $locale)
+            ->whereNotIn('ct.country_id', [$afg->id])
+            ->select('ct.country_id as id', 'ct.value as name')
+            ->get();
+
+        return response()->json($tr);
+    }
+
+
     public function provinces($country_id)
     {
         $locale = App::getLocale();

@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('user_id');
             $table->string('user_type');
-            $table->unsignedBigInteger('target_zone_id');
+            $table->unsignedBigInteger('target_zone_id')->nullable();
             $table->string('action');
             $table->string('target_type');
             $table->unsignedBigInteger('target_id');

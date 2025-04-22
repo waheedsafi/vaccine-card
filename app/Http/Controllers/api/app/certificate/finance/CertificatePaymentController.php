@@ -8,8 +8,14 @@ use App\Models\Person;
 use App\Models\Reciept;
 use Illuminate\Http\Request;
 use App\Models\VaccinePayment;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\FinanceUser;
 use App\Traits\Reciept\RecieptTrait;
+use App\Models\FinanceUserPasswordChange;
+use App\Models\People;
+use App\Models\ViolationLog;
+use Pest\Arch\ValueObjects\Violation;
 use Psy\CodeCleaner\FunctionReturnInWriteContextPass;
 
 class CertificatePaymentController extends Controller
@@ -18,84 +24,158 @@ class CertificatePaymentController extends Controller
 
     use RecieptTrait;
 
+    public function searchCertificate(Request $request)
+    {
+
+        $request->validate([
+            'filters.search.value' => 'required|string',
+        ]);
+        $tr = [];
+        $perPage = $request->input('per_page', 10); // Number of records per page
+        $page = $request->input('page', 1); // Current page
+
+        $query = DB::table('people as p')
+            // ->where('p.passport_number', '!=', $request->passport_number)
+            ->where('p.passport_number', '!=', $request->input('filters.search.value'))
+            ->join('visits as v', function ($join) {
+                $join->on('v.people_id', '=', 'p.id');
+            })
+            ->leftJoin('vaccine_payments as vp', 'vp.visit_id', '=', 'v.id')
+            ->select(
+                "p.id",
+                "p.passport_number",
+                "p.full_name",
+                "p.father_name",
+                "p.created_at",
+                "v.id as visit_id",
+                "v.visited_date as last_visit_date",
+                DB::raw('CASE WHEN vp.id IS NULL THEN 0 ELSE 1 END as has_payment')
+            )
+            ->latest('v.id'); // You can apply latest ordering here if needed
+
+
+        $tr = $query->paginate($perPage, ['*'], 'page', $page);
+        return response()->json(
+            [
+                "person_certificates" => $tr,
+            ],
+            200,
+            [],
+            JSON_UNESCAPED_UNICODE
+        );
+    }
 
     public function payment(Request $request)
     {
-
-
-
-
-        $validateData = $request->validate([
-            'passport_number' => 'required|string',
-            'paid_amount' => 'required|numeric',
-            'payment_amount_id' => 'required|tables:payment_amounts,id',
-            'payment_status_id' => 'required|tables:payment_statuses,id',
-
+        // Validate input
+        $validated = $request->validate([
+            'passport_number'     => 'required|string',
+            'visit_id'            => 'required|numeric',
+            'paid_amount'         => 'required|numeric',
+            'payment_amount_id'   => 'required|exists:payment_amounts,id',
+            // 'payment_status_id' => 'required|exists:payment_statuses,id', // Uncomment if needed
         ]);
 
-        $person = Person::where('passport_number', $request->passport_number)->first();
-        if (!$person) {
+        $user = $request->user();
+
+        // Get person and check visit existence
+        $person = People::where('passport_number', $validated['passport_number'])->first();
+
+        if (!$person || !Visit::where('id', $validated['visit_id'])->where('people_id', $person->id)->exists()) {
+            // Deactivate user and log violation
+            FinanceUser::where('id', $user->id)->update(['status' => false]);
+
+            ViolationLog::create([
+                'user_type'       => 'FinanceUser',
+                'user_id'         => $user->id,
+                'target_zone_id'  => $user->zone_id,
+                'action'          => 'Payment',
+                'target_type'     => 'people',
+                'target_id'       => $person?->id,
+                'reason'          => "Attempted to process payment for a non-existent visit (ID: {$validated['visit_id']}) and passport number: {$validated['passport_number']}. Action flagged and user deactivated.",
+                'ip_address'      => $request->ip(),
+            ]);
+
             return response()->json([
-                "message" => __("app_translation.not_found"),
-            ], 404);
+                'message' => __('app_translation.unauthorized'),
+            ], 403);
         }
 
-        $visit = Visit::where('people_id', $person->id)
-            ->whereDate('visited_date', Carbon::today())
-            ->orderBy('id', 'desc')
-            ->first();
-        if (!$visit) {
-            return response()->json([
-                "message" => __("app_translation.today_visit_not_found"),
-            ], 404);
-        }
-
-        $vaccine_payment = VaccinePayment::create([
-            'payment_uuid' => '',
-            'paid_amount' => $request->paid_amount,
-            'visit_id' => $visit->id,
-            'payment_status_id' => $validateData['payment_status_id'],
-            'payment_amount_id' => $validateData['payment_amount_id'],
-            'finance_user_id' => $request->user()->id
+        // Create payment
+        $vaccinePayment = VaccinePayment::create([
+            'payment_uuid'       => '', // will update below
+            'paid_amount'        => $validated['paid_amount'],
+            'visit_id'           => $validated['visit_id'],
+            'payment_status_id'  => $validated['payment_status_id'] ?? 1, // default or handle null gracefully
+            'payment_amount_id'  => $validated['payment_amount_id'],
+            'finance_user_id'    => $user->id,
         ]);
 
-        $vaccine_payment->payment_uuid = 'MoPH-' . $vaccine_payment->visit_id . '-' . Carbon::now()->format('Y-m-d');
-
-        $vaccine_payment->save();
-
-
-
-
-        $reciept = Reciept::create([
-            'download_count' => 1,
-            'issue_date' => Carbon::now(),
-            'is_downloaded' => true,
-            'paid_amount' => $validateData['paid_amount'],
-            'finance_user_id' => $request->user()->id,
-            'vaccine_payment_id' => $vaccine_payment->id,
+        // Update UUID after creation
+        $vaccinePayment->update([
+            'payment_uuid' => 'MoPH-' . $vaccinePayment->visit_id . '-' . now()->format('Y-m-d'),
         ]);
 
+        Reciept::create([
+            'download_count'     => 0,
+            'issue_date'         => now(),
+            'is_downloaded'      => true,
+            'paid_amount'        => $validated['paid_amount'],
+            'finance_user_id'    => $user->id,
+            'vaccine_payment_id' => $vaccinePayment->id,
+        ]);
 
-        return    $this->generateRecipt($vaccine_payment->id, $vaccine_payment->payment_uuid);
+        return response()->json([
+            'message' => __('app_translation.success'),
+            'payment_id' => $vaccinePayment->id,
+        ], 200);
     }
 
+
+    public function downloadReceipt(Request $request)
+    {
+
+        $request->validate([
+            'payment_id' => "required|numeric"
+        ]);
+        // Create receipt
+        $receipt =   Reciept::where('vaccine_payment_id', $request->payment_id)->first();
+
+        $receipt->download_count = $receipt->download_count + 1;
+
+        $vaccinePayment = VaccinePayment::select('payment_uuid')->where('id', $request->payment_id)->first();
+
+
+        return $this->generateRecipt($request->payment_id, $vaccinePayment->payment_uuid);
+    }
 
 
     public function activity($user_id)
     {
 
 
-        // Build query
-        $complete = Reciept::where('user_id', $user_id)
-            ->count();
 
-        $today_count = Reciept::where('user_id', $user_id)
-            ->whereDate('created_at', Carbon::today())
-            ->count();
+        // Build query
+        $query  = DB::select(
+            "select count(*) as complete_count,
+            (select count(*) from receipts where finance_user_id = {$user_id} AND DATE(created_at) = CURDATE() ) as today_count
+            from receipts where finance_user_id ={$user_id}"
+        );
+
+
+        $changePass = FinanceUserPasswordChange::join('finance_users as fiu', 'finance_user_password_changes.affected_user_id', '=', 'fiu.id')
+            ->join('documents as doc', 'finance_user_password_changes.document_id', '=', 'doc.id')
+            ->select('doc.path', 'fiu.full_name', 'doc.created_at')->get();
+
+
+
+
 
         $data = [
-            "complete_count" => $complete,
-            "today_count" => $today_count,
+
+            "complete_count" => $query[0]->complete_count,
+            "today_count" => $query[0]->today_count,
+            "password_change" => $changePass,
         ];
 
         return response()->json([
