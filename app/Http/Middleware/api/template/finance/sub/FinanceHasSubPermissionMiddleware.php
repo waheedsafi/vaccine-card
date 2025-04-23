@@ -7,14 +7,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response;
 
-class FinanceHasSubEditPermissionMiddleware
+class FinanceHasSubPermissionMiddleware
 {
     /**
      * Handle an incoming request.
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next, $permission = null, $subPermission = null): Response
+    public function handle(Request $request, Closure $next, $permission = null, $subPermission = null, $column = null): Response
     {
         $authUser = $request->user();
         if ($authUser) {
@@ -22,10 +22,10 @@ class FinanceHasSubEditPermissionMiddleware
             $permission = DB::table("finance_permissions as fp")
                 ->where("finance_user_id", "=", $authUser->id)
                 ->where("permission", $permission)
-                ->join("finance_permission_subs as fps", function ($join) use ($subPermission) {
+                ->join("finance_permission_subs as fps", function ($join) use ($subPermission, &$column) {
                     return $join->on('fps.finance_permission_id', '=', 'fp.id')
                         ->where('fps.sub_permission_id', $subPermission)
-                        ->where('fps.edit', true);
+                        ->where('fps.' . $column, true);
                 })->select("fps.id")->first();
 
             if ($permission) {

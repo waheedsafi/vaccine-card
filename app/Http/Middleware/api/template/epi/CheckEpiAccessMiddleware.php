@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Middleware\api\template;
+namespace App\Http\Middleware\api\template\epi;
 
 use App\Enums\RoleEnum;
 use App\Models\EpiUser;

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('documents', function (Blueprint $table) {
             $table->id();
-            $table->text('actual_name', 64);
+            $table->text('actual_name', 100);
             $table->string('size', 128);
             $table->text('path');
             $table->string('type', 32);

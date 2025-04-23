@@ -3,25 +3,23 @@
 namespace App\Http\Controllers\api\app\travel;
 
 use App\Http\Controllers\Controller;
-use App\Models\TravelType;
 use App\Models\TravelTypeTran;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 
 class TravelController extends Controller
 {
-    //
-
-    public function travelsType(Request $request)
+    public function travelsTypes()
     {
-        $locale = app()->getLocale();
-
-        $travleType =   TravelTypeTran::select('travel_type_id as id', 'value as name')
+        $locale = App::getLocale();
+        $travleType = TravelTypeTran::select('travel_type_id as id', 'value as name')
             ->where('language_name', $locale)
             ->get();
 
-        return response()->json([
-            'data' => $travleType,
-        ], 200);
+        return response()->json(
+            $travleType,
+            200,
+            [],
+            JSON_UNESCAPED_UNICODE
+        );
     }
 }

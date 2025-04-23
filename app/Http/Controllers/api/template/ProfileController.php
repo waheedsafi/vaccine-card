@@ -34,19 +34,20 @@ class ProfileController extends Controller
         ]);
         return $this->savePicture($request, 'user-profile');
     }
-    public function updateNgoPicture(Request $request)
+
+    public function updateFinancePicture(Request $request)
     {
         $request->validate([
             'profile' => 'nullable|mimes:jpeg,png,jpg|max:2048',
         ]);
-        return $this->savePicture($request, 'ngo-profile');
+        return $this->savePicture($request, 'epi-profile');
     }
-    public function updateDonorPicture(Request $request)
+    public function updateEpiPicture(Request $request)
     {
         $request->validate([
             'profile' => 'nullable|mimes:jpeg,png,jpg|max:2048',
         ]);
-        return $this->savePicture($request, 'donor-profile');
+        return $this->savePicture($request, 'epi-profile');
     }
     public function savePicture(Request $request, $dynamic_path)
     {
@@ -76,10 +77,7 @@ class ProfileController extends Controller
             ->select('id')->first();
         // Email Is taken by someone
         if ($email) {
-            if ($email->id == $authUser->email_id) {
-                $email->value = $request->email;
-                $email->save();
-            } else {
+            if ($email->id != $authUser->email_id) {
                 return response()->json([
                     'message' => __('app_translation.email_exist'),
                 ], 409, [], JSON_UNESCAPED_UNICODE);
@@ -92,18 +90,26 @@ class ProfileController extends Controller
         $contact = Contact::where('value', $request->contact)
             ->select('id')->first();
         if ($contact) {
-            if ($contact->id == $authUser->contact_id) {
-                $contact->value = $request->contact;
-                $contact->save();
-            } else {
+            if ($contact->id != $authUser->contact_id) {
                 return response()->json([
                     'message' => __('app_translation.contact_exist'),
                 ], 409, [], JSON_UNESCAPED_UNICODE);
             }
         } else {
-            $contact = Contact::where('id', $authUser->contact_id)->first();
-            $contact->value = $request->contact;
-            $contact->save();
+            if ($request->contact !== null && !empty($request->contact)) {
+                if ($authUser->contact_id) {
+                    $contact = Contact::where('id', $authUser->contact_id)->first();
+                    $contact->value = $request->contact;
+                    $contact->save();
+                } else {
+                    $contact = Contact::create([
+                        'value' => $request->contact
+                    ]);
+                    $authUser->contact_id = $contact->id;
+                }
+            } else if ($authUser->contact_id) {
+                Contact::where('id', $authUser->contact_id)->delete();
+            }
         }
         $authUser->full_name = $request->full_name;
         $authUser->username = $request->username;
@@ -114,19 +120,47 @@ class ProfileController extends Controller
             'message' => __('app_translation.profile_changed'),
         ], 200, [], JSON_UNESCAPED_UNICODE);
     }
-    public function ngoProfileInfo($ngo_id)
+    public function updateProfileInfo(Request $request)
     {
-        $locale = App::getLocale();
+        $request->validate([
+            'username' => ['required', 'string', 'max:45'],
+            'full_name' => ['required', 'string', 'max:45'],
+            'id' => ['required', 'string'],
+        ]);
+        $authUser = $request->user();
+        // Begin transaction
+        DB::beginTransaction();
+        $contact = Contact::where('value', $request->contact)
+            ->select('id')->first();
+        if ($contact) {
+            if ($contact->id != $authUser->contact_id) {
+                return response()->json([
+                    'message' => __('app_translation.contact_exist'),
+                ], 409, [], JSON_UNESCAPED_UNICODE);
+            }
+        } else {
+            if ($request->contact !== null && !empty($request->contact)) {
+                if ($authUser->contact_id) {
+                    $contact = Contact::where('id', $authUser->contact_id)->first();
+                    $contact->value = $request->contact;
+                    $contact->save();
+                } else {
+                    $contact = Contact::create([
+                        'value' => $request->contact
+                    ]);
+                    $authUser->contact_id = $contact->id;
+                }
+            } else if ($authUser->contact_id) {
+                Contact::where('id', $authUser->contact_id)->delete();
+            }
+        }
+        $authUser->full_name = $request->full_name;
+        $authUser->username = $request->username;
+        $authUser->save();
+        DB::commit();
 
-        // $data = $this->ngoRepository->ngoProfileInfo($ngo_id, $locale);
-        // if (!$data) {
-        //     return response()->json([
-        //         'message' => __('app_translation.ngo_not_found'),
-        //     ], 404);
-        // }
-
-        // return response()->json([
-        //     'ngo' => $data,
-        // ], 200, [], JSON_UNESCAPED_UNICODE);
+        return response()->json([
+            'message' => __('app_translation.profile_changed'),
+        ], 200, [], JSON_UNESCAPED_UNICODE);
     }
 }

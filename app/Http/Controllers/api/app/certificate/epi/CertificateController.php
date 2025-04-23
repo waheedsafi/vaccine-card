@@ -20,6 +20,7 @@ use App\Http\Controllers\Controller;
 use App\Models\EpiUserPasswordChange;
 use App\Traits\Card\VaccineCardTrait;
 use App\Http\Requests\app\certificate\PersonStoreRequest;
+use Illuminate\Support\Facades\Log;
 
 class CertificateController extends Controller
 {
@@ -309,8 +310,19 @@ class CertificateController extends Controller
     }
 
 
-    public function storeCertificateDetail(PersonStoreRequest $request)
+    public function storeCertificateDetail(Request $request)
     {
+        $formattedVaccines = json_decode($request->vaccines, true);
+        Log::warning($request);
+        Log::warning($formattedVaccines);
+        return response()->json(
+            [
+                "message" => __('app_translation.success'),
+            ],
+            404,
+            [],
+            JSON_UNESCAPED_UNICODE
+        );
         $validatedData = $request->validated();
         DB::beginTransaction();
         $address = Address::create([
@@ -424,7 +436,6 @@ class CertificateController extends Controller
             'epi_user_id' => $request->user()->id,
         ]);
     }
-
 
     public function activity($user_id)
     {

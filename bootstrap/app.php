@@ -9,9 +9,11 @@ use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\api\template\LocaleMiddleware;
-use App\Http\Middleware\api\template\CheckEpiAccessMiddleware;
+use App\Http\Middleware\api\template\epi\CheckEpiAccessMiddleware;
+use App\Http\Middleware\api\template\finance\CheckFinanceAccessMiddleware;
 use App\Http\Middleware\api\template\epi\sub\EpiHasSubPermissionMiddleware;
 use App\Http\Middleware\api\template\epi\main\EpiHasMainPermissionMiddleware;
+use App\Http\Middleware\api\template\finance\sub\FinanceHasSubPermissionMiddleware;
 use App\Http\Middleware\api\template\finance\main\FinanceHasMainPermissionMiddleware;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -27,7 +29,10 @@ return Application::configure(basePath: dirname(__DIR__))
                 'financeHasMainPermission' => FinanceHasMainPermissionMiddleware::class,
                 'epiHasMainPermission' => EpiHasMainPermissionMiddleware::class,
                 'epiHasSubPermission' => EpiHasSubPermissionMiddleware::class,
+                'financeHasMainPermission' => FinanceHasMainPermissionMiddleware::class,
+                'financeHasSubPermission' => FinanceHasSubPermissionMiddleware::class,
                 'checkEpiAccess'  => CheckEpiAccessMiddleware::class,
+                'checkFinanceAccess'  => CheckFinanceAccessMiddleware::class,
             ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

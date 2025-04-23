@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\api\template\task;
+namespace App\Http\Controllers\api\template;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -20,12 +20,14 @@ class PendingTaskController extends Controller
             'contents' => 'required|string',
             'step' => 'required|string',
             'task_type' => 'required|string',
+            'unique_identifier' => 'required|string',
         ]);
 
         $authUser = $request->user();
         $task = $this->pendingTaskRepository->storeTask(
             $authUser,
             $request->task_type,
+            $id,
             $id
         );
 

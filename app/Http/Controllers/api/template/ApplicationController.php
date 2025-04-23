@@ -100,7 +100,8 @@ class ApplicationController extends Controller
     {
         $locale = App::getLocale();
         $nationality = NationalityTrans::select('nationality_id as id', "value as name")
-            ->where('language_name', $locale)->get();
+            ->where('language_name', $locale)
+            ->get();
 
         return  response()->json(
             $nationality,

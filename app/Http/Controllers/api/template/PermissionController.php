@@ -5,6 +5,8 @@ namespace App\Http\Controllers\api\template;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Models\EpiUser;
+use App\Models\FinanceUser;
 use App\Repositories\Permission\PermissionRepositoryInterface;
 
 class PermissionController extends Controller
@@ -38,7 +40,7 @@ class PermissionController extends Controller
             ], 404, [], JSON_UNESCAPED_UNICODE);
         }
         return response()->json(
-            $this->permissionRepository->assigningPermissions($user->id, $user->role_id),
+            $this->permissionRepository->assignedPermissions($user->id, $user->role_id),
             200,
             [],
             JSON_UNESCAPED_UNICODE
@@ -73,9 +75,95 @@ class PermissionController extends Controller
         }
     }
     /*
-    NGO
+    EPI
     */
+    public function epiPermissions($id)
+    {
+        $user = EpiUser::where('id', $id)->first();
+        if (!$user) {
+            return response()->json([
+                'message' => __('app_translation.user_not_found'),
+            ], 404, [], JSON_UNESCAPED_UNICODE);
+        }
+        return response()->json(
+            $this->permissionRepository->assignedEpiPermissions($user->id, $user->role_id),
+            200,
+            [],
+            JSON_UNESCAPED_UNICODE
+        );
+    }
+    public function editEpiPermissions(Request $request)
+    {
+        $request->validate([
+            'user_id' => "required",
+            'permissions' => "required"
+        ]);
+        $permissions = $request->permissions;
+        $user = EpiUser::where('id', $request->user_id)->first();
+        if (!$user) {
+            return response()->json([
+                'message' => __('app_translation.user_not_found'),
+            ], 404, [], JSON_UNESCAPED_UNICODE);
+        }
+        $result = $this->permissionRepository->storeEpiPermission($user, $permissions);
+        if ($result == 401) {
+            return response()->json([
+                'message' => __('app_translation.unauthorized_role_per'),
+            ], 403, [], JSON_UNESCAPED_UNICODE);
+        } else if ($result == 402) {
+            return response()->json([
+                'message' => __('app_translation.per_not_found'),
+            ], 404, [], JSON_UNESCAPED_UNICODE);
+        } else {
+            return response()->json([
+                'message' => __('app_translation.success'),
+            ], 200, [], JSON_UNESCAPED_UNICODE);
+        }
+    }
     /*
-    DONOR
+    Finance
     */
+    public function financePermissions($id)
+    {
+        $user = FinanceUser::where('id', $id)->first();
+        if (!$user) {
+            return response()->json([
+                'message' => __('app_translation.user_not_found'),
+            ], 404, [], JSON_UNESCAPED_UNICODE);
+        }
+        return response()->json(
+            $this->permissionRepository->assignedFinancePermissions($user->id, $user->role_id),
+            200,
+            [],
+            JSON_UNESCAPED_UNICODE
+        );
+    }
+    public function editFinancePermissions(Request $request)
+    {
+        $request->validate([
+            'user_id' => "required",
+            'permissions' => "required"
+        ]);
+        $permissions = $request->permissions;
+        $user = FinanceUser::where('id', $request->user_id)->first();
+        if (!$user) {
+            return response()->json([
+                'message' => __('app_translation.user_not_found'),
+            ], 404, [], JSON_UNESCAPED_UNICODE);
+        }
+        $result = $this->permissionRepository->storeFinancePermission($user, $permissions);
+        if ($result == 401) {
+            return response()->json([
+                'message' => __('app_translation.unauthorized_role_per'),
+            ], 403, [], JSON_UNESCAPED_UNICODE);
+        } else if ($result == 402) {
+            return response()->json([
+                'message' => __('app_translation.per_not_found'),
+            ], 404, [], JSON_UNESCAPED_UNICODE);
+        } else {
+            return response()->json([
+                'message' => __('app_translation.success'),
+            ], 200, [], JSON_UNESCAPED_UNICODE);
+        }
+    }
 }
