@@ -16,8 +16,6 @@ use App\Models\AddressTran;
 
 class VaccineController extends Controller
 {
-    //
-
     public function vaccineTypes()
     {
         $locale = App::getLocale();
