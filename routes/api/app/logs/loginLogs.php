@@ -1,9 +1,11 @@
 <?php
 
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\TestController;
 use App\Http\Controllers\api\app\log\login\EpiLoginLogController;
 use App\Http\Controllers\api\app\log\login\FinanceLoginLogController;
-use Illuminate\Support\Facades\Route;
 
+Route::get('/testing', [TestController::class, "vaccineCenterStore"]);
 
 
 Route::prefix('v1')->middleware(["multiAuthorized:" . 'epi:api,finance:api'])->group(function () {
