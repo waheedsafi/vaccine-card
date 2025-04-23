@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\app\certificate;
 
+use Illuminate\Support\Facades\Log;
 use Illuminate\Foundation\Http\FormRequest;
 
 class PersonStoreRequest extends FormRequest
@@ -9,6 +10,38 @@ class PersonStoreRequest extends FormRequest
     /**
      * Determine if the user is authorized to make this request.
      */
+
+
+
+    public function prepareForValidation()
+    {
+        if ($this->has('vaccines') && is_string($this->vaccines)) {
+            $decodedVaccines = json_decode($this->vaccines, true);
+
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                Log::error('Invalid JSON in vaccines field', ['vaccines' => $this->vaccines]);
+            } else {
+                // Flatten the doses array inside each vaccine
+                foreach ($decodedVaccines as &$vaccine) {
+                    if (isset($vaccine['doses']) && is_array($vaccine['doses'])) {
+                        // Flatten if nested like [[{...}]]
+                        $flattened = [];
+                        foreach ($vaccine['doses'] as $doseGroup) {
+                            if (is_array($doseGroup)) {
+                                $flattened = array_merge($flattened, $doseGroup);
+                            }
+                        }
+                        $vaccine['doses'] = $flattened;
+                    }
+                }
+
+                $this->merge([
+                    'vaccines' => $decodedVaccines,
+                ]);
+            }
+        }
+    }
+
     public function authorize(): bool
     {
         return true;
@@ -29,10 +62,14 @@ class PersonStoreRequest extends FormRequest
             'full_name' => 'required|string',
             'father_name' => 'required|string',
             'date_of_birth' => 'required|date',
-            'phone' => 'required|string',
+            'contact' => 'required|string',
             'gender_id' => 'required|in:1,2',
             'nationality_id' => 'required|integer',
+            'travel_type_id' => 'required|integer',
             'vaccines' => 'required|array',
+            'vaccines.*.doses' => 'required|array',
+            'vaccines.*.doses.*' => 'required|array',
+            'destina_country_id' => 'required|integer',
             'vaccines.*.registration_date' => 'required|date',
             'vaccines.*.volume' => 'required|string',
             'vaccines.*.page' => 'required|string',

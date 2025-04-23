@@ -146,17 +146,17 @@ class DatabaseSeeder extends Seeder
         ]);
         $zone = Zone::create([]);
         ZoneTrans::create([
-            "value" => "قندار",
+            "value" => "قندهار",
             "language_name" => "fa",
             "zone_id" => $zone->id
         ]);
         ZoneTrans::create([
-            "value" => "قندار",
+            "value" => "کندهار",
             "language_name" => "ps",
             "zone_id" => $zone->id
         ]);
         ZoneTrans::create([
-            "value" => "Qandar",
+            "value" => "Kandahar",
             "language_name" => "en",
             "zone_id" => $zone->id
         ]);
@@ -172,7 +172,24 @@ class DatabaseSeeder extends Seeder
             "zone_id" => $zone->id
         ]);
         ZoneTrans::create([
-            "value" => "Mazar",
+            "value" => "Mazar-E-Sharif",
+            "language_name" => "en",
+            "zone_id" => $zone->id
+        ]);
+
+        $zone = Zone::create([]);
+        ZoneTrans::create([
+            "value" => "هرات",
+            "language_name" => "fa",
+            "zone_id" => $zone->id
+        ]);
+        ZoneTrans::create([
+            "value" => "هرات",
+            "language_name" => "ps",
+            "zone_id" => $zone->id
+        ]);
+        ZoneTrans::create([
+            "value" => "Herat",
             "language_name" => "en",
             "zone_id" => $zone->id
         ]);

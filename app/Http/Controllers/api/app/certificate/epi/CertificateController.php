@@ -31,16 +31,14 @@ class CertificateController extends Controller
         $request->validate([
             'filters.search.value' => 'required|string',
         ]);
-        $tr = [];
-        $perPage = $request->input('per_page', 10); // Number of records per page
-        $page = $request->input('page', 1); // Current page
+
+        $perPage = $request->input('per_page', 10);
+        $page = $request->input('page', 1);
+        $searchValue = $request->input('filters.search.value');
 
         $query = DB::table('people as p')
-            ->where('p.passport_number', '!=', $request->passport_number)
-            ->join('visits as v', function ($join) {
-                $join->on('v.people_id', '=', 'p.id')
-                    ->latest('v.id');
-            })
+            ->where('p.passport_number', '=', $searchValue)
+            ->join('visits as v', 'v.people_id', '=', 'p.id')
             ->select(
                 "p.id",
                 "p.passport_number",
@@ -49,17 +47,16 @@ class CertificateController extends Controller
                 "p.created_at",
                 "v.id as visit_id",
                 "v.visited_date as last_visit_date"
-            );
-        $tr = $query->paginate($perPage, ['*'], 'page', $page);
-        return response()->json(
-            [
-                "person_certificates" => $tr,
-            ],
-            200,
-            [],
-            JSON_UNESCAPED_UNICODE
-        );
+            )
+            ->latest('v.id');
+
+        $results = $query->paginate($perPage, ['*'], 'page', $page);
+
+        return response()->json([
+            "person_certificates" => $results,
+        ], 200, [], JSON_UNESCAPED_UNICODE);
     }
+
 
     public function personalInformation($visit_id)
     {
@@ -310,19 +307,19 @@ class CertificateController extends Controller
     }
 
 
-    public function storeCertificateDetail(Request $request)
+    public function storeCertificateDetail(PersonStoreRequest $request)
     {
-        $formattedVaccines = json_decode($request->vaccines, true);
-        Log::warning($request);
-        Log::warning($formattedVaccines);
-        return response()->json(
-            [
-                "message" => __('app_translation.success'),
-            ],
-            404,
-            [],
-            JSON_UNESCAPED_UNICODE
-        );
+        // $formattedVaccines = json_decode($request->vaccines, true);
+        // Log::warning($request);
+        // Log::warning($formattedVaccines);
+        // return response()->json(
+        //     [
+        //         "message" => __('app_translation.success'),
+        //     ],
+        //     404,
+        //     [],
+        //     JSON_UNESCAPED_UNICODE
+        // );
         $validatedData = $request->validated();
         DB::beginTransaction();
         $address = Address::create([
@@ -331,13 +328,7 @@ class CertificateController extends Controller
         ]);
 
         // * Translations
-        foreach (LanguageEnum::LANGUAGES as $code => $name) {
-            AddressTran::create([
-                'address_id' => $address->id,
-                'area' => $validatedData["area"],
-                'language_name' =>  $code,
-            ]);
-        }
+
 
         // * Create Person
         $person =  People::create([
@@ -345,7 +336,7 @@ class CertificateController extends Controller
             'full_name' => $validatedData['full_name'],
             'father_name' => $validatedData['father_name'],
             'date_of_birth' => $validatedData['date_of_birth'],
-            'phone' => $validatedData['phone'],
+            'phone' => $validatedData['contact'],
             'nid_type_id' => 1,
             'gender_id' => $validatedData['gender_id'],
             'nationality_id' => $validatedData['nationality_id'],
@@ -360,15 +351,16 @@ class CertificateController extends Controller
         $visit = Visit::create([
             'people_id' => $person->id,
             'visited_date' => Carbon::today(),
+            'certificate_id' => "",
             'travel_type_id' => $validatedData['travel_type_id'],
-            'country_id' => $validatedData['country_id'],
+            'country_id' => $validatedData['destina_country_id'],
         ]);
 
         $vis = str_pad($visit->id, 5, '0', STR_PAD_LEFT);
         $visit->certificate_id  = 'MoPH-' . Carbon::now()->format('Y') . '-' . $vis;
-
+        $visit->save();
         // * Create Vaccines
-        foreach ($validatedData['vaccines'] as $vaccineData) {
+        foreach ($validatedData["vaccines"] as $vaccineData) {
             $vaccine = Vaccine::create([
                 'registration_number' => '',
                 'registration_date' => $vaccineData['registration_date'],
