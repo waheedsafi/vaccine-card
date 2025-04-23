@@ -6,7 +6,7 @@ use App\Http\Controllers\api\app\certificate\epi\CertificateController;
 
 
 
-Route::get('/cert', [CertificateController::class, 'certificate']);
+Route::get('/cert', [CertificateController::class, 'generateCertificate']);
 Route::get('/activity/{id}', [CertificateController::class, 'activity']);
 
 Route::prefix('v1')->middleware(["authorized:" . 'epi:api'])->group(function () {

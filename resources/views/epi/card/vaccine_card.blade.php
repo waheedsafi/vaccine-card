@@ -8,7 +8,7 @@
 </head>
 <style>
     .page {
-        page-break-after: always;
+        /* page-break-after: always; */
         /* Add a page break after each pair of student cards */
     }
 
@@ -52,7 +52,7 @@
     }
 
     img.moph_logo {
-        width: 80px;
+        width: 85px;
         height: 80px;
         float: left;
         margin-top: 0px;
@@ -135,7 +135,24 @@
         padding:0px;
         margin:0px;
     }
+.setFooter{
+    position: absolute;
+    bottom: 0; 
+    left: 0;
+    right: 0; 
+    background-color:rgb(100, 165, 235); 
+    height: 22%;
+    color: white;
+    text-align: center; 
+    display: flex;
+    align-items: center; 
+    justify-content: center;
+    padding: 30px 80px;
+    box-sizing: border-box;
+    font-family: sans-serif;
+    font-size: 10pt;
 
+}
 
 
 </style>
@@ -164,7 +181,7 @@
                    <strong> VACCINATION CERTIFICATE</strong>
                    <br>
                    <br>
-                   <span style="font-size:0.8rem;">Certificate ID: <strong style="color:blue; " bold>{{ $data[0]['certificate_id']}}</strong></span>
+                   <span style="font-size:1rem;">Certificate ID: <strong style="color:blue; " bold>{{ $data[0]['certificate_id']}}</strong></span>
                     <br>
                     <br>
                     <br>
@@ -183,6 +200,7 @@
                         <br>
                         Issue Date: <span style="color:white"> ___________________ _ </span>{{$data[0]['issue_date']}}
                         
+                        <br>
                         <br>
                       <strong style="color: rgb(53, 164, 224)">Vaccination Detials</strong>  
                     </div>
@@ -206,7 +224,7 @@
           
             <table class="table">
 
-                <tr>
+                <tr style="background-color: silver">
                  <th>
                      Vaccine
                  </th>
@@ -252,23 +270,41 @@
 
 
 
-
-            <div class="bottomdiv">
-
-                
-                <div class="bottomtext">
-                 
-
-                </div>
-               
-
-     
-
-            </div>
+          
 
         </div>
+        
     </div>
 
+    <div class="setFooter">
+        <table width="100%" style="height: 100%;">
+            <tr>
+                <!-- Top left: Afghanistan text -->
+                <td colspan="2" valign="top" style="font-size: 13pt; font-weight: bold; padding-bottom: 10px; color:white">
+                    This certificate is issued by the Ministry of Public Health <br>
+                    of the Islamic Emirate of Afghanistan.
+                </td>
+            </tr>
+            <tr>
+            
+              
+                <!-- Bottom left: Contact Info -->
+                <td valign="bottom"  style="width: 70%; margin-top: 20px; padding-left: 20px; padding-bottom:-80px;">
+                    Contact: 0767028775<br>
+                    Email: wahidsafi@gmail.com<br>
+                    Website: www.vaccine.moph.gov.af
+                </td>
+    
+                <!-- Bottom right: QR Code -->
+                <td align="right" valign="bottom" style="width: 30%;">
+                    {{-- <img src="images/islamic.png" width="80" height="80" alt="QR Code" /> --}}
+              <img   width="100" height="100" alt="QR Code" src="data:image/svg;base64,{{ base64_encode(QrCode::format('svg')->size(150)->merge(public_path('images/moph.png'),.3, true)->generate( url("/vaccine/card/qrcode/check/{$data[0]['visit_id']}"))) }}" style="width: 120px; height: 120px;">
+
+              
+                </td>
+            </tr>
+        </table>
+    </div>
 </body>
 
 </html>

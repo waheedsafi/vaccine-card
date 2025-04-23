@@ -8,10 +8,12 @@ use App\Models\Audit;
 use App\Models\Visit;
 use App\Models\People;
 use App\Models\Address;
+use App\Models\EpiUser;
 use App\Models\Vaccine;
 use App\Enums\LanguageEnum;
 use App\Models\AddressTran;
 use App\Models\VaccineCard;
+use App\Models\ViolationLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
@@ -228,6 +230,84 @@ class CertificateController extends Controller
             "message" => __("app_translation.success"),
         ]);
     }
+
+    public function generateCertificate(Request $request)
+    {
+        // return 'hell';
+        $validated = $request->validate([
+            'payment_number'   => 'required|string',
+            'passport_number'  => 'required|string',
+        ]);
+
+        $user = $request->user();
+
+        // Retrieve person by passport number
+        $person = People::where('passport_number', $validated['passport_number'])->first();
+
+
+
+        // If person does not exist, handle violation
+        if (!$person) {
+
+            return $this->handleViolation($user, null, $validated, $request->ip());
+        }
+
+        // Find visit with matching payment number and person
+        $visit = Visit::join('vaccine_payments as vp', 'visits.id', '=', 'vp.visit_id')
+            ->where('vp.payment_uuid', $validated['payment_number'])
+            ->where('visits.people_id', $person->id)
+            ->select('visits.id')
+            ->first();
+
+        // If visit does not exist, handle violation
+        if (!$visit) {
+            return $this->handleViolation($user, $person->id, $validated, $request->ip());
+        }
+
+
+
+        // Generate certificate card and track downloads
+        $path = $this->generateCard($visit->id);
+
+
+
+        $vaccineCard = VaccineCard::join('vaccine_payments as vp', 'vp.id', '=', 'vaccine_cards.vaccine_payment_id')
+            ->where('vp.visit_id', $visit->id)
+            ->select('vaccine_cards.id', 'vaccine_cards.download_count')
+            ->first();
+
+        if ($vaccineCard) {
+            $vaccineCard->download_count += 1;
+            $vaccineCard->save();
+        }
+
+        return response()->json([
+            'message' => __('app_translation.success'),
+            'path' => $path
+        ]);
+    }
+
+    // Handle violation separately for clarity
+    private function handleViolation($user, $targetId, $validated, $ip)
+    {
+        EpiUser::where('id', $user->id)->update(['status' => false]);
+
+        ViolationLog::create([
+            'user_type'      => 'EpiUser',
+            'user_id'        => $user->id,
+            'target_zone_id' => $user->zone_id,
+            'action'         => 'Generate Card',
+            'target_type'    => 'people',
+            'target_id'      => $targetId ?? '',
+            'reason'         => "Attempted to generate card for invalid Payment No: ({$validated['payment_number']}) and Passport No: ({$validated['passport_number']}). User deactivated.",
+            'ip_address'     => $ip,
+        ]);
+
+        return response()->json([
+            'message' => __('app_translation.unauthorized'),
+        ], 403);
+    }
+
 
     public function storeCertificateDetail(PersonStoreRequest $request)
     {

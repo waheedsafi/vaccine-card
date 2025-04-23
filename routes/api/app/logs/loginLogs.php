@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Route;
 
 
 
-Route::prefix('v1')->middleware(['api.key', "multiAuthorized:" . 'epi:api,finance:api'])->group(function () {
+Route::prefix('v1')->middleware(["multiAuthorized:" . 'epi:api,finance:api'])->group(function () {
     Route::get('epi/login/logs', [EpiLoginLogController::class, 'userLoginLogs']);
     Route::get('finance/login/logs', [FinanceLoginLogController::class, 'userLoginLogs']);
 });

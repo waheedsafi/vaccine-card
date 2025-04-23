@@ -139,6 +139,9 @@ class CertificatePaymentController extends Controller
             'payment_id' => "required|numeric"
         ]);
         // Create receipt
+
+        $user = $request->user();
+
         $receipt =   Reciept::where('vaccine_payment_id', $request->payment_id)->first();
 
         $receipt->download_count = $receipt->download_count + 1;
@@ -146,7 +149,7 @@ class CertificatePaymentController extends Controller
         $vaccinePayment = VaccinePayment::select('payment_uuid')->where('id', $request->payment_id)->first();
 
 
-        return $this->generateRecipt($request->payment_id, $vaccinePayment->payment_uuid);
+        return $this->generateRecipt($request->payment_id, $user);
     }
 
 
