@@ -105,12 +105,11 @@ class VaccineController extends Controller
     }
 
 
-    public function vaccineCenter()
+    public function vaccineCenters()
     {
         $locale = App::getLocale();
         $vaccinecenter = VaccineCenterTran::select('vaccine_center_id as id', 'name')
             ->where('language_name', $locale)->get();
-
         return  response()->json(
             $vaccinecenter,
             200,
