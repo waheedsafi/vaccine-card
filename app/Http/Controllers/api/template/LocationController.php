@@ -2,15 +2,9 @@
 
 namespace App\Http\Controllers\api\template;
 
-use App\Models\Country;
-use App\Models\District;
-use App\Models\Province;
-use App\Enums\LanguageEnum;
-use Illuminate\Http\Request;
+use App\Enums\CountryEnum;
 use Illuminate\Support\Facades\App;
 use App\Http\Controllers\Controller;
-use App\Models\CountryTrans;
-use App\Models\ProvinceTrans;
 use Illuminate\Support\Facades\DB;
 
 class LocationController extends Controller
@@ -27,17 +21,10 @@ class LocationController extends Controller
 
     public function destinactionCountries()
     {
-
         $locale = App::getLocale();
-        $afg = DB::table('country_trans')
-            ->select('country_id as id')
-            ->where('language_name', 'en')
-            ->where('value', 'Afghanistan') // You were missing the column name here
-            ->first();
-
         $tr = DB::table('country_trans as ct')
             ->where('ct.language_name', $locale)
-            ->whereNotIn('ct.country_id', [$afg->id])
+            ->whereNotIn('ct.country_id', [CountryEnum::afghanistan->value])
             ->select('ct.country_id as id', 'ct.value as name')
             ->get();
 

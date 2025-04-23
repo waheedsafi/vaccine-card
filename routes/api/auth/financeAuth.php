@@ -10,5 +10,4 @@ Route::prefix('v1')->group(function () {
 Route::prefix('v1')->middleware(["authorized:" . 'finance:api'])->group(function () {
     Route::get('/auth-financeuser', [FinanceAuthController::class, 'user']);
     Route::post('/logout-finance', [FinanceAuthController::class, 'logout']);
-    Route::post('/finance/profile/change-password', [FinanceAuthController::class, 'changePassword']);
 });

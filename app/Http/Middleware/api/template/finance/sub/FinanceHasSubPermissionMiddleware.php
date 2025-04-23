@@ -22,10 +22,10 @@ class FinanceHasSubPermissionMiddleware
             $permission = DB::table("finance_permissions as fp")
                 ->where("finance_user_id", "=", $authUser->id)
                 ->where("permission", $permission)
-                ->join("finance_permission_subs as fps", function ($join) use ($subPermission) {
+                ->join("finance_permission_subs as fps", function ($join) use ($subPermission, &$column) {
                     return $join->on('fps.finance_permission_id', '=', 'fp.id')
                         ->where('fps.sub_permission_id', $subPermission)
-                        ->where('fps.add', true);
+                        ->where('fps.' . $column, true);
                 })->select("fps.id")->first();
 
             if ($permission) {

@@ -225,22 +225,4 @@ class FinanceAuthController extends Controller
             'message' => __('app_translation.user_logged_out_success')
         ], 204, [], JSON_UNESCAPED_UNICODE);
     }
-    public function changePassword(UpdateProfilePasswordRequest $request)
-    {
-        $request->validated();
-        $authUser = $request->user();
-        DB::beginTransaction();
-        if (!Hash::check($request->old_password, $authUser->password)) {
-            return response()->json([
-                'errors' => ['old_password' => [__('app_translation.incorrect_password')]],
-            ], 422, [], JSON_UNESCAPED_UNICODE);
-        } else {
-            $authUser->password = Hash::make($request->new_password);
-            $authUser->save();
-        }
-        DB::commit();
-        return response()->json([
-            'message' => __('app_translation.success'),
-        ], 200, [], JSON_UNESCAPED_UNICODE);
-    }
 }
