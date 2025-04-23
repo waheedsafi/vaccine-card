@@ -2,6 +2,7 @@
 
 namespace App\Traits\Card;
 
+use App\Models\People;
 use Mpdf\Mpdf;
 use App\Models\Person;
 use App\Models\VaccineCenterTran;
@@ -52,10 +53,18 @@ trait VaccineCardTrait
 
         $data = $this->data($visit_id);
 
+
+
         // return $data;
         $part = view('epi/card.vaccine_card', ['data' => $data])->render();
         $mpdf->WriteHTML($part);
 
+        $footerHtml = '
+    
+        ';
+
+        $mpdf->SetHTMLFooter($footerHtml, 'O');
+        $mpdf->SetHTMLFooter($footerHtml, 'E');
 
         $fileName = "vaccine_waheed.pdf";
         $outputPath = storage_path("app/private/temp/");
@@ -63,6 +72,7 @@ trait VaccineCardTrait
             mkdir($outputPath, 0755, true);
         }
         $filePath = $outputPath . $fileName;
+
 
         // return $filePath; F
         $mpdf->Output($filePath, 'I'); // Save to file
@@ -148,16 +158,17 @@ trait VaccineCardTrait
         // Fetch all data related to the visit
 
         // Fetch all data related to the visit
-        $records = Person::join('visits as vs', 'people.id', '=', 'vs.people_id')
+        $records = People::join('visits as vs', 'people.id', '=', 'vs.people_id')
 
-            ->join('vaccines as vac', 'vs.id', '=', 'vac.visit_id')
-            ->join('vaccine_type_trans as vtt', function ($join) {
+            ->leftJoin('vaccines as vac', 'vs.id', '=', 'vac.visit_id')
+            ->leftJoin('vaccine_type_trans as vtt', function ($join) {
                 $join->on('vac.vaccine_type_id', '=', 'vtt.vaccine_type_id')
                     ->where('vtt.language_name', '=', 'en');
             })
-            ->join('doses as d', 'vac.id', '=', 'd.vaccine_id')
+            ->leftJoin('doses as d', 'vac.id', '=', 'd.vaccine_id')
             ->where('vs.id', $visit_id)
             ->select(
+                'vs.id  as visit_id',
                 'people.full_name',
                 'people.father_name',
                 'people.date_of_birth',
@@ -172,6 +183,7 @@ trait VaccineCardTrait
                 'd.batch_number'
             )
             ->get();
+
 
 
 
@@ -193,6 +205,7 @@ trait VaccineCardTrait
 
                 $doses = $vaccineRecords->map(function ($dose) {
                     return [
+
                         'vaccine_date' => $dose->vaccine_date,
                         'batch_number' => $dose->batch_number,
                     ];
@@ -208,6 +221,7 @@ trait VaccineCardTrait
 
 
             return [
+                'visit_id' => $person->visit_id,
                 'full_name' => $person->full_name,
                 'father_name' => $person->father_name,
                 'date_of_birth' => $person->date_of_birth,

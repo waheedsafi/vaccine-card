@@ -2,16 +2,18 @@
 
 namespace App\Traits\Reciept;
 
+use App\Models\People;
 use Mpdf\Mpdf;
 use App\Models\Person;
 use App\Models\VaccineCenterTran;
+use App\Models\ZoneTrans;
 use Mpdf\Config\FontVariables;
 use Mpdf\Config\ConfigVariables;
 
 
 trait RecieptTrait
 {
-    private function generateRecipt($visit_id)
+    private function generateRecipt($visit_id, $user)
     {
 
         $configVariables = new ConfigVariables();
@@ -35,6 +37,7 @@ trait RecieptTrait
             'autoScriptToLang' => true,
             'autoLangToFont' => true,
             'margin_bottom' => 50,  // Increase bottom margin to make space for the footer
+            'format' => 'A4-L',
         ]);
 
 
@@ -44,8 +47,9 @@ trait RecieptTrait
         // $mpdf->showWatermarkImage = true; // Enable watermark
 
 
-        // $data = $this->data($visit_id);
-        $data = [];
+        $data = $this->data($visit_id, $user);
+
+
 
         // return $data;
         $part = view('finance.reciept.receipt', ['data' => $data])->render();
@@ -66,155 +70,56 @@ trait RecieptTrait
     }
 
 
-    // protected function data($visit_id)
-    // {
-    //     // Fetch all data related to the visit
-    //     $records = Person::join('visits as vs', 'people.id', '=', 'vs.people_id')
-    //         ->join('vaccines as vac', 'vs.id', '=', 'vac.visit_id')
-    //         ->join('vaccine_type_trans as vtt', function ($join) {
-    //             $join->on('vac.vaccine_type_id', '=', 'vtt.vaccine_type_id')
-    //                 ->where('vtt.language_name', '=', 'en');
-    //         })
-    //         ->join('doses as d', 'vac.id', '=', 'd.vaccine_id')
-    //         ->where('vs.id', $visit_id)
-    //         ->select(
-    //             'people.full_name',
-    //             'people.father_name',
-    //             'people.date_of_birth',
-    //             'people.passport_number',
-    //             'people.gender_id',
-    //             'vs.certificate_id',
-    //             'vs.visited_date as issue_date',
-    //             'vtt.name as vaccine_type_name',
-    //             'vac.id as vaccine_id',
-    //             'd.vaccine_date',
-    //             'd.batch_number'
-    //         )
-    //         ->get();
-
-    //     // return 'success';
-
-
-    //     // Group data by person and structure it
-    //     $result = $records->groupBy('passport_number')->map(function ($personRecords) {
-    //         $person = $personRecords->first(); // Get the first record for person details
-
-    //         // Group vaccines and their doses
-    //         $vaccines = $personRecords->groupBy('vaccine_id')->map(function ($vaccineRecords) {
-    //             // $vaccine = $vaccineRecords->first(); // Get the first record for vaccine details
-
-    //             // Map doses for the vaccine
-    //             $doses = $vaccineRecords->map(function ($dose) {
-    //                 return [
-    //                     'vaccine_date' => $dose->vaccine_date,
-    //                     'batch_number' => $dose->batch_number,
-    //                 ];
-    //             });
-
-    //             return [
-    //                 'vaccine_type_name' => $vaccine->vaccine_type_name,
-    //                 'vaccine_id' => $vaccine->vaccine_id,
-    //                 'doses' => $doses,
-    //             ];
-    //         });
-
-    //         return [
-    //             'full_name' => $person->full_name,
-    //             'father_name' => $person->father_name,
-    //             'date_of_birth' => $person->date_of_birth,
-    //             'passport_number' => $person->passport_number,
-    //             'issue_date' => $person->issue_date,
-    //             'vaccine_center' => 'center',
-    //             'gender' => $person->gender_id == 1 ? "Male" : "Female",
-    //             'certificate_id' => $person->certificate_id,
-    //             'vaccines' => $vaccines->values(),
-    //         ];
-    //     });
-
-
-    //     return $result->values();
-    // }
 
 
 
 
-    protected function data($visit_id)
+    protected function data($visit_id, $user)
     {
         // Fetch all data related to the visit
 
-        // Fetch all data related to the visit
-        $records = Person::join('visits as vs', 'people.id', '=', 'vs.people_id')
 
-            ->join('vaccines as vac', 'vs.id', '=', 'vac.visit_id')
-            ->join('vaccine_type_trans as vtt', function ($join) {
-                $join->on('vac.vaccine_type_id', '=', 'vtt.vaccine_type_id')
-                    ->where('vtt.language_name', '=', 'en');
+        // Fetch all data related to the visit
+        $records = People::join('visits as vs', 'people.id', '=', 'vs.people_id')
+            ->join('travel_type_trans as ttt', function ($join) {
+                $join->on('vs.travel_type_id', '=', 'ttt.travel_type_id')
+                    ->where('ttt.language_name', '=', 'fa');
             })
-            ->join('doses as d', 'vac.id', '=', 'd.vaccine_id')
+            ->join('vaccine_payments as vp', 'vs.id', '=', 'vp.visit_id')
             ->where('vs.id', $visit_id)
             ->select(
                 'people.full_name',
                 'people.father_name',
                 'people.date_of_birth',
                 'people.passport_number',
-                'people.gender_id',
-                'vac.vaccine_center_id',
+                'vp.paid_amount',
+                'vp.payment_uuid',
                 'vs.certificate_id',
-                'vs.visited_date as issue_date',
-                'vtt.name as vaccine_type_name',
-                'vac.id as vaccine_id',
-                'd.vaccine_date',
-                'd.batch_number'
+                'ttt.value as travel_type_name',
+
+
             )
-            ->get();
+            ->first();
+
+
+        $zone = ZoneTrans::where('zone_id', $user->zone_id)
+            ->where('language_name', 'fa')
+            ->select('value as name')->first();
 
 
 
-        // ->leftJoin('vaccine_center_trans vct',  function ($join) {
-        //     $join->on('vac.vaccine_center_id', '=', 'vct.vaccine_center_id')
-        //         ->where('vct.language_name', '=', 'en');
-        // })
+        return [
+            'full_name' => $records->full_name,
+            'payment_no' => $records->payment_uuid,
+            'passport_number' => $records->passport_number,
+            'travel_type' => $records->travel_type_name,
+            'paid_amount' => $records->paid_amount,
+            'user_name' => $user->full_name ?? '',
+            'zone' => $zone->name ?? '',
+            'certificate_id' => $records->certificate_id,
+            'registeration_number' => $user->registeration_number ?? '',
 
-
-        // Group data by person and structure it
-        $result = $records->groupBy('passport_number')->map(function ($personRecords) {
-            $person = $personRecords->first(); // Get the first record for person details
-
-            // Group vaccines and their doses
-            $vaccines = $personRecords->groupBy('vaccine_id')->map(function ($vaccineRecords) {
-                // Map doses for the vaccine
-
-
-
-                $doses = $vaccineRecords->map(function ($dose) {
-                    return [
-                        'vaccine_date' => $dose->vaccine_date,
-                        'batch_number' => $dose->batch_number,
-                    ];
-                });
-
-                return [
-                    'vaccine_type_name' => $vaccineRecords->first()->vaccine_type_name,
-                    'vaccine_center' => $this->vaccine_center($vaccineRecords->first()->vaccine_center_id),
-                    'vaccine_id' => $vaccineRecords->first()->vaccine_id,
-                    'doses' => $doses->values(),
-                ];
-            });
-
-
-            return [
-                'full_name' => $person->full_name,
-                'father_name' => $person->father_name,
-                'date_of_birth' => $person->date_of_birth,
-                'passport_number' => $person->passport_number,
-                'issue_date' => $person->issue_date,
-                'gender' => $person->gender_id == 1 ? "Male" : "Female",
-                'certificate_id' => $person->certificate_id,
-                'vaccines' => $vaccines->values(),
-            ];
-        });
-
-        return $result->values();
+        ];
     }
 
 

@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/search/certificate', [CertificatePaymentController::class, 'searchCertificate']);
 Route::get('/reciept', [CertificatePaymentController::class, 'payment']);
+Route::get('/reciept/download', [CertificatePaymentController::class, 'downloadReceipt']);
+
 
 
 Route::prefix('v1')->middleware(["authorized:" . 'finance:api'])->group(function () {});
