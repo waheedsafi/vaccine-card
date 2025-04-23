@@ -20,8 +20,6 @@ use Psy\CodeCleaner\FunctionReturnInWriteContextPass;
 
 class CertificatePaymentController extends Controller
 {
-    //
-
     use RecieptTrait;
 
     public function searchCertificate(Request $request)
