@@ -31,13 +31,17 @@ class CertificatePaymentController extends Controller
         $tr = [];
         $perPage = $request->input('per_page', 10); // Number of records per page
         $page = $request->input('page', 1); // Current page
+        $request->validate([
+            'filters.search.value' => 'required|string',
+        ]);
+
+        $perPage = $request->input('per_page', 10);
+        $page = $request->input('page', 1);
+        $searchValue = $request->input('filters.search.value');
 
         $query = DB::table('people as p')
-            // ->where('p.passport_number', '!=', $request->passport_number)
-            ->where('p.passport_number', '!=', $request->input('filters.search.value'))
-            ->join('visits as v', function ($join) {
-                $join->on('v.people_id', '=', 'p.id');
-            })
+            ->where('p.passport_number', '=', $searchValue)
+            ->join('visits as v', 'v.people_id', '=', 'p.id')
             ->leftJoin('vaccine_payments as vp', 'vp.visit_id', '=', 'v.id')
             ->select(
                 "p.id",
