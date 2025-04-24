@@ -36,7 +36,7 @@ class CertificatePaymentController extends Controller
 
         // Get the payment amount where status is 'paid'
         $paymentAmount = DB::table('payment_amounts as pa')
-            ->join('payment_statuses as ps', 'ps.payment_status_id', '=', 'pa.payment_status_id')
+            ->join('payment_statuses as ps', 'ps.id', '=', 'pa.payment_status_id')
             ->where('ps.id', StatusTypeEnum::paid->value)
             ->value('pa.amount');
 
