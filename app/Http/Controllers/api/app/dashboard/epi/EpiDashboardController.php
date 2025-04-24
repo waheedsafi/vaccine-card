@@ -17,7 +17,9 @@ class EpiDashboardController extends Controller
     {
         $locale = app()->getLocale();
         $user = request()->user();
-        $zone_id = $user->role_id == RoleEnum::epi_admin->value ? $user->zone_id : null;
+        $zone_id = null;
+
+        // $zone_id = $user->role_id == RoleEnum::epi_admin->value ? $user->zone_id : null;
 
         // Vaccine Cards Count by Zone
         $vaccineCardCounts = DB::table('vaccine_cards')
@@ -34,7 +36,7 @@ class EpiDashboardController extends Controller
 
         // Vaccine Cards Count by Vaccine Type
         $vaccineTypeCounts = DB::table('vaccine_cards as vc')
-            ->join('vaccine_payment as vp', 'vp.id', '=', 'vc.vaccine_payment_id')
+            ->join('vaccine_payments as vp', 'vp.id', '=', 'vc.vaccine_payment_id')
             ->join('vaccines as v', 'vp.visit_id', '=', 'v.visit_id')
             ->join('vaccine_type_trans as vtt', 'vtt.id', '=', 'v.vaccine_type_id')
             ->join('epi_users as eu', 'vc.epi_user_id', '=', 'eu.id')
