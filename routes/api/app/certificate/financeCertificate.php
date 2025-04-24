@@ -12,14 +12,9 @@ use App\Http\Controllers\api\app\certificate\finance\CertificatePaymentControlle
 
 Route::get('/reciept/download', [CertificatePaymentController::class, 'downloadReceipt']);
 
-
-
-
-
 Route::prefix('v1')->middleware(["authorized:" . 'finance:api'])->group(function () {
     // Route::post('/epi/certificate/detail/store', [CertificatePaymentController::class, 'searchCertificate'])->middleware(["financeHasMainPermission:" . PermissionEnum::certificate_payment->value . ',' . 'view']);
+    Route::get('/reciept/download', [CertificatePaymentController::class, 'downloadReceipt']);
+    Route::get('/finance/visits/payment/{id}', [CertificatePaymentController::class, "personalInformation"])->middleware(["epiHasSubPermission:" . PermissionEnum::certificate_payment->value . "," . SubPermissionEnum::certificate_payment_info->value . ',' . 'view']);
     Route::get('/finance/certificate/search', [CertificatePaymentController::class, 'searchCertificate'])->middleware(["financeHasMainPermission:" . PermissionEnum::certificate_payment->value . ',' . 'view']);
-    Route::get('/finance/certificate/info', [CertificatePaymentController::class, 'infoCertificate'])->middleware(["financeHasMainPermission:" . PermissionEnum::certificate_payment->value . ',' . 'view']);
-
-    Route::get('/finance/certificate/amount', [CertificatePaymentController::class, 'certificatePaymentAmount']);
 });

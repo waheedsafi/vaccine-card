@@ -26,7 +26,6 @@ class CertificatePaymentController extends Controller
 
     public function searchCertificate(Request $request)
     {
-
         $request->validate([
             'filters.search.value' => 'required|string',
         ]);
@@ -34,6 +33,15 @@ class CertificatePaymentController extends Controller
         $perPage = $request->input('per_page', 10);
         $page = $request->input('page', 1);
         $searchValue = $request->input('filters.search.value');
+
+        // Get the payment amount where status is 'paid'
+        $paymentAmount = DB::table('payment_amounts as pa')
+            ->join('payment_statuses as ps', 'ps.id', '=', 'pa.payment_status_id')
+            ->where('ps.id', StatusTypeEnum::paid->value)
+            ->value('pa.amount');
+
+        // Fallback to 0 if no value is found
+        $paymentAmount = $paymentAmount ?? 0;
 
         $query = DB::table('people as p')
             ->where('p.passport_number', '=', $searchValue)
@@ -50,6 +58,7 @@ class CertificatePaymentController extends Controller
                 DB::raw('CASE WHEN vp.id IS NULL THEN 0 ELSE 1 END as has_payment')
             )
             ->latest('v.id'); // You can apply latest ordering here if needed
+
 
 
         $tr = $query->paginate($perPage, ['*'], 'page', $page);
@@ -116,8 +125,6 @@ class CertificatePaymentController extends Controller
             'passport_number'     => 'required|string',
             'visit_id'            => 'required|numeric',
             'paid_amount'         => 'required|numeric',
-            'payment_amount_id'   => 'required|exists:payment_amounts,id',
-            // 'payment_status_id' => 'required|exists:payment_statuses,id', // Uncomment if needed
         ]);
 
         $user = $request->user();
