@@ -26,7 +26,6 @@ class CertificatePaymentController extends Controller
 
     public function searchCertificate(Request $request)
     {
-
         $request->validate([
             'filters.search.value' => 'required|string',
         ]);
@@ -41,7 +40,9 @@ class CertificatePaymentController extends Controller
             ->where('ps.id', StatusTypeEnum::paid->value)
             ->value('pa.amount');
 
-        // Main query
+        // Fallback to 0 if no value is found
+        $paymentAmount = $paymentAmount ?? 0;
+
         $query = DB::table('people as p')
             ->where('p.passport_number', '=', $searchValue)
             ->join('visits as v', 'v.people_id', '=', 'p.id')
@@ -58,6 +59,7 @@ class CertificatePaymentController extends Controller
                 DB::raw("CASE WHEN vp.id IS NULL THEN {$paymentAmount} ELSE NULL END as amount")
             )
             ->latest('v.id');
+
 
         $tr = $query->paginate($perPage, ['*'], 'page', $page);
 
@@ -79,8 +81,6 @@ class CertificatePaymentController extends Controller
             'passport_number'     => 'required|string',
             'visit_id'            => 'required|numeric',
             'paid_amount'         => 'required|numeric',
-            'payment_amount_id'   => 'required|exists:payment_amounts,id',
-            // 'payment_status_id' => 'required|exists:payment_statuses,id', // Uncomment if needed
         ]);
 
         $user = $request->user();
@@ -141,7 +141,6 @@ class CertificatePaymentController extends Controller
 
     public function downloadReceipt(Request $request)
     {
-
         $request->validate([
             'payment_id' => "required|numeric"
         ]);
