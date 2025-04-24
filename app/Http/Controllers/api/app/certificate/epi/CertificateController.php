@@ -27,8 +27,41 @@ class CertificateController extends Controller
 {
     use VaccineCardTrait;
 
+    // public function searchCertificate(Request $request)
+    // {
+    //     $request->validate([
+    //         'filters.search.value' => 'required|string',
+    //     ]);
+
+    //     $perPage = $request->input('per_page', 10);
+    //     $page = $request->input('page', 1);
+    //     $searchValue = $request->input('filters.search.value');
+
+    //     $query = DB::table('people as p')
+    //         ->where('p.passport_number', '=', $searchValue)
+    //         ->join('visits as v', 'v.people_id', '=', 'p.id')
+    //         ->select(
+    //             "p.id",
+    //             "p.passport_number",
+    //             "p.full_name",
+    //             "p.father_name",
+    //             "p.created_at",
+    //             "p.phone as contact",
+    //             "v.id as visit_id",
+    //             "v.visited_date as last_visit_date"
+    //         )
+    //         ->latest('v.id');
+
+    //     $results = $query->paginate($perPage, ['*'], 'page', $page);
+
+    //     return response()->json([
+    //         "person_certificates" => $results,
+    //     ], 200, [], JSON_UNESCAPED_UNICODE);
+    // }
+
     public function searchCertificate(Request $request)
     {
+
         $request->validate([
             'filters.search.value' => 'required|string',
         ]);
@@ -40,23 +73,29 @@ class CertificateController extends Controller
         $query = DB::table('people as p')
             ->where('p.passport_number', '=', $searchValue)
             ->join('visits as v', 'v.people_id', '=', 'p.id')
+            ->leftJoin('vaccine_payments as vp', 'vp.visit_id', '=', 'v.id')
             ->select(
                 "p.id",
                 "p.passport_number",
                 "p.full_name",
                 "p.father_name",
                 "p.created_at",
-                "p.phone as contact",
                 "v.id as visit_id",
-                "v.visited_date as last_visit_date"
+                "v.visited_date as last_visit_date",
+                DB::raw('CASE WHEN vp.id IS NULL THEN 0 ELSE 1 END as has_payment')
             )
-            ->latest('v.id');
+            ->latest('v.id'); // You can apply latest ordering here if needed
 
-        $results = $query->paginate($perPage, ['*'], 'page', $page);
 
-        return response()->json([
-            "person_certificates" => $results,
-        ], 200, [], JSON_UNESCAPED_UNICODE);
+        $tr = $query->paginate($perPage, ['*'], 'page', $page);
+        return response()->json(
+            [
+                "person_certificates" => $tr,
+            ],
+            200,
+            [],
+            JSON_UNESCAPED_UNICODE
+        );
     }
 
     public function personalInformation($visit_id)
@@ -325,7 +364,7 @@ class CertificateController extends Controller
             'passport_number'  => 'required|string',
         ]);
 
-        $user = $request->user();
+        // $user = $request->user();
 
         // Retrieve person by passport number
         $person = People::where('passport_number', $validated['passport_number'])->first();
@@ -333,10 +372,10 @@ class CertificateController extends Controller
 
 
         // If person does not exist, handle violation
-        if (!$person) {
+        // if (!$person) {
 
-            return $this->handleViolation($user, null, $validated, $request->ip());
-        }
+        //     return $this->handleViolation($user, null, $validated, $request->ip());
+        // }
 
         // Find visit with matching payment number and person
         $visit = Visit::join('vaccine_payments as vp', 'visits.id', '=', 'vp.visit_id')
