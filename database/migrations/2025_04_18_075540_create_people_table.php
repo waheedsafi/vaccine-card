@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('full_name');
             $table->string('father_name');
             $table->string('date_of_birth');
-            $table->string('phone');
+            $table->string('phone')->nullable();
             $table->unsignedBigInteger('nid_type_id');
             $table->foreign('nid_type_id')->references('id')->on('nid_types')
                 ->onUpdate('cascade')

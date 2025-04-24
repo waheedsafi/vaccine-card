@@ -62,7 +62,6 @@ class PersonStoreRequest extends FormRequest
             'full_name' => 'required|string',
             'father_name' => 'required|string',
             'date_of_birth' => 'required|date',
-            'contact' => 'required|string',
             'gender_id' => 'required|in:1,2',
             'nationality_id' => 'required|integer',
             'travel_type_id' => 'required|integer',

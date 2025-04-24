@@ -20,7 +20,6 @@ use App\Http\Controllers\Controller;
 use App\Models\EpiUserPasswordChange;
 use App\Traits\Card\VaccineCardTrait;
 use App\Http\Requests\app\certificate\PersonStoreRequest;
-use Illuminate\Support\Facades\Log;
 
 class CertificateController extends Controller
 {
@@ -45,6 +44,7 @@ class CertificateController extends Controller
                 "p.full_name",
                 "p.father_name",
                 "p.created_at",
+                "p.phone as contact",
                 "v.id as visit_id",
                 "v.visited_date as last_visit_date"
             )
@@ -57,14 +57,13 @@ class CertificateController extends Controller
         ], 200, [], JSON_UNESCAPED_UNICODE);
     }
 
-
     public function personalInformation($visit_id)
     {
         $locale = app()->getLocale();
 
         $visit = DB::table('visits')
             ->join('people', 'visits.people_id', '=', 'people.id')
-            ->join('addresses add', 'people.address_id', '=', 'add.id')
+            ->join('addresses as add', 'people.address_id', '=', 'add.id')
             ->join('address_trans', function ($join) use ($locale) {
                 $join->on('add.id', '=', 'address_trans.address_id')
                     ->where('address_trans.language_name', '=', $locale);
@@ -309,17 +308,6 @@ class CertificateController extends Controller
 
     public function storeCertificateDetail(PersonStoreRequest $request)
     {
-        // $formattedVaccines = json_decode($request->vaccines, true);
-        // Log::warning($request);
-        // Log::warning($formattedVaccines);
-        // return response()->json(
-        //     [
-        //         "message" => __('app_translation.success'),
-        //     ],
-        //     404,
-        //     [],
-        //     JSON_UNESCAPED_UNICODE
-        // );
         $validatedData = $request->validated();
         DB::beginTransaction();
         $address = Address::create([
@@ -336,7 +324,7 @@ class CertificateController extends Controller
             'full_name' => $validatedData['full_name'],
             'father_name' => $validatedData['father_name'],
             'date_of_birth' => $validatedData['date_of_birth'],
-            'phone' => $validatedData['contact'],
+            'phone' => $request->contact,
             'nid_type_id' => 1,
             'gender_id' => $validatedData['gender_id'],
             'nationality_id' => $validatedData['nationality_id'],
