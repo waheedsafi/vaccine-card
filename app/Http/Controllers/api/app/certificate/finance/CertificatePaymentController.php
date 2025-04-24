@@ -35,13 +35,6 @@ class CertificatePaymentController extends Controller
         $page = $request->input('page', 1);
         $searchValue = $request->input('filters.search.value');
 
-        // Get the payment amount where status is 'paid'
-        $paymentAmount = DB::table('payment_amounts as pa')
-            ->join('payment_statuses as ps', 'ps.id', '=', 'pa.payment_status_id')
-            ->where('ps.id', StatusTypeEnum::paid->value)
-            ->value('pa.amount');
-
-        // Main query
         $query = DB::table('people as p')
             ->where('p.passport_number', '=', $searchValue)
             ->join('visits as v', 'v.people_id', '=', 'p.id')
@@ -54,13 +47,12 @@ class CertificatePaymentController extends Controller
                 "p.created_at",
                 "v.id as visit_id",
                 "v.visited_date as last_visit_date",
-                DB::raw('CASE WHEN vp.id IS NULL THEN 0 ELSE 1 END as has_payment'),
-                DB::raw("CASE WHEN vp.id IS NULL THEN {$paymentAmount} ELSE NULL END as amount")
+                DB::raw('CASE WHEN vp.id IS NULL THEN 0 ELSE 1 END as has_payment')
             )
-            ->latest('v.id');
+            ->latest('v.id'); // You can apply latest ordering here if needed
+
 
         $tr = $query->paginate($perPage, ['*'], 'page', $page);
-
         return response()->json(
             [
                 "person_certificates" => $tr,
@@ -70,6 +62,51 @@ class CertificatePaymentController extends Controller
             JSON_UNESCAPED_UNICODE
         );
     }
+
+    public function certificatePaymentAmount(Request $request)
+    {
+
+
+        $row = PaymentAmount::select('amount')->where('payment_status_id', StatusTypeEnum::paid->value)->first();
+
+        return response()->json([
+            'message' => __('app_translation.success'),
+            'payment_amounts' => $row->amount,
+        ], 200, [], JSON_UNESCAPED_UNICODE);
+    }
+
+    public function infoCertificate(Request $request)
+    {
+
+
+        $request->validate([
+            'id' => 'required|numeric',
+        ]);
+
+        $row = People::join('visits as v', 'v.people_id', '=', 'people.id')
+            ->leftJoin('vaccine_payments as vp', 'vp.visit_id', '=', 'v.id')
+            ->select(
+                "people.id",
+                "people.passport_number",
+                "people.full_name",
+                "people.father_name",
+                "people.created_at",
+                "v.id as visit_id",
+                "v.visited_date",
+                "vp.paid_amount" ?? '',
+                DB::raw('CASE WHEN vp.id IS NULL THEN 0 ELSE 1 END as has_payment')
+            )
+            ->where('people.id', $request->id)
+            ->get();
+
+
+        return response()->json([
+            'message' => __('app_translation.success'),
+            'person_certificates' => $row,
+
+        ], 200, [], JSON_UNESCAPED_UNICODE);
+    }
+
 
 
     public function payment(Request $request)
