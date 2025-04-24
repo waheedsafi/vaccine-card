@@ -2,18 +2,21 @@
 
 namespace Database\Seeders;
 
-use App\Models\Gender;
-use App\Models\NidType;
-use App\Models\Language;
-use App\Models\StatusType;
-use App\Models\NidTypeTrans;
-use Illuminate\Database\Seeder;
-use App\Enums\StatusTypeEnum;
-use App\Enums\ZoneEnum;
-use App\Models\TravelType;
-use App\Models\TravelTypeTran;
 use App\Models\Zone;
+use App\Models\Gender;
+use App\Enums\ZoneEnum;
+use App\Models\NidType;
+use App\Models\Currency;
+use App\Models\Language;
 use App\Models\ZoneTrans;
+use App\Models\StatusType;
+use App\Models\TravelType;
+use App\Models\NidTypeTrans;
+use App\Enums\StatusTypeEnum;
+use App\Models\CurrencyTran;
+use App\Models\CurrencyTrans;
+use App\Models\TravelTypeTran;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Database\Seeders\CheckListSeeder;
 
@@ -52,6 +55,27 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->languages();
+
+        // $curreny =  Currency::factory()->create([
+        //     'abbr' => 'AFG',
+        //     'symbole' => 'AF',
+        // ]);
+        // $curreny =  CurrencyTrans::factory()->create([
+        //     'currency_id' => $curreny->id,
+        //     'language_name' => 'en',
+        //     'name' => 'Afghani'
+        // ]);
+        // $curreny =  CurrencyTrans::factory()->create([
+        //     'currency_id' => $curreny->id,
+        //     'language_name' => 'fa',
+        //     'name' => 'افغانی'
+        // ]);
+        // $curreny =  CurrencyTrans::factory()->create([
+        //     'currency_id' => $curreny->id,
+        //     'language_name' => 'ps',
+        //     'name' => 'افغانی'
+        // ]);
+
         $this->gender();
         $this->call(CountrySeeder::class);
         $this->call(VaccineCenterSeeder::class);
