@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\api\app\certificate\finance;
 
+use App\Enums\StatusTypeEnum;
 use Carbon\Carbon;
 use App\Models\Visit;
 use App\Models\Person;
@@ -13,6 +14,7 @@ use App\Http\Controllers\Controller;
 use App\Models\FinanceUser;
 use App\Traits\Reciept\RecieptTrait;
 use App\Models\FinanceUserPasswordChange;
+use App\Models\PaymentAmount;
 use App\Models\People;
 use App\Models\ViolationLog;
 use Pest\Arch\ValueObjects\Violation;
@@ -24,13 +26,6 @@ class CertificatePaymentController extends Controller
 
     public function searchCertificate(Request $request)
     {
-
-        $request->validate([
-            'filters.search.value' => 'required|string',
-        ]);
-        $tr = [];
-        $perPage = $request->input('per_page', 10); // Number of records per page
-        $page = $request->input('page', 1); // Current page
         $request->validate([
             'filters.search.value' => 'required|string',
         ]);
@@ -39,6 +34,13 @@ class CertificatePaymentController extends Controller
         $page = $request->input('page', 1);
         $searchValue = $request->input('filters.search.value');
 
+        // Get the payment amount where status is 'paid'
+        $paymentAmount = DB::table('payment_amounts as pa')
+            ->join('payment_statuses as ps', 'ps.payment_status_id', '=', 'pa.payment_status_id')
+            ->where('ps.id', StatusTypeEnum::paid->value)
+            ->value('pa.amount');
+
+        // Main query
         $query = DB::table('people as p')
             ->where('p.passport_number', '=', $searchValue)
             ->join('visits as v', 'v.people_id', '=', 'p.id')
@@ -51,12 +53,13 @@ class CertificatePaymentController extends Controller
                 "p.created_at",
                 "v.id as visit_id",
                 "v.visited_date as last_visit_date",
-                DB::raw('CASE WHEN vp.id IS NULL THEN 0 ELSE 1 END as has_payment')
+                DB::raw('CASE WHEN vp.id IS NULL THEN 0 ELSE 1 END as has_payment'),
+                DB::raw("CASE WHEN vp.id IS NULL THEN {$paymentAmount} ELSE NULL END as amount")
             )
-            ->latest('v.id'); // You can apply latest ordering here if needed
-
+            ->latest('v.id');
 
         $tr = $query->paginate($perPage, ['*'], 'page', $page);
+
         return response()->json(
             [
                 "person_certificates" => $tr,
@@ -66,6 +69,7 @@ class CertificatePaymentController extends Controller
             JSON_UNESCAPED_UNICODE
         );
     }
+
 
     public function payment(Request $request)
     {
