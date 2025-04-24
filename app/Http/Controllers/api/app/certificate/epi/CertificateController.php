@@ -20,6 +20,7 @@ use App\Http\Controllers\Controller;
 use App\Models\EpiUserPasswordChange;
 use App\Traits\Card\VaccineCardTrait;
 use App\Http\Requests\app\certificate\PersonStoreRequest;
+use App\Http\Requests\app\certificate\UpdatePersonInfoRequest;
 
 class CertificateController extends Controller
 {
@@ -63,11 +64,13 @@ class CertificateController extends Controller
 
         $visit = DB::table('people')
             ->join('addresses as add', 'people.address_id', '=', 'add.id')
-            ->leftJoin('district_trans', function ($join) use ($locale) {
+            ->join('genders as g', 'people.gender_id', '=', 'g.id')
+            ->join('nationality_trans as nt', 'people.nationality_id', '=', 'nt.nationality_id')
+            ->join('district_trans', function ($join) use ($locale) {
                 $join->on('add.district_id', '=', 'district_trans.district_id')
                     ->where('district_trans.language_name', '=', $locale);
             })
-            ->leftJoin('province_trans', function ($join) use ($locale) {
+            ->join('province_trans', function ($join) use ($locale) {
                 $join->on('add.province_id', '=', 'province_trans.province_id')
                     ->where('province_trans.language_name', '=', $locale);
             })
@@ -83,6 +86,12 @@ class CertificateController extends Controller
                 'add.province_id',
                 'district_trans.value as district',
                 'province_trans.value as province',
+                'nt.value as nationality',
+                'nt.nationality_id',
+                'g.name_en',
+                'g.name_en',
+                'g.name_fa',
+                'g.id as gender_id',
                 // Consider adding these if you're using them later:
                 // 'add.area',
                 // 'add.id as address_id'
@@ -92,10 +101,14 @@ class CertificateController extends Controller
         if (!$visit) {
             return response()->json([
                 "message" => __("app_translation.not_found"),
-                "data" => null
             ], 404);
         }
-
+        $gender = $visit->name_en;
+        if ($locale == LanguageEnum::farsi->value) {
+            $gender = $visit->name_fa;
+        } else if ($locale == LanguageEnum::pashto->value) {
+            $gender = $visit->name_ps;
+        }
         $data = [
             'full_name' => $visit->full_name,
             'father_name' => $visit->father_name,
@@ -105,6 +118,8 @@ class CertificateController extends Controller
             'nid_type_id' => $visit->nid_type_id,
             'district' => ['id' => $visit->district_id, 'name' => $visit->district],
             'province' => ['id' => $visit->province_id, 'name' => $visit->province],
+            'nationality' => ['id' => $visit->nationality_id, 'name' => $visit->nationality],
+            'gender' => ['id' => $visit->gender_id, 'name' => $gender],
             // Uncomment if selected from DB
             // 'area' => $visit->area,
             // 'province_id' => $visit->province_id,
@@ -116,7 +131,42 @@ class CertificateController extends Controller
             "data" => $data
         ], 200);
     }
+    public function personalVaccines($id)
+    {
+        $locale = app()->getLocale();
+        $data = [];
+        return response()->json([
+            "message" => __("app_translation.success"),
+            "data" => $data
+        ], 200);
+    }
+    public function updatePeopleInformation(UpdatePersonInfoRequest $request)
+    {
+        $request->validated();
+        $people = People::find();
+        // 1. User is passed from middleware
+        DB::beginTransaction($request->id);
+        if ($people) {
+            // 4. Update User other attributes
+            $people->full_name = $request->full_name;
+            $people->username = $request->username;
+            $people->job_id = $request->job_id;
+            $people->destination_id = $request->destination_id;
+            $people->province_id = $request->province_id;
+            $people->gender_id = $request->gender_id;
+            $people->zone_id = $request->zone_id;
+            $people->status = $request->status == 'true';
+            $people->save();
 
+            DB::commit();
+            return response()->json([
+                'message' => __('app_translation.success'),
+            ], 200, [], JSON_UNESCAPED_UNICODE);
+        }
+        return response()->json([
+            'message' => __('app_translation.user_not_found'),
+        ], 404, [], JSON_UNESCAPED_UNICODE);
+    }
 
     public function vaccineInformation($visit_id)
     {

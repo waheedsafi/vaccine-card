@@ -30,12 +30,6 @@ class CertificatePaymentController extends Controller
         $request->validate([
             'filters.search.value' => 'required|string',
         ]);
-        $tr = [];
-        $perPage = $request->input('per_page', 10); // Number of records per page
-        $page = $request->input('page', 1); // Current page
-        $request->validate([
-            'filters.search.value' => 'required|string',
-        ]);
 
         $perPage = $request->input('per_page', 10);
         $page = $request->input('page', 1);
