@@ -61,32 +61,17 @@ class CertificateController extends Controller
     {
         $locale = app()->getLocale();
 
-        $visit = DB::table('visits')
-            ->join('people', 'visits.people_id', '=', 'people.id')
+        $visit = DB::table('people')
             ->join('addresses as add', 'people.address_id', '=', 'add.id')
-            ->join('address_trans', function ($join) use ($locale) {
-                $join->on('add.id', '=', 'address_trans.address_id')
-                    ->where('address_trans.language_name', '=', $locale);
-            })
-            ->join('district_trans', function ($join) use ($locale) {
+            ->leftJoin('district_trans', function ($join) use ($locale) {
                 $join->on('add.district_id', '=', 'district_trans.district_id')
                     ->where('district_trans.language_name', '=', $locale);
             })
-            ->join('province_trans', function ($join) use ($locale) {
+            ->leftJoin('province_trans', function ($join) use ($locale) {
                 $join->on('add.province_id', '=', 'province_trans.province_id')
                     ->where('province_trans.language_name', '=', $locale);
             })
-            ->join('travel_type_trans', function ($join) use ($locale) {
-                $join->on('visits.travel_type_id', '=', 'travel_type_trans.travel_type_id')
-                    ->where('travel_type_trans.language_name', '=', $locale);
-            })
-            ->join('country_trans', function ($join) use ($locale) {
-                $join->on('visits.country_id', '=', 'country_trans.country_id')
-                    ->where('country_trans.language_name', '=', $locale);
-            })
-            ->where('visits.people_id', $visit_id)
-            ->whereDate('visits.visited_date', Carbon::today())
-            ->orderByDesc('visits.id')
+            ->where('people.id', $visit_id)
             ->select([
                 'people.full_name',
                 'people.father_name',
@@ -94,18 +79,22 @@ class CertificateController extends Controller
                 'people.date_of_birth',
                 'people.phone',
                 'people.nid_type_id',
-                'visits.visited_date as visit_date',
-                'travel_type_trans.value as travel_type',
-                'visits.travel_type_id',
                 'add.district_id',
                 'add.province_id',
-                'country_trans.value as country',
-                'visits.country_id',
                 'district_trans.value as district',
                 'province_trans.value as province',
-                'address_trans.area as area',
+                // Consider adding these if you're using them later:
+                // 'add.area',
+                // 'add.id as address_id'
             ])
             ->first();
+
+        if (!$visit) {
+            return response()->json([
+                "message" => __("app_translation.not_found"),
+                "data" => null
+            ], 404);
+        }
 
         $data = [
             'full_name' => $visit->full_name,
@@ -114,14 +103,12 @@ class CertificateController extends Controller
             'date_of_birth' => $visit->date_of_birth,
             'phone' => $visit->phone,
             'nid_type_id' => $visit->nid_type_id,
-            'visited_date' => $visit->visit_date,
-            'country_id' => ['id' => $visit->country_id, 'name' => $visit->country],
-            'travel_type' => ['id' => $visit->travel_type_id, 'name' => $visit->travel_type],
             'district' => ['id' => $visit->district_id, 'name' => $visit->district],
             'province' => ['id' => $visit->province_id, 'name' => $visit->province],
-            'area' => $visit->area,
-            'province_id' => $visit->province_id,
-            'address_id' => $visit->address_id,
+            // Uncomment if selected from DB
+            // 'area' => $visit->area,
+            // 'province_id' => $visit->province_id,
+            // 'address_id' => $visit->address_id,
         ];
 
         return response()->json([
@@ -129,6 +116,7 @@ class CertificateController extends Controller
             "data" => $data
         ], 200);
     }
+
 
     public function vaccineInformation($visit_id)
     {
