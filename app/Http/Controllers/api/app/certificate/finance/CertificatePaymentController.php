@@ -178,23 +178,37 @@ class CertificatePaymentController extends Controller
 
     public function downloadReceipt(Request $request)
     {
-
         $request->validate([
-            'payment_id' => "required|numeric"
+            'passport_numbere' => 'required|numeric',
         ]);
-        // Create receipt
 
         $user = $request->user();
 
-        $receipt =   Reciept::where('vaccine_payment_id', $request->payment_id)->first();
+        // Eager load related models in a single query
+        $person = People::with(['visits.vaccinePayment.receipt'])
+            ->where('passport_number', $request->passport_numbere)
+            ->first();
 
-        $receipt->download_count = $receipt->download_count + 1;
+        if (
+            !$person ||
+            !$person->visits->first() ||
+            !$person->visits->first()->vaccinePayment ||
+            !$person->visits->first()->vaccinePayment->receipt
+        ) {
+            return response()->json([
+                'message' => __('app_translation.unauthorized'),
+            ], 403);
+        }
 
-        $vaccinePayment = VaccinePayment::select('payment_uuid')->where('id', $request->payment_id)->first();
+        $vaccinePayment = $person->visits->first()->vaccinePayment;
+        $receipt = $vaccinePayment->receipt;
 
+        // Update download count
+        $receipt->increment('download_count');
 
-        return $this->generateRecipt($request->payment_id, $user);
+        return $this->generateRecipt($vaccinePayment->id, $user);
     }
+
 
 
     public function activity($user_id)

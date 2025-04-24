@@ -22,15 +22,15 @@ class UpdatePersonInfoRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'id' => 'required',
-            'full_name' => 'required',
-            'father_name' => 'required',
+            'id' => 'required|numeric|exists:people,id',
+            'district_id' => 'required|integer|exists:districts,id',
+            'province_id' => 'required|integer|exists:provinces,id',
+            'full_name' => 'required|string',
+            'father_name' => 'required|string',
             'date_of_birth' => 'required',
-            'passport_number' => 'required',
-            'gender_id' => 'required',
-            'province_id' => 'required',
-            'district_id' => 'required',
-            'nationality_id' => 'required',
+            'passport_number' => 'required|string',
+            'gender_id' => 'required|numeric',
+            'nationality_id' => 'required|numeric|exists:nationalities,id',
         ];
     }
 }
