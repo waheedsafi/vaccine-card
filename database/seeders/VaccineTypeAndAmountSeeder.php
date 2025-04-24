@@ -2,12 +2,16 @@
 
 namespace Database\Seeders;
 
+use App\Enums\StatusTypeEnum;
+use App\Models\PaymentAmount;
+use App\Models\PaymentStatus;
+use App\Models\PaymentStatusTran;
 use App\Models\VaccineType;
 use App\Models\VaccineTypeTran;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
-class VaccineTypeSeeder extends Seeder
+class VaccineTypeAndAmountSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -69,5 +73,30 @@ class VaccineTypeSeeder extends Seeder
                 ]);
             }
         }
+
+
+        $payment =  PaymentStatus::create([
+            'id' => StatusTypeEnum::paid->value
+        ]);
+        PaymentStatusTran::create([
+            'payment_status_id' => $payment->id,
+            'language_name' => 'fa',
+            'name' => 'پرداخت شده',
+        ]);
+        PaymentStatusTran::create([
+            'payment_status_id' => $payment->id,
+            'language_name' => 'ps',
+            'name' => 'تادیه شوی',
+        ]);
+        PaymentStatusTran::create([
+            'payment_status_id' => $payment->id,
+            'language_name' => 'en',
+            'name' => 'Paid',
+        ]);
+
+        PaymentAmount::create([
+            'amount' => 500,
+            'payment_status_id' => StatusTypeEnum::paid->value
+        ]);
     }
 }

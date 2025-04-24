@@ -21,6 +21,7 @@ use App\Models\EpiUserPasswordChange;
 use App\Traits\Card\VaccineCardTrait;
 use App\Http\Requests\app\certificate\PersonStoreRequest;
 use App\Http\Requests\app\certificate\UpdatePersonInfoRequest;
+use Faker\Provider\ar_EG\Person;
 
 class CertificateController extends Controller
 {
@@ -131,31 +132,80 @@ class CertificateController extends Controller
             "data" => $data
         ], 200);
     }
-    public function personalVaccines($id)
+    public function personVaccines($id)
     {
         $locale = app()->getLocale();
-        $data = [];
+
+
+        // Fetch the data with the vaccines for each visit
+        $data = People::leftJoin('visits  as v', 'people.id', '=', 'v.people_id')
+            ->leftJoin('vaccines as vac', 'v.id', '=', 'vac.visit_id')
+            ->leftJoin('vaccine_type_trans as vtt', function ($join) use ($locale) {
+                $join->on('vtt.vaccine_type_id', '=', 'vac.vaccine_type_id')
+                    ->where('vtt.language_name', $locale);
+            })
+            ->select(
+                'people.id',
+                'people.full_name',
+                'v.visited_date',
+                'vac.vaccine_type_id', // To group by vaccine
+                'vtt.name as vaccine_type_name'
+            )
+            ->where('people.id', $id) // Make sure to filter by person id
+            ->orderBy('v.visited_date', 'desc')
+            ->get();
+
+        // Group the data by visit date
+        $groupedData = $data->groupBy(function ($item) {
+            return $item->visited_date; // Group by the visit date
+        })->map(function ($visits) {
+            return [
+                'visit_date' => $visits->first()->visited_date,
+                'vaccine_count' => $visits->count(), // Count how many vaccines in this visit
+                'vaccines' => $visits->map(function ($visit) {
+                    return [
+                        'vaccine_type_name' => $visit->vaccine_type_name,
+                    ];
+                }),
+            ];
+        });
+
+        // Now get the final data grouped by the person
+        $personData = [
+            'full_name' => $data->first()->full_name,
+            'visit_count' => $groupedData->count(),
+            'visits' => $groupedData->values(),
+        ];
+
         return response()->json([
             "message" => __("app_translation.success"),
-            "data" => $data
+            "data" => $personData,
         ], 200);
     }
+
     public function updatePeopleInformation(UpdatePersonInfoRequest $request)
     {
         $request->validated();
-        $people = People::find();
-        // 1. User is passed from middleware
+        $people = People::find($request->id);
+        $address = Address::find($people->address_id);
+
+
         DB::beginTransaction($request->id);
         if ($people) {
+            $address->district_id = $request->district_id;
+            $address->province_id = $request->province_id;
+            $address->save();
             // 4. Update User other attributes
             $people->full_name = $request->full_name;
-            $people->username = $request->username;
-            $people->job_id = $request->job_id;
-            $people->destination_id = $request->destination_id;
-            $people->province_id = $request->province_id;
+            $people->father_name = $request->father_name;
+            $people->date_of_birth = $request->date_of_birth;
+            $people->phone = $request->contact;
             $people->gender_id = $request->gender_id;
-            $people->zone_id = $request->zone_id;
-            $people->status = $request->status == 'true';
+            $people->nationality_id = $request->nationality_id;
+
+            if ($people->passport_block_time > 0) {
+                $people->passport_number = $request->passport_number;
+            }
             $people->save();
 
             DB::commit();
@@ -265,6 +315,7 @@ class CertificateController extends Controller
             "message" => __("app_translation.success"),
         ]);
     }
+
 
     public function generateCertificate(Request $request)
     {
