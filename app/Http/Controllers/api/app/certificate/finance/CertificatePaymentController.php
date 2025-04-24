@@ -24,7 +24,6 @@ class CertificatePaymentController extends Controller
 
     public function searchCertificate(Request $request)
     {
-
         $request->validate([
             'filters.search.value' => 'required|string',
         ]);
