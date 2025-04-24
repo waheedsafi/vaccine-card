@@ -10,10 +10,6 @@ use App\Http\Controllers\api\app\certificate\finance\CertificatePaymentControlle
 // Route::get('/reciept', [CertificatePaymentController::class, 'payment']);
 // Route::get('/reciept/download', [CertificatePaymentController::class, 'downloadReceipt']);
 
-
-
-
-
 Route::prefix('v1')->middleware(["authorized:" . 'finance:api'])->group(function () {
     Route::get('/reciept/download', [CertificatePaymentController::class, 'downloadReceipt']);
     Route::get('/finance/visits/payment/{id}', [CertificatePaymentController::class, "personalInformation"])->middleware(["epiHasSubPermission:" . PermissionEnum::certificate_payment->value . "," . SubPermissionEnum::certificate_payment_info->value . ',' . 'view']);
