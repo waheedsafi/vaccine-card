@@ -96,7 +96,8 @@ class VaccineTypeAndAmountSeeder extends Seeder
 
         PaymentAmount::create([
             'amount' => 500,
-            'payment_status_id' => StatusTypeEnum::paid->value
+            'payment_status_id' => StatusTypeEnum::paid->value,
+            'currancy_id' => 1
         ]);
     }
 }

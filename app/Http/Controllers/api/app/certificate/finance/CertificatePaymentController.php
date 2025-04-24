@@ -158,7 +158,7 @@ class CertificatePaymentController extends Controller
             'paid_amount'        => $validated['paid_amount'],
             'visit_id'           => $validated['visit_id'],
             'payment_status_id'  => $validated['payment_status_id'] ?? 1, // default or handle null gracefully
-            'payment_amount_id'  => $validated['payment_amount_id'],
+            'payment_amount_id'  => 1,
             'finance_user_id'    => $user->id,
         ]);
 
