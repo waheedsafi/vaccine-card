@@ -75,10 +75,6 @@ class RolePermissionSeeder extends Seeder
             "permission" => "vaccine_certificate"
         ]);
         $this->epiRolePermissionSubVaccineCertificate($rolePer->id);
-        $rolePer = RolePermission::factory()->create([
-            "role" => RoleEnum::epi_user,
-            "permission" => "configurations"
-        ]);
     }
     public function financeSuperPermissions()
     {
@@ -131,10 +127,6 @@ class RolePermissionSeeder extends Seeder
             "permission" => "certificate_payment"
         ]);
         $this->financeUserRolePermissionSubCertificatePayment($rolePer->id);
-        $rolePer = RolePermission::factory()->create([
-            "role" => RoleEnum::finance_user,
-            "permission" => "configurations"
-        ]);
     }
 
     public function debuggerPermissions()

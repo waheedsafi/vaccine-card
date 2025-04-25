@@ -39,9 +39,27 @@ class CountrySeeder extends Seeder
         DB::statement('SET FOREIGN_KEY_CHECKS=1');
 
         $country = [
+            "Saudi Arabia" => [
+                "fa" => "عربستان سعودی",
+                "ps" => "سعودي عربستان",
+                "nationality" => [
+                    "en" => "Saudi",
+                    "fa" => "سعودی",
+                    "ps" => "سعودی",
+
+                ],
+                "provinces" => []
+
+            ],
             "Afghanistan" => [
                 "fa" => "افغانستان",
                 "ps" => "افغانستان",
+                "nationality" => [
+                    "en" => "Afghan",
+                    "fa" => "افغان",
+                    "ps" => "افغان",
+
+                ],
                 "provinces" => [
                     "Kabul" => [
                         "fa" => "کابل",
@@ -819,7 +837,7 @@ class CountrySeeder extends Seeder
                 "nationality" => [
                     "en" => "German",
                     "fa" => "آلمانی",
-                    "ps" => "جرمنی",
+                    "ps" => "آلمانی",
 
                 ],
                 "provinces" => []
@@ -858,7 +876,7 @@ class CountrySeeder extends Seeder
                 "nationality" => [
                     "en" => "Spanish",
                     "fa" => "اسپانیایی",
-                    "ps" => "هسپانوی",
+                    "ps" => "اسپانیایی",
 
                 ],
                 "provinces" => []
@@ -870,7 +888,7 @@ class CountrySeeder extends Seeder
                 "ps" => "چین",
                 "nationality" => [
                     "en" => "Chinese",
-                    "fa" => "چینی",
+                    "fa" => "چینایی",
                     "ps" => "چینایی",
 
                 ],
@@ -934,21 +952,8 @@ class CountrySeeder extends Seeder
                 "ps" => "ترکیه",
                 "nationality" => [
                     "en" => "Turkish",
-                    "fa" => "ترکیه",
+                    "fa" => "ترکی",
                     "ps" => "ترکی",
-
-                ],
-                "provinces" => []
-
-            ],
-
-            "Saudi Arabia" => [
-                "fa" => "افغانستان",
-                "ps" => "افغانستان",
-                "nationality" => [
-                    "en" => "Saudi",
-                    "fa" => "عربستان سعودی",
-                    "ps" => "سعودي عربستان",
 
                 ],
                 "provinces" => []
@@ -973,8 +978,8 @@ class CountrySeeder extends Seeder
                 "ps" => "برزیل",
                 "nationality" => [
                     "en" => "Brazilian",
-                    "fa" => "برزیلی",
-                    "ps" => "برازیلي",
+                    "fa" => "برازیلی",
+                    "ps" => "برازیلی",
 
                 ],
                 "provinces" => []
@@ -986,7 +991,7 @@ class CountrySeeder extends Seeder
                 "ps" => "مکسیکو",
                 "nationality" => [
                     "en" => "Mexican",
-                    "fa" => "مکزیکی",
+                    "fa" => "میکسیکویی",
                     "ps" => "میکسیکویي",
 
                 ],
@@ -1013,7 +1018,7 @@ class CountrySeeder extends Seeder
                 "nationality" => [
                     "en" => "Argentine",
                     "fa" => "آرژانتینی",
-                    "ps" => "ارجنټایني",
+                    "ps" => "آرژانتینی",
 
                 ],
                 "provinces" => []
@@ -1026,7 +1031,7 @@ class CountrySeeder extends Seeder
                 "nationality" => [
                     "en" => "Bangladeshi",
                     "fa" => "بنگلادشی",
-                    "ps" => "بنګله‌دېشي",
+                    "ps" => "بنگلادشی",
 
                 ],
                 "provinces" => []
@@ -1051,8 +1056,8 @@ class CountrySeeder extends Seeder
                 "ps" => "هالنډي",
                 "nationality" => [
                     "en" => "Dutch",
-                    "fa" => "هلند",
-                    "ps" => "هالنډ",
+                    "fa" => "هالندی",
+                    "ps" => "هالندی",
 
                 ],
                 "provinces" => []
@@ -1103,7 +1108,7 @@ class CountrySeeder extends Seeder
                 "ps" => "فنلنډ",
                 "nationality" => [
                     "en" => "Finnish",
-                    "fa" => "فنلاندی",
+                    "fa" => "فنلندی",
                     "ps" => "فنلنډي",
 
                 ],
@@ -1116,7 +1121,7 @@ class CountrySeeder extends Seeder
                 "ps" => "سوئیس",
                 "nationality" => [
                     "en" => "Swiss",
-                    "fa" => "سوئیسی",
+                    "fa" => "سویسی",
                     "ps" => "سویسي",
 
                 ],
@@ -1156,7 +1161,7 @@ class CountrySeeder extends Seeder
                 "nationality" => [
                     "en" => "Portuguese",
                     "fa" => "پرتغالی",
-                    "ps" => "پرتګالي",
+                    "ps" => "پرتغالی",
 
                 ],
                 "provinces" => []
@@ -1203,12 +1208,12 @@ class CountrySeeder extends Seeder
             ],
 
             "North Korea" => [
-                "fa" => "افغانستان",
-                "ps" => "افغانستان",
+                "fa" => "کوریا شمالی",
+                "ps" => "کوریا شمالی",
                 "nationality" => [
                     "en" => "North Korean",
-                    "fa" => "کره شمالی",
-                    "ps" => "شمالي کوریا",
+                    "fa" => "کوریا شمالی",
+                    "ps" => "کوریا شمالی",
 
                 ],
                 "provinces" => []
@@ -1597,7 +1602,7 @@ class CountrySeeder extends Seeder
                 "fa" => "بوروندی",
                 "ps" => "بورونډي",
                 "nationality" => [
-                    "en" => "Afghan",
+                    "en" => "Burundi",
                     "fa" => "بوروندی",
                     "ps" => "بورونډي",
 

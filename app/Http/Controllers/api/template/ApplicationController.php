@@ -99,8 +99,10 @@ class ApplicationController extends Controller
     public function nationalities()
     {
         $locale = App::getLocale();
-        $nationality = NationalityTrans::select('nationality_id as id', "value as name")
+        $countryId = 2;
+        $nationality = NationalityTrans::select('nationality_id as id', 'value as name')
             ->where('language_name', $locale)
+            ->orderByRaw("FIELD(nationality_id," . $countryId . ") DESC") // ID 2 will come first
             ->get();
 
         return  response()->json(

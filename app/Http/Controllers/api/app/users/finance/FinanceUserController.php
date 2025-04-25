@@ -138,12 +138,15 @@ class FinanceUserController extends Controller
         $page = $request->input('page', 1); // Current page
         $role_id =  $request->user()->role_id;
         $includeRole = [];
+        $includeZone = [];
 
         if ($role_id === RoleEnum::finance_super->value) {
             array_push($includeRole, RoleEnum::finance_admin->value);
             array_push($includeRole, RoleEnum::finance_user->value);
         } else if ($role_id === RoleEnum::finance_admin->value) {
             array_push($includeRole, RoleEnum::finance_user->value);
+            // zone
+            array_push($includeZone, $request->user()->zone_id);
         } else {
             return response()->json([
                 'message' => __('app_translation.unauthorized'),
@@ -154,18 +157,21 @@ class FinanceUserController extends Controller
         // Start building the query
         $query = DB::table('finance_users as fu')
             ->whereIn('fu.role_id', $includeRole)
-            ->leftJoin('contacts as c', 'c.id', '=', 'fu.contact_id')
+            ->when(!empty($includeZone), function ($q) use ($includeZone) {
+                $q->whereIn('eu.zone_id', $includeZone);
+            })
+            ->join('contacts as c', 'c.id', '=', 'fu.contact_id')
             ->join('emails as e', 'e.id', '=', 'fu.email_id')
             ->join('roles as r', 'r.id', '=', 'fu.role_id')
             ->leftjoin('destination_trans as dt', function ($join) use ($locale) {
                 $join->on('dt.destination_id', '=', 'fu.destination_id')
                     ->where('dt.language_name', $locale);
             })
-            ->leftjoin('zone_trans as zt', function ($join) use ($locale) {
+            ->join('zone_trans as zt', function ($join) use ($locale) {
                 $join->on('zt.zone_id', '=', 'fu.zone_id')
                     ->where('zt.language_name', $locale);
             })
-            ->leftjoin('model_job_trans as mjt', function ($join) use ($locale) {
+            ->join('model_job_trans as mjt', function ($join) use ($locale) {
                 $join->on('mjt.model_job_id', '=', 'fu.job_id')
                     ->where('mjt.language_name', $locale);
             })
@@ -252,7 +258,7 @@ class FinanceUserController extends Controller
             "username" => $request->username,
             "email_id" => $email->id,
             "password" => Hash::make($validatedData['password']),
-            "status" => 1,
+            "status" => $email->status == 'true',
             "role_id" => $role_id,
             "contact_id" => $contact ? $contact->id : $contact,
             "zone_id" => $zone_id,
@@ -395,7 +401,8 @@ class FinanceUserController extends Controller
             $user->province_id = $request->province_id;
             $user->gender_id = $request->gender_id;
             $user->zone_id = $request->zone_id;
-            $user->status = $request->status == 'true';
+            $user->status = $request->status == true;
+
             $user->save();
 
             DB::commit();

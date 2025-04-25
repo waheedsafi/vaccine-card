@@ -77,6 +77,23 @@ class DatabaseSeeder extends Seeder
     {
         $travel = TravelType::create([]);
         TravelTypeTran::create([
+            "value" => "حج فرضی",
+            "language_name" => "fa",
+            "travel_type_id" => $travel->id
+        ]);
+        TravelTypeTran::create([
+            "value" => "حج فرضی",
+            "language_name" => "ps",
+            "travel_type_id" => $travel->id
+        ]);
+        TravelTypeTran::create([
+            "value" => "Hajj Farzi",
+            "language_name" => "en",
+            "travel_type_id" => $travel->id
+        ]);
+
+        $travel = TravelType::create([]);
+        TravelTypeTran::create([
             "value" => "حج عمره",
             "language_name" => "fa",
             "travel_type_id" => $travel->id
@@ -92,22 +109,6 @@ class DatabaseSeeder extends Seeder
             "travel_type_id" => $travel->id
         ]);
 
-        $travel = TravelType::create([]);
-        TravelTypeTran::create([
-            "value" => "حج فرضی",
-            "language_name" => "fa",
-            "travel_type_id" => $travel->id
-        ]);
-        TravelTypeTran::create([
-            "value" => "حج فرضی",
-            "language_name" => "ps",
-            "travel_type_id" => $travel->id
-        ]);
-        TravelTypeTran::create([
-            "value" => "Hajj Farzi",
-            "language_name" => "en",
-            "travel_type_id" => $travel->id
-        ]);
         $travel = TravelType::create([]);
         TravelTypeTran::create([
             "value" => "عادی",
