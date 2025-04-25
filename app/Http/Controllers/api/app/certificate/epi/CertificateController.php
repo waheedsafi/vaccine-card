@@ -386,7 +386,7 @@ class CertificateController extends Controller
 
         // If visit does not exist, handle violation
         if (!$visit) {
-            return $this->handleViolation($user, $person->id, $validated, $request->ip());
+            // return $this->handleViolation($user, $person->id, $validated, $request->ip());
         }
 
 

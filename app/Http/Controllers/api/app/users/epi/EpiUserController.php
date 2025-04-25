@@ -12,6 +12,7 @@ use App\Enums\CheckListEnum;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use App\Enums\CheckListTypeEnum;
+use App\Enums\PermissionEnum;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\App;
 use App\Http\Controllers\Controller;
@@ -106,6 +107,8 @@ class EpiUserController extends Controller
         } else if ($locale == LanguageEnum::pashto->value) {
             $gender = $user->name_ps;
         }
+
+
         return response()->json(
             [
                 "user" => [

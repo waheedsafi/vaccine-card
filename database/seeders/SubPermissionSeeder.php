@@ -17,7 +17,7 @@ class SubPermissionSeeder extends Seeder
         $this->subUserPermissions();
         $this->subVeccineCertificatePermissions();
         $this->subCertificatePaymentPermissions();
-        $this->subSettingPermissions();
+        $this->subConfigurationsPermissions();
         $this->subActivityPermissions();
     }
     public function subUserPermissions()
@@ -50,12 +50,12 @@ class SubPermissionSeeder extends Seeder
             ]);
         }
     }
-    public function subSettingPermissions()
+    public function subConfigurationsPermissions()
     {
-        foreach (SubPermissionEnum::SETTINGS as $id => $role) {
+        foreach (SubPermissionEnum::CONFIGURATIONS as $id => $role) {
             SubPermission::factory()->create([
                 "id" => $id,
-                "permission" => PermissionEnum::settings->value,
+                "permission" => PermissionEnum::configurations->value,
                 "name" => $role,
             ]);
         }

@@ -5,8 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class StatusTypeTran extends Model
+class CurrencyTran extends Model
 {
+    /** @use HasFactory<\Database\Factories\CurrencyTranFactory> */
     use HasFactory;
     protected $guarded = [];
 }

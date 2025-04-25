@@ -9,4 +9,5 @@ class Currency extends Model
 {
     /** @use HasFactory<\Database\Factories\CurrencyFactory> */
     use HasFactory;
+    protected $guarded = [];
 }

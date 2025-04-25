@@ -2,13 +2,9 @@
 
 namespace App\Providers;
 
-use App\Repositories\ngo\NgoRepository;
 use Illuminate\Support\ServiceProvider;
 use App\Repositories\User\UserRepository;
 use App\Repositories\Storage\StorageRepository;
-use App\Repositories\ngo\NgoRepositoryInterface;
-use App\Repositories\Approval\ApprovalRepository;
-use App\Repositories\Director\DirectorRepository;
 use App\Repositories\User\UserRepositoryInterface;
 use App\Repositories\Permission\PermissionRepository;
 use App\Repositories\PendingTask\PendingTaskRepository;

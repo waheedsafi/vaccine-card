@@ -4,7 +4,8 @@ namespace App\Enums;
 
 enum StatusTypeEnum: int
 {
-
-    case paid = 1;
-    case free = 2;
+    case payment = 1;
+    case no_payment = 2;
+    case paid = 3;
+    case unpaid = 4;
 }

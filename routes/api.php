@@ -19,7 +19,6 @@ require __DIR__ . '/api/template/destinationType.php';
 require __DIR__ . '/api/template/audit.php';
 require __DIR__ . '/api/template/location.php';
 require __DIR__ . '/api/template/pendingTask.php';
-require __DIR__ . '/api/template/status.php';
 require __DIR__ . '/api/app/dashboard/epiAdminDashboard.php';
 require __DIR__ . '/api/app/dashboard/financeAdminDashboard.php';
 require __DIR__ . '/api/app/dashboard/debuggerAdminDashboard.php';

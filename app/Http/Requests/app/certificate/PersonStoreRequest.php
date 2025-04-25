@@ -12,7 +12,6 @@ class PersonStoreRequest extends FormRequest
      */
 
 
-
     public function prepareForValidation()
     {
         if ($this->has('vaccines') && is_string($this->vaccines)) {

@@ -26,14 +26,6 @@ class UserPermissionSeeder extends Seeder
 
     public function epiSuperPermissions()
     {
-        EpiPermission::factory()->create([
-            "view" => true,
-            "edit" => true,
-            "delete" => true,
-            "add" => true,
-            "epi_user_id" => RoleEnum::epi_super->value,
-            "permission" => "dashboard"
-        ]);
         $userPermission = EpiPermission::factory()->create([
             "view" => true,
             "edit" => true,
@@ -49,9 +41,9 @@ class UserPermissionSeeder extends Seeder
             "delete" => true,
             "add" => true,
             "epi_user_id" => RoleEnum::epi_super->value,
-            "permission" => "settings"
+            "permission" => "configurations"
         ]);
-        $this->addEpiSettingSubPermissions($userPermission);
+        $this->addEpiConfigurationubPermissions($userPermission);
         EpiPermission::factory()->create([
             "view" => true,
             "edit" => true,
@@ -73,14 +65,6 @@ class UserPermissionSeeder extends Seeder
     }
     public function financeSuperPermissions()
     {
-        FinancePermission::factory()->create([
-            "view" => true,
-            "edit" => true,
-            "delete" => true,
-            "add" => true,
-            "finance_user_id" => RoleEnum::finance_super->value,
-            "permission" => "dashboard"
-        ]);
         $userPermission = FinancePermission::factory()->create([
             "view" => true,
             "edit" => true,
@@ -96,9 +80,9 @@ class UserPermissionSeeder extends Seeder
             "delete" => true,
             "add" => true,
             "finance_user_id" => RoleEnum::finance_super->value,
-            "permission" => "settings"
+            "permission" => "configurations"
         ]);
-        $this->addFinanceSettingSubPermissions($userPermission);
+        $this->addFinanceConfigurationsSubPermissions($userPermission);
         FinancePermission::factory()->create([
             "view" => true,
             "edit" => true,
@@ -126,14 +110,6 @@ class UserPermissionSeeder extends Seeder
             "delete" => true,
             "add" => true,
             "user_id" => RoleEnum::debugger->value,
-            "permission" => "dashboard"
-        ]);
-        UserPermission::factory()->create([
-            "view" => true,
-            "edit" => true,
-            "delete" => true,
-            "add" => true,
-            "user_id" => RoleEnum::debugger->value,
             "permission" => "logs"
         ]);
         UserPermission::factory()->create([
@@ -144,15 +120,6 @@ class UserPermissionSeeder extends Seeder
             "user_id" => RoleEnum::debugger->value,
             "permission" => "audit"
         ]);
-        $userPermission = UserPermission::factory()->create([
-            "view" => true,
-            "edit" => true,
-            "delete" => true,
-            "add" => true,
-            "user_id" => RoleEnum::debugger->value,
-            "permission" => "settings"
-        ]);
-        $this->addSettingSubPermissions($userPermission);
     }
     public function addEpiSuperSubUserPermissions($userPermission)
     {
@@ -241,9 +208,9 @@ class UserPermissionSeeder extends Seeder
         ]);
     }
 
-    public function addEpiSettingSubPermissions($userPermission)
+    public function addEpiConfigurationubPermissions($userPermission)
     {
-        foreach (SubPermissionEnum::SETTINGS as $id => $role) {
+        foreach (SubPermissionEnum::CONFIGURATIONS as $id => $role) {
             EpiPermissionSub::factory()->create([
                 "edit" => true,
                 "delete" => true,
@@ -254,28 +221,15 @@ class UserPermissionSeeder extends Seeder
             ]);
         }
     }
-    public function addFinanceSettingSubPermissions($userPermission)
+    public function addFinanceConfigurationsSubPermissions($userPermission)
     {
-        foreach (SubPermissionEnum::SETTINGS as $id => $role) {
+        foreach (SubPermissionEnum::CONFIGURATIONS as $id => $role) {
             FinancePermissionSub::factory()->create([
                 "edit" => true,
                 "delete" => true,
                 "add" => true,
                 "view" => true,
                 "finance_permission_id" => $userPermission->id,
-                "sub_permission_id" => $id,
-            ]);
-        }
-    }
-    public function addSettingSubPermissions($userPermission)
-    {
-        foreach (SubPermissionEnum::SETTINGS as $id => $role) {
-            UserPermissionSub::factory()->create([
-                "edit" => true,
-                "delete" => true,
-                "add" => true,
-                "view" => true,
-                "user_permission_id" => $userPermission->id,
                 "sub_permission_id" => $id,
             ]);
         }

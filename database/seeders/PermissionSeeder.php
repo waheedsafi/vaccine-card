@@ -13,21 +13,15 @@ class PermissionSeeder extends Seeder
     public function run(): void
     {
         // Icons
-        $dashboard = 'icons/home.svg';
         $users = 'icons/users-group.svg';
         $vaccine_certificate = 'icons/card.svg';
         $certificate_payment = 'icons/finance.svg';
         $reports = 'icons/chart.svg';
-        $settings = 'icons/settings.svg';
+        $configurations = 'icons/configurations.svg';
         $logs = 'icons/logs.svg';
         $audit = 'icons/audits.svg';
         $activity = 'icons/activity.svg';
 
-        Permission::factory()->create([
-            "name" => "dashboard",
-            "icon" => $dashboard,
-            "priority" => 1,
-        ]);
         Permission::factory()->create([
             "name" => "users",
             "icon" => $users,
@@ -49,8 +43,8 @@ class PermissionSeeder extends Seeder
             "priority" => 5,
         ]);
         Permission::factory()->create([
-            "name" => "settings",
-            "icon" => $settings,
+            "name" => "configurations",
+            "icon" => $configurations,
             "priority" => 6,
         ]);
         Permission::factory()->create([

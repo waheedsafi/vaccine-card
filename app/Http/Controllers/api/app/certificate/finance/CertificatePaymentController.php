@@ -67,11 +67,11 @@ class CertificatePaymentController extends Controller
     {
 
 
-        $row = PaymentAmount::select('amount')->where('payment_status_id', StatusTypeEnum::paid->value)->first();
+        // $row = PaymentAmount::select('amount')->where('payment_status_id', StatusTypeEnum::paid->value)->first();
 
         return response()->json([
             'message' => __('app_translation.success'),
-            'payment_amounts' => $row->amount,
+            // 'payment_amounts' => $row->amount,
         ], 200, [], JSON_UNESCAPED_UNICODE);
     }
 

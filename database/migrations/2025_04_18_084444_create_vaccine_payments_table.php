@@ -27,8 +27,8 @@ return new class extends Migration
             $table->foreign('finance_user_id')->references('id')->on('finance_users')
                 ->onUpdate('cascade')
                 ->onDelete('no action');
-            $table->unsignedBigInteger('payment_amount_id');
-            $table->foreign('payment_amount_id')->references('id')->on('payment_amounts')
+            $table->unsignedBigInteger('system_payment_id');
+            $table->foreign('system_payment_id')->references('id')->on('system_payments')
                 ->onUpdate('cascade')
                 ->onDelete('no action');
             $table->timestamps();

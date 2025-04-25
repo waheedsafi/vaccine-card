@@ -11,14 +11,4 @@ class Destination extends Model
 {
     use HasFactory, Auditable;
     protected $guarded = [];
-
-    public function type()
-    {
-        return $this->belongsTo(DestinationType::class, 'destination_type_id');
-    }
-    // In the Destination model
-    public function translations()
-    {
-        return $this->morphMany(Translate::class, 'translable');
-    }
 }

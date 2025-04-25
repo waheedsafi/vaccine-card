@@ -33,18 +33,16 @@ enum SubPermissionEnum: int
         12 => "vaccination_info",
         13 => "card_issuing",
     ];
-        // settings
-    case setting_language = 21;
-    case setting_job = 22;
-    case setting_destination = 23;
-    case vaccine_type = 24;
-    case setting_vaccine_center = 25;
-    public const SETTINGS = [
-        21 => "language",
-        22 => "job",
-        23 => "destination",
-        24 => "vaccine_type",
-        25 => "vaccine_center",
+        // configurations
+    case configuration_job = 21;
+    case configuration_destination = 22;
+    case configuration_vaccine_type = 23;
+    case configuration_vaccine_center = 24;
+    public const CONFIGURATIONS = [
+        21 => "job",
+        22 => "destination",
+        23 => "vaccine_type",
+        24 => "vaccine_center",
     ];
         // Certificate Payment
     case certificate_payment_info = 31;

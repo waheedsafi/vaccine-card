@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('status_type_trans', function (Blueprint $table) {
+        Schema::create('payment_status_trans', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->unsignedBigInteger('status_type_id');
-            $table->foreign('status_type_id')->references('id')->on('status_types')
+            $table->unsignedBigInteger('payment_status_id');
+            $table->foreign('payment_status_id')->references('id')->on('payment_statuses')
                 ->onUpdate('cascade')
                 ->onDelete('no action');
             $table->string('language_name');
@@ -23,6 +23,7 @@ return new class extends Migration
                 ->onUpdate('cascade')
                 ->onDelete('no action');
             $table->timestamps();
+            $table->index(["payment_status_id", "language_name"]);
         });
     }
 
@@ -31,6 +32,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('status_type_trans');
+        Schema::dropIfExists('payment_status_trans');
     }
 };

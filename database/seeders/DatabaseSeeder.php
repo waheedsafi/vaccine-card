@@ -55,27 +55,6 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->languages();
-
-        // $curreny =  Currency::factory()->create([
-        //     'abbr' => 'AFG',
-        //     'symbole' => 'AF',
-        // ]);
-        // $curreny =  CurrencyTrans::factory()->create([
-        //     'currency_id' => $curreny->id,
-        //     'language_name' => 'en',
-        //     'name' => 'Afghani'
-        // ]);
-        // $curreny =  CurrencyTrans::factory()->create([
-        //     'currency_id' => $curreny->id,
-        //     'language_name' => 'fa',
-        //     'name' => 'افغانی'
-        // ]);
-        // $curreny =  CurrencyTrans::factory()->create([
-        //     'currency_id' => $curreny->id,
-        //     'language_name' => 'ps',
-        //     'name' => 'افغانی'
-        // ]);
-
         $this->gender();
         $this->call(CountrySeeder::class);
         $this->call(VaccineCenterSeeder::class);
@@ -94,7 +73,6 @@ class DatabaseSeeder extends Seeder
         $this->nidTypes();
         $this->travelTypes();
     }
-
     public function travelTypes()
     {
         $travel = TravelType::create([]);

@@ -11,9 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('payment_amounts', function (Blueprint $table) {
+        Schema::create('system_payments', function (Blueprint $table) {
             $table->id();
-            $table->decimal('amount', 15, 2);
+            $table->boolean('active');
+            $table->unsignedBigInteger('finance_user_id');
+            $table->foreign('finance_user_id')->references('id')->on('finance_users')
+                ->onUpdate('cascade')
+                ->onDelete('no action');
+            $table->decimal('amount', 15, 2)->comment('If status free set amount to 0');
             $table->unsignedBigInteger('payment_status_id');
             $table->foreign('payment_status_id')->references('id')->on('payment_statuses')
                 ->onUpdate('cascade')
@@ -23,6 +28,7 @@ return new class extends Migration
                 ->onUpdate('cascade')
                 ->onDelete('no action');
             $table->timestamps();
+            $table->index(["currancy_id", "finance_user_id", "payment_status_id"], 'currancy_finance_user_payment_status_id');
         });
     }
 
@@ -31,6 +37,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('payment_amounts');
+        Schema::dropIfExists('system_payments');
     }
 };
