@@ -29,7 +29,6 @@ use App\Http\Requests\app\certificate\PersonStoreRequest;
 use App\Http\Requests\app\certificate\UpdatePersonInfoRequest;
 use App\Models\Reciept;
 use App\Repositories\PendingTask\PendingTaskRepositoryInterface;
-use App\Models\VaccinePayment;
 use Illuminate\Support\Facades\App;
 
 class CertificateController extends Controller
