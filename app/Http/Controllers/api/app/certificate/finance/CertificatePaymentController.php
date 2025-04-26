@@ -14,9 +14,7 @@ use App\Http\Controllers\Controller;
 use App\Models\FinanceUser;
 use App\Traits\Reciept\RecieptTrait;
 use App\Models\FinanceUserPasswordChange;
-use App\Models\PaymentAmount;
 use App\Models\People;
-use App\Models\SystemPayment;
 use App\Models\ViolationLog;
 use Illuminate\Support\Facades\App;
 
@@ -31,12 +29,16 @@ class CertificatePaymentController extends Controller
         ]);
         $locale = App::getLocale();
         $authUser = $request->user();
+        $zone_id = $authUser->zone_id;
 
         $query = DB::table('people as p');
         $this->applySearch($query, $request);
         $person_certificate = $query
             ->join('epi_users as eu', 'eu.id', '=', 'p.epi_user_id')
-            ->join('visits as v', 'v.people_id', '=', 'p.id')
+            ->join('visits as v', function ($join) use (&$zone_id) {
+                $join->on('v.people_id', '=', 'p.id')
+                    ->where('v.zone_id', $zone_id);
+            })
             ->leftJoin('vaccine_payments as vp', 'vp.visit_id', '=', 'v.id')
             ->select(
                 "p.id",

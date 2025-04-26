@@ -119,13 +119,16 @@ class CertificateController extends Controller
             'filters.search.value' => 'required|string',
         ]);
         $authUser = $request->user();
+        $zone_id = $authUser->zone_id;
 
         $query = DB::table('people as p');
         $this->applySearch($query, $request);
         $person_certificate = $query
             ->join('epi_users as eu', 'eu.id', '=', 'p.epi_user_id')
-            ->join('visits as v', 'v.people_id', '=', 'p.id')
-            ->leftJoin('vaccine_payments as vp', 'vp.visit_id', '=', 'v.id')
+            ->join('visits as v', function ($join) use (&$zone_id) {
+                $join->on('v.people_id', '=', 'p.id')
+                    ->where('v.zone_id', $zone_id);
+            })->leftJoin('vaccine_payments as vp', 'vp.visit_id', '=', 'v.id')
             ->leftJoin('vaccine_cards as vc', 'vc.vaccine_payment_id', '=', 'v.id')
             ->select(
                 "p.id",
@@ -145,7 +148,7 @@ class CertificateController extends Controller
         if (!$person_certificate) {
             return response()->json(
                 [
-                    'message' => __('app_translation.not_allowed_different_zone'),
+                    'message' => __('app_translation.passport_not_found'),
                     "person_certificate" => null,
                 ],
                 404,
