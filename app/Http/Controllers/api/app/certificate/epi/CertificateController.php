@@ -21,6 +21,7 @@ use App\Models\EpiUserPasswordChange;
 use App\Traits\Card\VaccineCardTrait;
 use App\Http\Requests\app\certificate\PersonStoreRequest;
 use App\Http\Requests\app\certificate\UpdatePersonInfoRequest;
+use App\Models\VaccinePayment;
 
 class CertificateController extends Controller
 {
@@ -434,18 +435,34 @@ class CertificateController extends Controller
 
     public function generateCertificate(Request $request)
     {
-        // return 'hell';
         $validated = $request->validate([
-            'payment_number'   => 'required|string',
-            'passport_number'  => 'required|string',
+            'passport_number'   => 'required|string',
+            'visit_id'  => 'required',
+            'payment_number'  => 'required',
         ]);
+        $payment = VaccinePayment::where('payment_uuid', '=', $request->payment_number)
+            ->select('payment_status_id', 'visit_id')
+            ->first();
+        if (!$payment)
+            return response()->json([
+                'message' => __('app_translation.unprocessable'),
+            ], 500);
+        // $visit_id = $request->visit_id;
+        // 1. validate visit_id belongs to passport_number
+        // $record = DB::table('people as p')
+        //     ->where('p.passport_number', '=', $request->passport_number)
+        //     ->join('visits as v', function ($join) use (&$visit_id) {
+        //         $join->on('v.people_id', '=', 'p.id')
+        //             ->where('p.id', $visit_id);
+        //     })
+        //     ->select('v.id as visit_id', 'p.id as people_id')
+        //     ->first();
 
         // $user = $request->user();
 
+
         // Retrieve person by passport number
         $person = People::where('passport_number', $validated['passport_number'])->first();
-
-
 
         // If person does not exist, handle violation
         // if (!$person) {

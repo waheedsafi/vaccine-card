@@ -44,4 +44,5 @@ return [
     "allowed_file_types" => "Allowed file types: ",
     "file_size_error" => "File size must be between this size: ",
     "today_visit_not_found" => "Today visit not found.",
+    "unprocessable" => "Unprocessable.",
 ];

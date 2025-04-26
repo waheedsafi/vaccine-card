@@ -44,5 +44,6 @@ return [
     'allowed_file_types' => 'انواع فایل‌های مجاز:',
     'file_size_error' => 'اندازه فایل باید بین این اندازه‌ها باشد:',
     'today_visit_not_found' => 'بازدید امروز پیدا نشد.',
-    'passport_number' => 'شماره پاسپورت'
+    'passport_number' => 'شماره پاسپورت',
+    "unprocessable" => "غیرقابل ادامه.",
 ];
