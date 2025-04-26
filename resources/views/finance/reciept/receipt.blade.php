@@ -227,7 +227,6 @@
                                             <br>
                                             <br>
                                             <br>
-                                            نمبر ثبت سرتفیکت : {{ $data['certificate_id'] }}
 
                                             <br>
                                             <br>

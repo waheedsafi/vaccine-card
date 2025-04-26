@@ -2,13 +2,14 @@
 
 namespace App\Traits\Reciept;
 
-use App\Models\People;
 use Mpdf\Mpdf;
+use App\Models\People;
 use App\Models\Person;
-use App\Models\VaccineCenterTran;
 use App\Models\ZoneTrans;
+use Illuminate\Support\Str;
 use Mpdf\Config\FontVariables;
 use Mpdf\Config\ConfigVariables;
+use App\Models\VaccineCenterTran;
 
 
 trait RecieptTrait
@@ -56,7 +57,7 @@ trait RecieptTrait
         $mpdf->WriteHTML($part);
 
 
-        $fileName = "vaccine_waheed.pdf";
+        $fileName = 'vaccine_' . Str::uuid() . '.pdf';
         $outputPath = storage_path("app/private/temp/");
         if (!is_dir($outputPath)) {
             mkdir($outputPath, 0755, true);
@@ -64,9 +65,9 @@ trait RecieptTrait
         $filePath = $outputPath . $fileName;
 
         // return $filePath; F
-        $mpdf->Output($filePath, 'I'); // Save to file
+        $mpdf->Output($filePath, 'F'); // Save to file
 
-
+        return response()->download($filePath)->deleteFileAfterSend(true);
     }
 
 

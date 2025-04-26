@@ -169,8 +169,8 @@ class CertificatePaymentController extends Controller
     public function downloadReceipt(Request $request)
     {
         $request->validate([
-            'passport_number' => 'required|numeric',
-            'payment_id' => 'required|numeric',
+            'passport_number' => 'required|string',
+            'visit_id' => 'required|numeric',
         ]);
         $user = $request->user();
         $passport_number = $request->passport_number;
@@ -179,7 +179,6 @@ class CertificatePaymentController extends Controller
 
         // Validate zone and passport
         $record = DB::table('vaccine_payments as vp')
-            ->where('vp.id', '=', $request->payment_id)
             ->join('visits as v', 'v.id', '=', 'vp.visit_id')
             ->join('people as p', function ($join) use (&$passport_number) {
                 $join->on('v.people_id', '=', 'p.id')
@@ -188,41 +187,41 @@ class CertificatePaymentController extends Controller
             ->join('epi_users as eu', function ($join) use (&$zone_id) {
                 $join->on('eu.id', '=', 'p.epi_user_id')
                     ->where('eu.zone_id', $zone_id);
-            })->first();
+            })
+            ->where('v.id', '=', $request->visit_id)
+            ->select(
+                'vp.id as vaccine_pay_id',
+                'v.id as visit_id'
+            )
+            ->first();
 
-        return response()->json([
-            'message' => 'hello',
-            'check' => $record,
-        ], 404);
+
         if ($record) {
             // Means payment_id belongs to the people also people is in the same zone
         }
 
 
         // Eager load related models in a single querpy
-        $person = People::with(['visits.vaccinePayment.receipt'])
-            // ->where('passport_number', $request->passport_numbere)
-            ->where('passport_number', 'p012345')
-            ->first();
+        // $person = People::with(['visits.vaccinePayment.receipt'])
+        //     ->where('passport_number', $request->passport_numbere)
+        //     ->first();
 
-        if (
-            !$person ||
-            !$person->visits->first() ||
-            !$person->visits->first()->vaccinePayment ||
-            !$person->visits->first()->vaccinePayment->receipt
-        ) {
+
+
+
+        $receipt = Reciept::where('vaccine_payment_id', $record->vaccine_pay_id)->first();
+        if (!$receipt) {
             return response()->json([
                 'message' => __('app_translation.unauthorized'),
             ], 403);
         }
 
-        $vaccinePayment = $person->visits->first()->vaccinePayment;
-        $receipt = $vaccinePayment->receipt;
-
         // Update download count
         $receipt->increment('download_count');
 
-        return $this->generateRecipt($vaccinePayment->id, $user);
+
+
+        return $this->generateRecipt($request->visit_id, $user);
     }
 
     // search function 
