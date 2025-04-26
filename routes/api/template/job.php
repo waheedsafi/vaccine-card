@@ -15,3 +15,7 @@ Route::prefix('v1')->group(function () {
     Route::get('/jobs', [JobController::class, "jobs"]);
     Route::get('/job/{id}', [JobController::class, "job"]);
 });
+Route::prefix('v1')->middleware(["multiAuthorized:" . 'epi:api,finance:api'])->group(function () {
+    Route::get('/jobs', [JobController::class, "jobs"]);
+    Route::get('/job/{id}', [JobController::class, "job"]);
+});

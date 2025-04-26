@@ -45,4 +45,8 @@ return [
     "file_size_error" => "File size must be between this size: ",
     "today_visit_not_found" => "Today visit not found.",
     "unprocessable" => "Unprocessable.",
+    "not_allowed_different_zone" => "You are not allowed to get different zone payment.",
+    "passport_not_found" => "Passport number not found.",
+    "file_not_found_reupload" => "File not found or has been currepted upload file again.",
+    "payment_number_not_found" => "The payment number is incorrect, it was not issued by the system."
 ];

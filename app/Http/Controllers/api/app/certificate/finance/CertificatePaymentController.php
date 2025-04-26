@@ -19,8 +19,6 @@ use App\Models\People;
 use App\Models\SystemPayment;
 use App\Models\ViolationLog;
 use Illuminate\Support\Facades\App;
-use Pest\Arch\ValueObjects\Violation;
-use Psy\CodeCleaner\FunctionReturnInWriteContextPass;
 
 class CertificatePaymentController extends Controller
 {
@@ -53,26 +51,28 @@ class CertificatePaymentController extends Controller
             )
             ->latest('v.id')
             ->first(); // You can apply latest ordering here if needed
-
         if (!$person_certificate) {
             return response()->json(
                 [
-                    "certificate_payment" => null,
+                    'message' => __('app_translation.passport_not_found'),
+                    "person_certificate" => null,
                 ],
-                200,
+                404,
                 [],
                 JSON_UNESCAPED_UNICODE
             );
         } else if ($authUser->zone_id != $person_certificate->zone_id) {
             return response()->json(
                 [
+                    'message' => __('app_translation.not_allowed_different_zone'),
                     "certificate_payment" => null,
                 ],
-                200,
+                500,
                 [],
                 JSON_UNESCAPED_UNICODE
             );
         }
+
         $amount = DB::table('system_payments as sp')
             ->where('sp.active', '=', true)
             ->leftjoin('currency_trans as ct', function ($join) use (&$locale) {

@@ -145,18 +145,20 @@ class CertificateController extends Controller
         if (!$person_certificate) {
             return response()->json(
                 [
+                    'message' => __('app_translation.not_allowed_different_zone'),
                     "person_certificate" => null,
                 ],
-                200,
+                404,
                 [],
                 JSON_UNESCAPED_UNICODE
             );
-        } else if ($authUser->zone_id != $person_certificate->zone_id) {
+        } else  if ($authUser->zone_id != $person_certificate->zone_id) {
             return response()->json(
                 [
-                    "person_certificate" => null,
+                    'message' => __('app_translation.not_allowed_different_zone'),
+                    "certificate_payment" => null,
                 ],
-                200,
+                500,
                 [],
                 JSON_UNESCAPED_UNICODE
             );
@@ -639,21 +641,16 @@ class CertificateController extends Controller
             'payment_number' => 'required|string',
         ]);
 
-
-
-
         $receipt = Reciept::join('vaccine_payments as vp', 'vp.id', '=', 'reciepts.vaccine_payment_id')
             ->select('reciepts.id as receipt_id', 'vp.id as vaccine_pay_id')
             ->where('vp.payment_uuid', $request->payment_number)->first();
         if (!$receipt) {
             return response()->json([
-                "message" => __("app_translation.not_found"),
+                "message" => __("app_translation.payment_number_not_found"),
             ], 404);
         }
 
-
         DB::beginTransaction();
-
         $task = $this->pendingTaskRepository->pendingTaskExist(
             $request->user(),
             CheckListTypeEnum::finance->value,
@@ -663,7 +660,7 @@ class CertificateController extends Controller
 
         if (!$task) {
             return response()->json([
-                'message' => __('app_translation.task_not_found')
+                'message' => __('app_translation.file_not_found_reupload')
             ], 404);
         }
         $document_id = '';
