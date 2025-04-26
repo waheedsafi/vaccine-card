@@ -22,11 +22,77 @@ use App\Traits\Card\VaccineCardTrait;
 use App\Http\Requests\app\certificate\PersonStoreRequest;
 use App\Http\Requests\app\certificate\UpdatePersonInfoRequest;
 use App\Models\VaccinePayment;
+use Illuminate\Support\Facades\App;
 
 class CertificateController extends Controller
 {
     use VaccineCardTrait;
 
+    public function personIssuedCards($id)
+    {
+        $locale = App::getLocale();
+
+        $tr = DB::table('people as p')
+            ->where('p.id', $id)
+            ->join('visits as v', 'v.people_id', '=', 'p.id')
+            ->join('country_trans as ct', function ($join) use ($locale) {
+                $join->on('ct.country_id', '=', 'v.country_id')
+                    ->where('ct.language_name', '=', $locale);
+            })
+            ->join('vaccine_payments as vp', 'vp.visit_id', '=', 'v.id')
+            ->join('vaccine_cards as vc', function ($join) {
+                $join->on('vc.vaccine_payment_id', '=', 'vp.id');
+                // ->where('vc.issue_date', '=', $locale);
+            })
+            ->select(
+                'v.visited_date',
+                'ct.value as destination_country',
+            )
+            ->get();
+        return response()->json(
+            [
+                "data" => $tr,
+            ],
+            200,
+            [],
+            JSON_UNESCAPED_UNICODE
+        );
+    }
+    public function personaVaccines($id)
+    {
+        $locale = App::getLocale();
+        $tr = DB::table('people as p')
+            ->where('p.id', $id)
+            ->join('visits as v', 'v.people_id', '=', 'p.id')
+            ->join('country_trans as ct', function ($join) use ($locale) {
+                $join->on('ct.country_id', '=', 'v.country_id')
+                    ->where('ct.language_name', '=', $locale);
+            })
+            ->join('travel_type_trans as ttt', function ($join) use ($locale) {
+                $join->on('ttt.travel_type_id', '=', 'v.travel_type_id')
+                    ->where('ttt.language_name', '=', $locale);
+            })
+            ->join('vaccines as vac', 'vac.visit_id', '=', 'v.id')
+            ->join('vaccine_type_trans as vtt', function ($join) use ($locale) {
+                $join->on('vtt.vaccine_type_id', '=', 'vac.vaccine_type_id')
+                    ->where('vtt.language_name', '=', $locale);
+            })
+            ->select(
+                'v.visited_date',
+                'vtt.name as vaccine_type',
+                'ttt.value as travel_type',
+                'ct.value as destination_country',
+            )
+            ->get();
+        return response()->json(
+            [
+                "data" => $tr,
+            ],
+            200,
+            [],
+            JSON_UNESCAPED_UNICODE
+        );
+    }
     public function searchCertificate(Request $request)
     {
         $request->validate([
@@ -40,6 +106,7 @@ class CertificateController extends Controller
             ->join('epi_users as eu', 'eu.id', '=', 'p.epi_user_id')
             ->join('visits as v', 'v.people_id', '=', 'p.id')
             ->leftJoin('vaccine_payments as vp', 'vp.visit_id', '=', 'v.id')
+            ->leftJoin('vaccine_cards as vc', 'vc.vaccine_payment_id', '=', 'v.id')
             ->select(
                 "p.id",
                 "eu.zone_id",
@@ -50,6 +117,7 @@ class CertificateController extends Controller
                 "v.id as visit_id",
                 "v.visited_date as last_visit_date",
                 "vp.payment_status_id",
+                "vc.is_downloaded",
             )
             ->latest('v.id')
             ->first(); // You can apply latest ordering here if needed
