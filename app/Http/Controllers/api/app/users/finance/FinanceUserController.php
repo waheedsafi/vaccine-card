@@ -158,7 +158,7 @@ class FinanceUserController extends Controller
         $query = DB::table('finance_users as fu')
             ->whereIn('fu.role_id', $includeRole)
             ->when(!empty($includeZone), function ($q) use ($includeZone) {
-                $q->whereIn('eu.zone_id', $includeZone);
+                $q->whereIn('fu.zone_id', $includeZone);
             })
             ->join('contacts as c', 'c.id', '=', 'fu.contact_id')
             ->join('emails as e', 'e.id', '=', 'fu.email_id')
@@ -258,7 +258,7 @@ class FinanceUserController extends Controller
             "username" => $request->username,
             "email_id" => $email->id,
             "password" => Hash::make($validatedData['password']),
-            "status" => $email->status == 'true',
+            "status" => $request->status == true,
             "role_id" => $role_id,
             "contact_id" => $contact ? $contact->id : $contact,
             "zone_id" => $zone_id,

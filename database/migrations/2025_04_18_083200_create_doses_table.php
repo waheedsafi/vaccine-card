@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('doses', function (Blueprint $table) {
             $table->id();
+            $table->string('dose');
             $table->string('batch_number');
             $table->string('vaccine_date');
             $table->unsignedBigInteger('vaccine_id');

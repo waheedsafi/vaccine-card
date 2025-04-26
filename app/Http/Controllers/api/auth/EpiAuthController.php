@@ -31,6 +31,11 @@ class EpiAuthController extends Controller
     {
         $locale = App::getLocale();
         $user = $request->user();
+        if ($user->status != 1 || $user->disabled_parmanently == 1) {
+            return response()->json([
+                'message' => __('app_translation.account_is_lock'),
+            ], 401, [], JSON_UNESCAPED_UNICODE);
+        }
 
         $user = DB::table('epi_users as eu')
             ->where('eu.id', $user->id)

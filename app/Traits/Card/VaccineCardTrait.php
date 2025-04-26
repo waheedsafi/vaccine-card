@@ -16,11 +16,6 @@ trait VaccineCardTrait
     {
 
 
-
-
-
-
-
         $configVariables = new ConfigVariables();
         $fontDirs = $configVariables->getDefaults()['fontDir'];
         $fontVariables = new FontVariables();

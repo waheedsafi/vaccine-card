@@ -94,10 +94,7 @@ trait RecieptTrait
                 'people.passport_number',
                 'vp.paid_amount',
                 'vp.payment_uuid',
-                'vs.certificate_id',
                 'ttt.value as travel_type_name',
-
-
             )
             ->first();
 
@@ -116,7 +113,6 @@ trait RecieptTrait
             'paid_amount' => $records->paid_amount,
             'user_name' => $user->full_name ?? '',
             'zone' => $zone->name ?? '',
-            'certificate_id' => $records->certificate_id,
             'registeration_number' => $user->registeration_number ?? '',
 
         ];

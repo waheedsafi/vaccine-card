@@ -262,7 +262,7 @@ class EpiUserController extends Controller
             "username" => $request->username,
             "email_id" => $email->id,
             "password" => Hash::make($validatedData['password']),
-            "status" => $email->status == true,
+            "status" => $request->status == true,
             "role_id" => $role_id,
             "contact_id" => $contact ? $contact->id : $contact,
             "zone_id" => $zone_id,

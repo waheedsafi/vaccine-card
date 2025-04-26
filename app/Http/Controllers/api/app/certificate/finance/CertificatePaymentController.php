@@ -16,7 +16,9 @@ use App\Traits\Reciept\RecieptTrait;
 use App\Models\FinanceUserPasswordChange;
 use App\Models\PaymentAmount;
 use App\Models\People;
+use App\Models\SystemPayment;
 use App\Models\ViolationLog;
+use Illuminate\Support\Facades\App;
 use Pest\Arch\ValueObjects\Violation;
 use Psy\CodeCleaner\FunctionReturnInWriteContextPass;
 
@@ -26,43 +28,220 @@ class CertificatePaymentController extends Controller
 
     public function searchCertificate(Request $request)
     {
-
         $request->validate([
             'filters.search.value' => 'required|string',
         ]);
+        $locale = App::getLocale();
+        $authUser = $request->user();
 
-        $perPage = $request->input('per_page', 10);
-        $page = $request->input('page', 1);
-        $searchValue = $request->input('filters.search.value');
-
-        $query = DB::table('people as p')
-            ->where('p.passport_number', '=', $searchValue)
+        $query = DB::table('people as p');
+        $this->applySearch($query, $request);
+        $person_certificate = $query
+            ->join('epi_users as eu', 'eu.id', '=', 'p.epi_user_id')
             ->join('visits as v', 'v.people_id', '=', 'p.id')
             ->leftJoin('vaccine_payments as vp', 'vp.visit_id', '=', 'v.id')
             ->select(
                 "p.id",
+                "eu.zone_id",
                 "p.passport_number",
                 "p.full_name",
                 "p.father_name",
                 "p.created_at",
                 "v.id as visit_id",
                 "v.visited_date as last_visit_date",
-                DB::raw('CASE WHEN vp.id IS NULL THEN 0 ELSE 1 END as has_payment')
+                "vp.payment_status_id",
             )
-            ->latest('v.id'); // You can apply latest ordering here if needed
+            ->latest('v.id')
+            ->first(); // You can apply latest ordering here if needed
 
+        if (!$person_certificate) {
+            return response()->json(
+                [
+                    "certificate_payment" => null,
+                ],
+                200,
+                [],
+                JSON_UNESCAPED_UNICODE
+            );
+        } else if ($authUser->zone_id != $person_certificate->zone_id) {
+            return response()->json(
+                [
+                    "certificate_payment" => null,
+                ],
+                200,
+                [],
+                JSON_UNESCAPED_UNICODE
+            );
+        }
+        $amount = DB::table('system_payments as sp')
+            ->where('sp.active', '=', true)
+            ->leftjoin('currency_trans as ct', function ($join) use (&$locale) {
+                $join->on('ct.id', '=', 'sp.currancy_id')
+                    ->where('ct.language_name', $locale);
+            })
+            ->select('sp.amount', 'ct.name as currency')
+            ->first();
 
-        $tr = $query->paginate($perPage, ['*'], 'page', $page);
         return response()->json(
             [
-                "person_certificates" => $tr,
+                "certificate_payment" => [
+                    'id' => $person_certificate->id,
+                    'passport_number' => $person_certificate->passport_number,
+                    'full_name' => $person_certificate->full_name,
+                    'father_name' => $person_certificate->father_name,
+                    'created_at' => $person_certificate->created_at,
+                    'visit_id' => $person_certificate->visit_id,
+                    'last_visit_date' => $person_certificate->last_visit_date,
+                    'payment_status_id' => $person_certificate->payment_status_id,
+                    'amount' => $amount->amount,
+                    'currency' => $amount->currency,
+                ],
             ],
             200,
             [],
             JSON_UNESCAPED_UNICODE
         );
     }
+    public function payment(Request $request)
+    {
+        // Validate input
+        $validated = $request->validate([
+            'passport_number'     => 'required|string',
+            'visit_id'            => 'required|numeric',
+            'paid_amount'         => 'required|numeric',
+        ]);
+        $user = $request->user();
+        // Get person and check visit existence
+        $person = People::where('passport_number', $validated['passport_number'])->first();
 
+        if (!$person || !Visit::where('id', $validated['visit_id'])->where('people_id', $person->id)->exists()) {
+            // Deactivate user and log violation
+            FinanceUser::where('id', $user->id)->update(['status' => false]);
+            ViolationLog::create([
+                'user_type'       => 'FinanceUser',
+                'user_id'         => $user->id,
+                'target_zone_id'  => $user->zone_id,
+                'action'          => 'Payment',
+                'target_type'     => 'people',
+                'target_id'       => $person?->id,
+                'reason'          => "Attempted to process payment for a non-existent visit (ID: {$validated['visit_id']}) and passport number: {$validated['passport_number']}. Action flagged and user deactivated.",
+                'ip_address'      => $request->ip(),
+            ]);
+            return response()->json([
+                'message' => __('app_translation.unauthorized'),
+            ], 403);
+        }
+
+
+        $system_payment = DB::table('system_payments as sp')
+            ->where('sp.active', '=', true)
+            ->select('sp.id')
+            ->first();
+        // Create payment
+        $vaccinePayment = VaccinePayment::create([
+            'payment_uuid'       => '', // will update below
+            'paid_amount'        => $validated['paid_amount'],
+            'visit_id'           => $validated['visit_id'],
+            'payment_status_id'  => StatusTypeEnum::paid->value, // default or handle null gracefully
+            'system_payment_id'    => $system_payment->id,
+            'finance_user_id'    => $user->id,
+        ]);
+
+        // Update UUID after creation
+        $vaccinePayment->update([
+            'payment_uuid' => 'MoPH-' . $vaccinePayment->visit_id . '-' . now()->format('Y-m-d'),
+        ]);
+
+        Reciept::create([
+            'download_count'     => 0,
+            'issue_date'         => now(),
+            'is_downloaded'      => false,
+            'paid_amount'        => $validated['paid_amount'],
+            'finance_user_id'    => $user->id,
+            'vaccine_payment_id' => $vaccinePayment->id,
+        ]);
+
+        return response()->json([
+            'message' => __('app_translation.success'),
+            'payment_id' => $vaccinePayment->id,
+        ], 200);
+    }
+    public function downloadReceipt(Request $request)
+    {
+        $request->validate([
+            'passport_number' => 'required|numeric',
+            'payment_id' => 'required|numeric',
+        ]);
+        $user = $request->user();
+        $passport_number = $request->passport_number;
+        $zone_id =  $user->zone_id;
+
+
+        // Validate zone and passport
+        $record = DB::table('vaccine_payments as vp')
+            ->where('vp.id', '=', $request->payment_id)
+            ->join('visits as v', 'v.id', '=', 'vp.visit_id')
+            ->join('people as p', function ($join) use (&$passport_number) {
+                $join->on('v.people_id', '=', 'p.id')
+                    ->where('p.passport_number', $passport_number);
+            })
+            ->join('epi_users as eu', function ($join) use (&$zone_id) {
+                $join->on('eu.id', '=', 'p.epi_user_id')
+                    ->where('eu.zone_id', $zone_id);
+            })->first();
+
+        return response()->json([
+            'message' => 'hello',
+            'check' => $record,
+        ], 404);
+        if ($record) {
+            // Means payment_id belongs to the people also people is in the same zone
+        }
+
+
+        // Eager load related models in a single querpy
+        $person = People::with(['visits.vaccinePayment.receipt'])
+            // ->where('passport_number', $request->passport_numbere)
+            ->where('passport_number', 'p012345')
+            ->first();
+
+        if (
+            !$person ||
+            !$person->visits->first() ||
+            !$person->visits->first()->vaccinePayment ||
+            !$person->visits->first()->vaccinePayment->receipt
+        ) {
+            return response()->json([
+                'message' => __('app_translation.unauthorized'),
+            ], 403);
+        }
+
+        $vaccinePayment = $person->visits->first()->vaccinePayment;
+        $receipt = $vaccinePayment->receipt;
+
+        // Update download count
+        $receipt->increment('download_count');
+
+        return $this->generateRecipt($vaccinePayment->id, $user);
+    }
+
+    // search function 
+    protected function applySearch($query, $request)
+    {
+        $searchColumn = $request->input('filters.search.column');
+        $searchValue = $request->input('filters.search.value');
+
+        if ($searchColumn && $searchValue) {
+            $allowedColumns = [
+                'passport_number' => 'p.passport_number'
+            ];
+            // Ensure that the search column is allowed
+            if (in_array($searchColumn, array_keys($allowedColumns))) {
+                $query->where($allowedColumns[$searchColumn], '=', $searchValue);
+            }
+        }
+    }
+    // End approved
     public function certificatePaymentAmount(Request $request)
     {
 
@@ -106,111 +285,6 @@ class CertificatePaymentController extends Controller
 
         ], 200, [], JSON_UNESCAPED_UNICODE);
     }
-
-
-
-    public function payment(Request $request)
-    {
-        // Validate input
-        $validated = $request->validate([
-            'passport_number'     => 'required|string',
-            'visit_id'            => 'required|numeric',
-            'paid_amount'         => 'required|numeric',
-            'payment_amount_id'   => 'required|exists:payment_amounts,id',
-            // 'payment_status_id' => 'required|exists:payment_statuses,id', // Uncomment if needed
-        ]);
-
-        $user = $request->user();
-
-        // Get person and check visit existence
-        $person = People::where('passport_number', $validated['passport_number'])->first();
-
-        if (!$person || !Visit::where('id', $validated['visit_id'])->where('people_id', $person->id)->exists()) {
-            // Deactivate user and log violation
-            FinanceUser::where('id', $user->id)->update(['status' => false]);
-
-            ViolationLog::create([
-                'user_type'       => 'FinanceUser',
-                'user_id'         => $user->id,
-                'target_zone_id'  => $user->zone_id,
-                'action'          => 'Payment',
-                'target_type'     => 'people',
-                'target_id'       => $person?->id,
-                'reason'          => "Attempted to process payment for a non-existent visit (ID: {$validated['visit_id']}) and passport number: {$validated['passport_number']}. Action flagged and user deactivated.",
-                'ip_address'      => $request->ip(),
-            ]);
-
-            return response()->json([
-                'message' => __('app_translation.unauthorized'),
-            ], 403);
-        }
-
-        // Create payment
-        $vaccinePayment = VaccinePayment::create([
-            'payment_uuid'       => '', // will update below
-            'paid_amount'        => $validated['paid_amount'],
-            'visit_id'           => $validated['visit_id'],
-            'payment_status_id'  => $validated['payment_status_id'] ?? 1, // default or handle null gracefully
-            'payment_amount_id'  => $validated['payment_amount_id'],
-            'finance_user_id'    => $user->id,
-        ]);
-
-        // Update UUID after creation
-        $vaccinePayment->update([
-            'payment_uuid' => 'MoPH-' . $vaccinePayment->visit_id . '-' . now()->format('Y-m-d'),
-        ]);
-
-        Reciept::create([
-            'download_count'     => 0,
-            'issue_date'         => now(),
-            'is_downloaded'      => true,
-            'paid_amount'        => $validated['paid_amount'],
-            'finance_user_id'    => $user->id,
-            'vaccine_payment_id' => $vaccinePayment->id,
-        ]);
-
-        return response()->json([
-            'message' => __('app_translation.success'),
-            'payment_id' => $vaccinePayment->id,
-        ], 200);
-    }
-
-
-    public function downloadReceipt(Request $request)
-    {
-        $request->validate([
-            'passport_number' => 'required|numeric',
-        ]);
-
-
-        $user = $request->user();
-
-        // Eager load related models in a single querpy
-        $person = People::with(['visits.vaccinePayment.receipt'])
-            // ->where('passport_number', $request->passport_numbere)
-            ->where('passport_number', 'p012345')
-            ->first();
-
-        if (
-            !$person ||
-            !$person->visits->first() ||
-            !$person->visits->first()->vaccinePayment ||
-            !$person->visits->first()->vaccinePayment->receipt
-        ) {
-            return response()->json([
-                'message' => __('app_translation.unauthorized'),
-            ], 403);
-        }
-
-        $vaccinePayment = $person->visits->first()->vaccinePayment;
-        $receipt = $vaccinePayment->receipt;
-
-        // Update download count
-        $receipt->increment('download_count');
-
-        return $this->generateRecipt($vaccinePayment->id, $user);
-    }
-
 
 
     public function activity($user_id)

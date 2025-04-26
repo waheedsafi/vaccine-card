@@ -18,7 +18,6 @@ return new class extends Migration
                 ->onUpdate('cascade')
                 ->onDelete('no action');
             $table->string('visited_date');
-            $table->string('certificate_id');
             $table->unsignedBigInteger('travel_type_id');
             $table->foreign('travel_type_id')->references('id')->on('travel_types')
                 ->onUpdate('cascade')

@@ -11,7 +11,7 @@ use App\Models\Address;
 use App\Models\EpiUser;
 use App\Models\Vaccine;
 use App\Enums\LanguageEnum;
-use App\Models\AddressTran;
+use App\Enums\NidTypeEnum;
 use App\Models\VaccineCard;
 use App\Models\ViolationLog;
 use Illuminate\Http\Request;
@@ -21,76 +21,60 @@ use App\Models\EpiUserPasswordChange;
 use App\Traits\Card\VaccineCardTrait;
 use App\Http\Requests\app\certificate\PersonStoreRequest;
 use App\Http\Requests\app\certificate\UpdatePersonInfoRequest;
-use Faker\Provider\ar_EG\Person;
 
 class CertificateController extends Controller
 {
     use VaccineCardTrait;
 
-    // public function searchCertificate(Request $request)
-    // {
-    //     $request->validate([
-    //         'filters.search.value' => 'required|string',
-    //     ]);
-
-    //     $perPage = $request->input('per_page', 10);
-    //     $page = $request->input('page', 1);
-    //     $searchValue = $request->input('filters.search.value');
-
-    //     $query = DB::table('people as p')
-    //         ->where('p.passport_number', '=', $searchValue)
-    //         ->join('visits as v', 'v.people_id', '=', 'p.id')
-    //         ->select(
-    //             "p.id",
-    //             "p.passport_number",
-    //             "p.full_name",
-    //             "p.father_name",
-    //             "p.created_at",
-    //             "p.phone as contact",
-    //             "v.id as visit_id",
-    //             "v.visited_date as last_visit_date"
-    //         )
-    //         ->latest('v.id');
-
-    //     $results = $query->paginate($perPage, ['*'], 'page', $page);
-
-    //     return response()->json([
-    //         "person_certificates" => $results,
-    //     ], 200, [], JSON_UNESCAPED_UNICODE);
-    // }
-
     public function searchCertificate(Request $request)
     {
-
         $request->validate([
             'filters.search.value' => 'required|string',
         ]);
+        $authUser = $request->user();
 
-        $perPage = $request->input('per_page', 10);
-        $page = $request->input('page', 1);
-        $searchValue = $request->input('filters.search.value');
-
-        $query = DB::table('people as p')
-            ->where('p.passport_number', '=', $searchValue)
+        $query = DB::table('people as p');
+        $this->applySearch($query, $request);
+        $person_certificate = $query
+            ->join('epi_users as eu', 'eu.id', '=', 'p.epi_user_id')
             ->join('visits as v', 'v.people_id', '=', 'p.id')
             ->leftJoin('vaccine_payments as vp', 'vp.visit_id', '=', 'v.id')
             ->select(
                 "p.id",
+                "eu.zone_id",
                 "p.passport_number",
                 "p.full_name",
                 "p.father_name",
                 "p.created_at",
                 "v.id as visit_id",
                 "v.visited_date as last_visit_date",
-                DB::raw('CASE WHEN vp.id IS NULL THEN 0 ELSE 1 END as has_payment')
+                "vp.payment_status_id",
             )
-            ->latest('v.id'); // You can apply latest ordering here if needed
+            ->latest('v.id')
+            ->first(); // You can apply latest ordering here if needed
 
-
-        $tr = $query->paginate($perPage, ['*'], 'page', $page);
+        if (!$person_certificate) {
+            return response()->json(
+                [
+                    "person_certificate" => null,
+                ],
+                200,
+                [],
+                JSON_UNESCAPED_UNICODE
+            );
+        } else if ($authUser->zone_id != $person_certificate->zone_id) {
+            return response()->json(
+                [
+                    "person_certificate" => null,
+                ],
+                200,
+                [],
+                JSON_UNESCAPED_UNICODE
+            );
+        }
         return response()->json(
             [
-                "person_certificates" => $tr,
+                "person_certificate" => $person_certificate,
             ],
             200,
             [],
@@ -98,6 +82,98 @@ class CertificateController extends Controller
         );
     }
 
+    public function storeCertificateDetail(PersonStoreRequest $request)
+    {
+        $validatedData = $request->validated();
+        DB::beginTransaction();
+        $address = Address::create([
+            'district_id' => $validatedData['district_id'],
+            'province_id' => $validatedData['province_id'],
+        ]);
+
+        // * Create Person
+        $person = People::create([
+            'passport_number' => $validatedData['passport_number'],
+            'full_name' => $validatedData['full_name'],
+            'father_name' => $validatedData['father_name'],
+            'date_of_birth' => $validatedData['date_of_birth'],
+            'phone' => $request->contact,
+            'nid_type_id' => NidTypeEnum::passport->value,
+            'gender_id' => $validatedData['gender_id'],
+            'nationality_id' => $validatedData['nationality_id'],
+            'address_id' => $address->id,
+            'epi_user_id' => $request->user()->id,
+        ]);
+
+        // visit
+        // * Create Visit
+
+        $visit = Visit::create([
+            'people_id' => $person->id,
+            'visited_date' => Carbon::today(),
+            // 'certificate_id' => "",
+            'travel_type_id' => $validatedData['travel_type_id'],
+            'country_id' => $validatedData['destina_country_id'],
+        ]);
+
+        // $vis = str_pad($visit->id, 5, '0', STR_PAD_LEFT);
+        // $visit->certificate_id  = 'MoPH-' . Carbon::now()->format('Y') . '-' . $vis;
+        // $visit->save();
+        // * Create Vaccines
+        foreach ($validatedData["vaccines"] as $vaccineData) {
+            $vaccine = Vaccine::create([
+                'registration_number' => $vaccineData['registration_number'],
+                'registration_date' => $vaccineData['registration_date'],
+                'volume' => $vaccineData['volume'],
+                'page' => $vaccineData['page'],
+                'vaccine_center_id' => $vaccineData['vaccine_center_id'],
+                'vaccine_type_id' => $vaccineData['vaccine_type_id'],
+                'epi_user_id' => $request->user()->id,
+                'visit_id' => $visit->id,
+            ]);
+
+            // $vaccine->registration_number = 'MoPH-' . Carbon::now()->format('Y') . '-' . $vaccine->id;
+            // $vaccine->save();
+
+            // * Create Doses
+            foreach ($vaccineData['doses'] as $doseData) {
+                Dose::create([
+                    'vaccine_id' => $vaccine->id,
+                    'dose' => $doseData['dose'],
+                    'batch_number' => $doseData['batch_number'],
+                    'vaccine_date' => $doseData['vaccine_date'],
+                    'epi_user_id' => $request->user()->id,
+                ]);
+            }
+        }
+
+        DB::commit();
+        return response()->json(
+            [
+                "message" => __('app_translation.success'),
+            ],
+            200,
+            [],
+            JSON_UNESCAPED_UNICODE
+        );
+    }
+    // search function 
+    protected function applySearch($query, $request)
+    {
+        $searchColumn = $request->input('filters.search.column');
+        $searchValue = $request->input('filters.search.value');
+
+        if ($searchColumn && $searchValue) {
+            $allowedColumns = [
+                'passport_number' => 'p.passport_number'
+            ];
+            // Ensure that the search column is allowed
+            if (in_array($searchColumn, array_keys($allowedColumns))) {
+                $query->where($allowedColumns[$searchColumn], '=', $searchValue);
+            }
+        }
+    }
+    // End approved
     public function personalInformation($visit_id)
     {
         $locale = app()->getLocale();
@@ -433,86 +509,6 @@ class CertificateController extends Controller
         ], 403);
     }
 
-
-    public function storeCertificateDetail(PersonStoreRequest $request)
-    {
-        $validatedData = $request->validated();
-        DB::beginTransaction();
-        $address = Address::create([
-            'district_id' => $validatedData['district_id'],
-            'province_id' => $validatedData['province_id'],
-        ]);
-
-        // * Translations
-
-
-        // * Create Person
-        $person =  People::create([
-            'passport_number' => $validatedData['passport_number'],
-            'full_name' => $validatedData['full_name'],
-            'father_name' => $validatedData['father_name'],
-            'date_of_birth' => $validatedData['date_of_birth'],
-            'phone' => $request->contact,
-            'nid_type_id' => 1,
-            'gender_id' => $validatedData['gender_id'],
-            'nationality_id' => $validatedData['nationality_id'],
-            'address_id' => $address->id,
-            'epi_user_id' => $request->user()->id,
-
-        ]);
-
-        // visit
-        // * Create Visit
-
-        $visit = Visit::create([
-            'people_id' => $person->id,
-            'visited_date' => Carbon::today(),
-            'certificate_id' => "",
-            'travel_type_id' => $validatedData['travel_type_id'],
-            'country_id' => $validatedData['destina_country_id'],
-        ]);
-
-        $vis = str_pad($visit->id, 5, '0', STR_PAD_LEFT);
-        $visit->certificate_id  = 'MoPH-' . Carbon::now()->format('Y') . '-' . $vis;
-        $visit->save();
-        // * Create Vaccines
-        foreach ($validatedData["vaccines"] as $vaccineData) {
-            $vaccine = Vaccine::create([
-                'registration_number' => '',
-                'registration_date' => $vaccineData['registration_date'],
-                'volume' => $vaccineData['volume'],
-                'page' => $vaccineData['page'],
-                'vaccine_center_id' => $vaccineData['vaccine_center_id'],
-                'vaccine_type_id' => $vaccineData['vaccine_type_id'],
-                'epi_user_id' => $request->user()->id,
-                'visit_id' => $visit->id,
-            ]);
-
-            $vaccine->registration_number = 'MoPH-' . Carbon::now()->format('Y') . '-' . $vaccine->id;
-            $vaccine->save();
-
-            // * Create Doses
-            foreach ($vaccineData['doses'] as $doseData) {
-                Dose::create([
-                    'vaccine_id' => $vaccine->id,
-                    'batch_number' => $doseData['batch_number'],
-                    'vaccine_date' => $doseData['vaccine_date'],
-                    'epi_user_id' => $request->user()->id,
-                ]);
-            }
-        }
-
-        DB::commit();
-
-        return response()->json(
-            [
-                "message" => __('app_translation.success'),
-            ],
-            200,
-            [],
-            JSON_UNESCAPED_UNICODE
-        );
-    }
 
     public function recieptStore(Request $request)
     {
