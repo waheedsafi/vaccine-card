@@ -20,4 +20,5 @@ Route::prefix('v1')->middleware(["authorized:" . 'epi:api'])->group(function () 
     Route::get('/epi/certificate/search', [CertificateController::class, 'searchCertificate'])->middleware(["epiHasMainPermission:" . PermissionEnum::vaccine_certificate->value . ',' . 'view']);
     Route::get('/epi/person/vaccines/{id}', [CertificateController::class, 'personaVaccines'])->middleware(["epiHasSubPermission:" . PermissionEnum::vaccine_certificate->value . "," . SubPermissionEnum::vaccine_certificate_vaccination_info->value . ',' . 'view']);
     Route::get('/epi/person/issued/cards/{id}', [CertificateController::class, 'personIssuedCards'])->middleware(["epiHasSubPermission:" . PermissionEnum::vaccine_certificate->value . "," . SubPermissionEnum::vaccine_certificate_card_issuing->value . ',' . 'view']);
+    Route::post('/person/passport/exist', [CertificateController::class, 'passportExist']);
 });

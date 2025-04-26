@@ -202,7 +202,7 @@ class CertificateController extends Controller
         $visit = Visit::create([
             'people_id' => $person->id,
             'visited_date' => Carbon::today(),
-            // 'certificate_id' => "",
+            'zone_id' => $request->user()->zone_id,
             'travel_type_id' => $validatedData['travel_type_id'],
             'country_id' => $validatedData['destina_country_id'],
         ]);
@@ -248,6 +248,24 @@ class CertificateController extends Controller
             JSON_UNESCAPED_UNICODE
         );
     }
+    public function passportExist(Request $request)
+    {
+        $passport_number = $request->passport_number;
+        $found =
+            DB::table('people as p')
+            ->where('p.passport_number', $passport_number)
+            ->first();
+        if ($found) {
+            return response()->json([
+                "passport_found" => true,
+            ], 200);
+        } else {
+            return response()->json([
+                "passport_found" => false,
+            ], 200);
+        }
+    }
+
     // search function 
     protected function applySearch($query, $request)
     {
@@ -634,7 +652,6 @@ class CertificateController extends Controller
 
     public function recieptStore(Request $request)
     {
-
         $request->validate([
             'passport_number' => 'required|string',
             'visit_id' => 'required|integer',
@@ -644,6 +661,7 @@ class CertificateController extends Controller
         $receipt = Reciept::join('vaccine_payments as vp', 'vp.id', '=', 'reciepts.vaccine_payment_id')
             ->select('reciepts.id as receipt_id', 'vp.id as vaccine_pay_id')
             ->where('vp.payment_uuid', $request->payment_number)->first();
+
         if (!$receipt) {
             return response()->json([
                 "message" => __("app_translation.payment_number_not_found"),

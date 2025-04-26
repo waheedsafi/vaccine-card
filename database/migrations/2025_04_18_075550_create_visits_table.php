@@ -22,6 +22,10 @@ return new class extends Migration
             $table->foreign('travel_type_id')->references('id')->on('travel_types')
                 ->onUpdate('cascade')
                 ->onDelete('no action');
+            $table->unsignedBigInteger('zone_id');
+            $table->foreign('zone_id')->references('id')->on('zones')
+                ->onUpdate('cascade')
+                ->onDelete('no action');
             $table->unsignedBigInteger('country_id');
             $table->foreign('country_id')->references('id')->on('countries')
                 ->onUpdate('cascade')
