@@ -240,11 +240,34 @@ class CertificatePaymentController extends Controller
             }
         }
     }
+    public function paymentInfo($id)
+    {
+        $tr = DB::table('people as p')
+            ->where('p.id', $id)
+            ->join('epi_users as eu', 'eu.id', '=', 'p.epi_user_id')
+            ->join('visits as v', 'v.people_id', '=', 'p.id')
+            ->leftJoin('vaccine_payments as vp', 'vp.visit_id', '=', 'v.id')
+            ->select(
+                "p.id",
+                "eu.zone_id",
+                "p.passport_number",
+                "p.full_name",
+                "p.father_name",
+                "p.created_at",
+                "v.id as visit_id",
+                "v.visited_date as last_visit_date",
+                "vp.payment_status_id",
+            )
+            ->latest('v.id')
+            ->get();
+        return response()->json([
+            'data' => $tr,
+            // 'payment_amounts' => $row->amount,
+        ], 200, [], JSON_UNESCAPED_UNICODE);
+    }
     // End approved
     public function certificatePaymentAmount(Request $request)
     {
-
-
         // $row = PaymentAmount::select('amount')->where('payment_status_id', StatusTypeEnum::paid->value)->first();
 
         return response()->json([
@@ -255,12 +278,9 @@ class CertificatePaymentController extends Controller
 
     public function infoCertificate(Request $request)
     {
-
-
         $request->validate([
             'id' => 'required|numeric',
         ]);
-
         $row = People::join('visits as v', 'v.people_id', '=', 'people.id')
             ->leftJoin('vaccine_payments as vp', 'vp.visit_id', '=', 'v.id')
             ->select(
@@ -288,9 +308,6 @@ class CertificatePaymentController extends Controller
 
     public function activity($user_id)
     {
-
-
-
         // Build query
         $query  = DB::select(
             "select count(*) as complete_count,
@@ -298,14 +315,9 @@ class CertificatePaymentController extends Controller
             from receipts where finance_user_id ={$user_id}"
         );
 
-
         $changePass = FinanceUserPasswordChange::join('finance_users as fiu', 'finance_user_password_changes.affected_user_id', '=', 'fiu.id')
             ->join('documents as doc', 'finance_user_password_changes.document_id', '=', 'doc.id')
             ->select('doc.path', 'fiu.full_name', 'doc.created_at')->get();
-
-
-
-
 
         $data = [
 
