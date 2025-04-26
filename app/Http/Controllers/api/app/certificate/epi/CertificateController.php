@@ -10,23 +10,44 @@ use App\Models\People;
 use App\Models\Address;
 use App\Models\EpiUser;
 use App\Models\Vaccine;
-use App\Enums\LanguageEnum;
+use App\Models\Document;
 use App\Enums\NidTypeEnum;
+use App\Enums\LanguageEnum;
 use App\Models\VaccineCard;
+use App\Enums\CheckListEnum;
 use App\Models\ViolationLog;
 use Illuminate\Http\Request;
+use App\Models\VaccinePayment;
+use App\Enums\CheckListTypeEnum;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\CardRecieptDocuments;
 use App\Models\EpiUserPasswordChange;
 use App\Traits\Card\VaccineCardTrait;
+use App\Repositories\Storage\StorageRepositoryInterface;
 use App\Http\Requests\app\certificate\PersonStoreRequest;
 use App\Http\Requests\app\certificate\UpdatePersonInfoRequest;
+use App\Models\Reciept;
+use App\Repositories\PendingTask\PendingTaskRepositoryInterface;
 use App\Models\VaccinePayment;
 use Illuminate\Support\Facades\App;
 
 class CertificateController extends Controller
 {
     use VaccineCardTrait;
+
+    protected $pendingTaskRepository;
+    protected $storageRepository;
+    protected $permissionRepository;
+
+    public function __construct(
+        PendingTaskRepositoryInterface $pendingTaskRepository,
+        StorageRepositoryInterface $storageRepository,
+
+    ) {
+        $this->pendingTaskRepository = $pendingTaskRepository;
+        $this->storageRepository = $storageRepository;
+    }
 
     public function personIssuedCards($id)
     {
@@ -508,6 +529,9 @@ class CertificateController extends Controller
             'visit_id'  => 'required',
             'payment_number'  => 'required',
         ]);
+
+
+
         $payment = VaccinePayment::where('payment_uuid', '=', $request->payment_number)
             ->select('payment_status_id', 'visit_id')
             ->first();
@@ -515,28 +539,32 @@ class CertificateController extends Controller
             return response()->json([
                 'message' => __('app_translation.unprocessable'),
             ], 500);
-        // $visit_id = $request->visit_id;
+        $visit_id = $request->visit_id;
         // 1. validate visit_id belongs to passport_number
-        // $record = DB::table('people as p')
-        //     ->where('p.passport_number', '=', $request->passport_number)
-        //     ->join('visits as v', function ($join) use (&$visit_id) {
-        //         $join->on('v.people_id', '=', 'p.id')
-        //             ->where('p.id', $visit_id);
-        //     })
-        //     ->select('v.id as visit_id', 'p.id as people_id')
-        //     ->first();
+        $record = DB::table('people as p')
+            ->where('p.passport_number', '=', $request->passport_number)
+            ->join('visits as v', function ($join) use (&$visit_id) {
+                $join->on('v.people_id', '=', 'p.id')
+                    ->where('p.id', $visit_id);
+            })
+            ->select('v.id as visit_id', 'p.id as people_id')
+            ->first();
 
-        // $user = $request->user();
+        $user = $request->user();
+
+
+
+
 
 
         // Retrieve person by passport number
         $person = People::where('passport_number', $validated['passport_number'])->first();
 
         // If person does not exist, handle violation
-        // if (!$person) {
+        if (!$person) {
 
-        //     return $this->handleViolation($user, null, $validated, $request->ip());
-        // }
+            return $this->handleViolation($user, null, $validated, $request->ip());
+        }
 
         // Find visit with matching payment number and person
         $visit = Visit::join('vaccine_payments as vp', 'visits.id', '=', 'vp.visit_id')
@@ -545,16 +573,23 @@ class CertificateController extends Controller
             ->select('visits.id')
             ->first();
 
+
         // If visit does not exist, handle violation
         if (!$visit) {
-            // return $this->handleViolation($user, $person->id, $validated, $request->ip());
+            return $this->handleViolation($user, $person->id, $validated, $request->ip());
         }
+
+
+
+
+
+
+
 
 
 
         // Generate certificate card and track downloads
         $path = $this->generateCard($visit->id);
-
 
 
         $vaccineCard = VaccineCard::join('vaccine_payments as vp', 'vp.id', '=', 'vaccine_cards.vaccine_payment_id')
@@ -567,6 +602,7 @@ class CertificateController extends Controller
             $vaccineCard->save();
         }
 
+        return $path;
         return response()->json([
             'message' => __('app_translation.success'),
             'path' => $path
@@ -600,30 +636,85 @@ class CertificateController extends Controller
 
         $request->validate([
             'passport_number' => 'required|string',
+            'visit_id' => 'required|integer',
+            'payment_number' => 'required|string',
         ]);
 
 
-        $payment = People::join('visits as vs', 'people.id', '=', 'vs.people_id')
-            ->join('vaccine_payments as vp', 'vs.id', '=', 'vp.visit_id')
-            ->where('people.passport_number', $request->passport_number)
-            ->whereDate('vs.visited_date', Carbon::today())
-            ->orderBy('vs.id', 'desc')
-            ->select('vp.id', 'vs.id as visit_id', 'people.id as person_id')
-            ->first();
 
-        if (!$payment) {
+
+        $receipt = Reciept::join('vaccine_payments as vp', 'vp.id', '=', 'reciepts.vaccine_payment_id')
+            ->select('reciepts.id as receipt_id', 'vp.id as vaccine_pay_id')
+            ->where('vp.payment_uuid', $request->payment_number)->first();
+        if (!$receipt) {
             return response()->json([
                 "message" => __("app_translation.not_found"),
             ], 404);
         }
 
-        VaccineCard::create([
+
+        DB::beginTransaction();
+
+        $task = $this->pendingTaskRepository->pendingTaskExist(
+            $request->user(),
+            CheckListTypeEnum::finance->value,
+            CheckListEnum::finance_reciept->value,
+            $request->passport_number
+        );
+
+        if (!$task) {
+            return response()->json([
+                'message' => __('app_translation.task_not_found')
+            ], 404);
+        }
+        $document_id = '';
+        $user =  $request->user();
+
+        $this->storageRepository->documentStore(CheckListTypeEnum::finance->value, $user->id, $task->id, function ($documentData) use (&$document_id) {
+            $checklist_id = $documentData['check_list_id'];
+            $document = Document::create([
+                'actual_name' => $documentData['actual_name'],
+                'size' => $documentData['size'],
+                'path' => $documentData['path'],
+                'type' => $documentData['type'],
+                'check_list_id' => $checklist_id,
+            ]);
+            $document_id = $document->id;
+        });
+
+
+        $this->pendingTaskRepository->destroyPendingTask(
+            $request->user(),
+            CheckListTypeEnum::finance->value,
+            CheckListEnum::finance_reciept->value,
+            $request->passport_number
+        );
+
+
+        $vaccine_card =  VaccineCard::create([
             'download_count' => 0,
             'issue_date' => Carbon::now(),
             'is_downloaded' => true,
-            'vaccine_payment_id' => $payment->id,
+            'vaccine_payment_id' => $receipt->vaccine_pay_id,
+            'card_number' => '',
             'epi_user_id' => $request->user()->id,
         ]);
+
+        $vis = str_pad($vaccine_card->id, 5, '0', STR_PAD_LEFT);
+        $vaccine_card->card_number  = 'MoPH-' . Carbon::now()->format('Y') . '-' . $vis;
+        $vaccine_card->save();
+
+        CardRecieptDocuments::create([
+            'document_id' => $document_id,
+            'vaccine_card_id' => $vaccine_card->id,
+            'reciept_id' => $receipt->receipt_id,
+
+        ]);
+
+        DB::commit();
+        return response()->json([
+            "message" => __("app_translation.success"),
+        ], 200);
     }
 
     public function activity($user_id)
