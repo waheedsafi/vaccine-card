@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('vaccine_cards', function (Blueprint $table) {
             $table->id();
             $table->integer('download_count');
+            $table->string('card_number')->unique();
             $table->string('issue_date');
             $table->boolean('is_downloaded')->default(false);
             $table->unsignedBigInteger('vaccine_payment_id')->unique();

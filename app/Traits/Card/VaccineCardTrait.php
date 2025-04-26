@@ -2,12 +2,13 @@
 
 namespace App\Traits\Card;
 
-use App\Models\People;
 use Mpdf\Mpdf;
+use App\Models\People;
 use App\Models\Person;
-use App\Models\VaccineCenterTran;
+use Illuminate\Support\Str;
 use Mpdf\Config\FontVariables;
 use Mpdf\Config\ConfigVariables;
+use App\Models\VaccineCenterTran;
 
 
 trait VaccineCardTrait
@@ -48,6 +49,7 @@ trait VaccineCardTrait
 
         $data = $this->data($visit_id);
 
+        // return $data;
 
 
         // return $data;
@@ -61,18 +63,20 @@ trait VaccineCardTrait
         $mpdf->SetHTMLFooter($footerHtml, 'O');
         $mpdf->SetHTMLFooter($footerHtml, 'E');
 
-        $fileName = "vaccine_waheed.pdf";
+
+
+
+        $fileName = 'vaccine_card' . Str::uuid() . '.pdf';
         $outputPath = storage_path("app/private/temp/");
         if (!is_dir($outputPath)) {
             mkdir($outputPath, 0755, true);
         }
         $filePath = $outputPath . $fileName;
 
-
         // return $filePath; F
-        $mpdf->Output($filePath, 'I'); // Save to file
+        $mpdf->Output($filePath, 'F'); // Save to file
 
-
+        return response()->download($filePath)->deleteFileAfterSend(true);
     }
 
 
@@ -154,23 +158,24 @@ trait VaccineCardTrait
 
         // Fetch all data related to the visit
         $records = People::join('visits as vs', 'people.id', '=', 'vs.people_id')
-
             ->leftJoin('vaccines as vac', 'vs.id', '=', 'vac.visit_id')
             ->leftJoin('vaccine_type_trans as vtt', function ($join) {
                 $join->on('vac.vaccine_type_id', '=', 'vtt.vaccine_type_id')
                     ->where('vtt.language_name', '=', 'en');
             })
+            ->join('vaccine_payments as vp', 'vs.id', '=', 'vp.visit_id')
+            ->join('vaccine_cards as vc', 'vp.id', '=', 'vc.vaccine_payment_id') // fixed here
             ->leftJoin('doses as d', 'vac.id', '=', 'd.vaccine_id')
             ->where('vs.id', $visit_id)
             ->select(
-                'vs.id  as visit_id',
+                'vs.id as visit_id',
                 'people.full_name',
                 'people.father_name',
                 'people.date_of_birth',
                 'people.passport_number',
                 'people.gender_id',
                 'vac.vaccine_center_id',
-                'vs.certificate_id',
+                'vc.card_number as certificate_id',
                 'vs.visited_date as issue_date',
                 'vtt.name as vaccine_type_name',
                 'vac.id as vaccine_id',
@@ -180,6 +185,8 @@ trait VaccineCardTrait
             ->get();
 
 
+
+        // ->leftJoin('vaccine_payments as vp', 'vs.id', '=', 'vp.visit_id')
 
 
         // ->leftJoin('vaccine_center_trans vct',  function ($join) {
