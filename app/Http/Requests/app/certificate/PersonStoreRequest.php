@@ -64,20 +64,21 @@ class PersonStoreRequest extends FormRequest
             'gender_id' => 'required|in:1,2',
             'nationality_id' => 'required|integer',
             'travel_type_id' => 'required|integer',
-            'vaccines' => 'required|array',
-            'vaccines.*.doses' => 'required|array',
-            'vaccines.*.doses.*' => 'required|array',
             'destina_country_id' => 'required|integer',
-            'vaccines.*.registration_number' => 'required',
+
+            'vaccines' => 'required|array',
+            'vaccines.*.registration_number' => 'required|string',
             'vaccines.*.registration_date' => 'required|date',
             'vaccines.*.volume' => 'required|string',
             'vaccines.*.page' => 'required|string',
             'vaccines.*.vaccine_center_id' => 'required|integer|exists:vaccine_centers,id',
             'vaccines.*.vaccine_type_id' => 'required|integer|exists:vaccine_types,id',
+
             'vaccines.*.doses' => 'required|array',
             'vaccines.*.doses.*.dose' => 'required|string',
             'vaccines.*.doses.*.batch_number' => 'required|string',
             'vaccines.*.doses.*.vaccine_date' => 'required|date',
+            'vaccines.*.doses.*.added_by' => 'required|string', // Assuming you need this field too
         ];
     }
 }
