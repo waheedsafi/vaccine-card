@@ -658,6 +658,94 @@ class CertificateController extends Controller
     }
 
 
+    // public function recieptStore(Request $request)
+    // {
+    //     $request->validate([
+    //         'passport_number' => 'required|string',
+    //         'visit_id' => 'required|integer',
+    //         'payment_number' => 'required|string',
+    //     ]);
+
+    //     $receipt = Reciept::join('vaccine_payments as vp', 'vp.id', '=', 'reciepts.vaccine_payment_id')
+    //         ->select('reciepts.id as receipt_id', 'vp.id as vaccine_pay_id')
+    //         ->where('vp.payment_uuid', $request->payment_number)->first();
+
+    //     if (!$receipt) {
+    //         return response()->json([
+    //             "message" => __("app_translation.payment_number_not_found"),
+    //         ], 404);
+    //     }
+    //     $vaccine_card = VaccineCard::where('vaccine_payment_id', $receipt->vaccine_pay_id)->exists();
+
+    //     if ($vaccine_card) {
+    //         return response()->json([
+    //             "message" => __("app_translation.vaccine_card_already_exist"),
+    //         ], 200);
+    //     }
+
+    //     DB::beginTransaction();
+    //     $task = $this->pendingTaskRepository->pendingTaskExist(
+    //         $request->user(),
+    //         CheckListTypeEnum::finance->value,
+    //         CheckListEnum::finance_reciept->value,
+    //         $request->passport_number
+    //     );
+
+    //     if (!$task) {
+    //         return response()->json([
+    //             'message' => __('app_translation.file_not_found_reupload')
+    //         ], 404);
+    //     }
+    //     $document_id = '';
+    //     $user =  $request->user();
+
+    //     $this->storageRepository->documentStore(CheckListTypeEnum::finance->value, $user->id, $task->id, function ($documentData) use (&$document_id) {
+    //         $checklist_id = $documentData['check_list_id'];
+    //         $document = Document::create([
+    //             'actual_name' => $documentData['actual_name'],
+    //             'size' => $documentData['size'],
+    //             'path' => $documentData['path'],
+    //             'type' => $documentData['type'],
+    //             'check_list_id' => $checklist_id,
+    //         ]);
+    //         $document_id = $document->id;
+    //     });
+
+
+    //     $this->pendingTaskRepository->destroyPendingTask(
+    //         $request->user(),
+    //         CheckListTypeEnum::finance->value,
+    //         CheckListEnum::finance_reciept->value,
+    //         $request->passport_number
+    //     );
+
+
+    //     $vaccine_card =  VaccineCard::create([
+    //         'download_count' => 0,
+    //         'issue_date' => Carbon::now(),
+    //         'is_downloaded' => true,
+    //         'vaccine_payment_id' => $receipt->vaccine_pay_id,
+    //         'card_number' => '',
+    //         'epi_user_id' => $request->user()->id,
+    //     ]);
+
+    //     $vis = str_pad($vaccine_card->id, 5, '0', STR_PAD_LEFT);
+    //     $vaccine_card->card_number  = 'MoPH-' . Carbon::now()->format('Y') . '-' . $vis;
+    //     $vaccine_card->save();
+
+    //     CardRecieptDocuments::create([
+    //         'document_id' => $document_id,
+    //         'vaccine_card_id' => $vaccine_card->id,
+    //         'reciept_id' => $receipt->receipt_id,
+
+    //     ]);
+
+    //     DB::commit();
+    //     return response()->json([
+    //         "message" => __("app_translation.success"),
+    //     ], 200);
+    // }
+
     public function recieptStore(Request $request)
     {
         $request->validate([
@@ -684,41 +772,6 @@ class CertificateController extends Controller
         }
 
         DB::beginTransaction();
-        $task = $this->pendingTaskRepository->pendingTaskExist(
-            $request->user(),
-            CheckListTypeEnum::finance->value,
-            CheckListEnum::finance_reciept->value,
-            $request->passport_number
-        );
-
-        if (!$task) {
-            return response()->json([
-                'message' => __('app_translation.file_not_found_reupload')
-            ], 404);
-        }
-        $document_id = '';
-        $user =  $request->user();
-
-        $this->storageRepository->documentStore(CheckListTypeEnum::finance->value, $user->id, $task->id, function ($documentData) use (&$document_id) {
-            $checklist_id = $documentData['check_list_id'];
-            $document = Document::create([
-                'actual_name' => $documentData['actual_name'],
-                'size' => $documentData['size'],
-                'path' => $documentData['path'],
-                'type' => $documentData['type'],
-                'check_list_id' => $checklist_id,
-            ]);
-            $document_id = $document->id;
-        });
-
-
-        $this->pendingTaskRepository->destroyPendingTask(
-            $request->user(),
-            CheckListTypeEnum::finance->value,
-            CheckListEnum::finance_reciept->value,
-            $request->passport_number
-        );
-
 
         $vaccine_card =  VaccineCard::create([
             'download_count' => 0,
@@ -733,12 +786,6 @@ class CertificateController extends Controller
         $vaccine_card->card_number  = 'MoPH-' . Carbon::now()->format('Y') . '-' . $vis;
         $vaccine_card->save();
 
-        CardRecieptDocuments::create([
-            'document_id' => $document_id,
-            'vaccine_card_id' => $vaccine_card->id,
-            'reciept_id' => $receipt->receipt_id,
-
-        ]);
 
         DB::commit();
         return response()->json([
