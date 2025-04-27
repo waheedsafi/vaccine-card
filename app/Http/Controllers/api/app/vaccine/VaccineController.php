@@ -31,7 +31,7 @@ class VaccineController extends Controller
     }
 
 
-    public function vaccineTypeStore(Request $request)
+    public function store(Request $request)
     {
         $validated = $request->validate([
             'vaccine_type_english' => 'required|string',
