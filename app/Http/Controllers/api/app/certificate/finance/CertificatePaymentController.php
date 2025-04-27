@@ -56,7 +56,7 @@ class CertificatePaymentController extends Controller
         if (!$person_certificate) {
             return response()->json(
                 [
-                    'message' => __('app_translation.passport_not_found'),
+                    'message' => __('app_translation.not_allowed_different_zone'),
                     "person_certificate" => null,
                 ],
                 404,

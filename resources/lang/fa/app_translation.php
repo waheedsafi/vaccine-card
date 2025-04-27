@@ -46,7 +46,7 @@ return [
     'today_visit_not_found' => 'بازدید امروز پیدا نشد.',
     'passport_number' => 'شماره پاسپورت',
     "unprocessable" => "غیرقابل ادامه.",
-    "not_allowed_different_zone" => "شما مجاز به دریافت پرداخت‌ زون دیگر نیستید.",
+    "not_allowed_different_zone" => "شما مجاز به دسترسی به معلومات زون مختلف نیستید.",
     "passport_not_found" => "شماره گذرنامه پیدا نشد.",
     "file_not_found_reupload" => "فایل پیدا نشد یا خراب است، دوباره فایل را آپلود کنید.",
     "payment_number_not_found" => "شماره پرداخت نادرست است، توسط سیستم صادر نشده است."
