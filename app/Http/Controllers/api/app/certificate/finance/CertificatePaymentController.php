@@ -151,7 +151,7 @@ class CertificatePaymentController extends Controller
 
         // Update UUID after creation
         $vaccinePayment->update([
-            'payment_uuid' => 'MoPH-' . $vaccinePayment->visit_id . '-' . now()->format('Y-m-d'),
+            'payment_uuid' => 'Fin-' . now()->format('Y') . '-' . $vaccinePayment->visit_id,
         ]);
 
         Reciept::create([

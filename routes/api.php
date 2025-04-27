@@ -24,6 +24,9 @@ require __DIR__ . '/api/app/dashboard/financeAdminDashboard.php';
 require __DIR__ . '/api/app/dashboard/debuggerAdminDashboard.php';
 require __DIR__ . '/api/app/users/epiUser.php';
 require __DIR__ . '/api/app/users/financeUser.php';
+require __DIR__ . '/api/app/qrcode/qrcode.php';
+
+
 
 require __DIR__ . '/api/app/file/file.php';
 require __DIR__ . '/api/app/checklist/checklist.php';
