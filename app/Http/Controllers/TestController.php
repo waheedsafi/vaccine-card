@@ -37,6 +37,7 @@ class TestController extends Controller
 
     private function getLocationFromIP($ip)
     {
+
         try {
             $response = Http::get("http://ip-api.com/json/{$ip}");
             return $response->json()['city'] . ', ' . $response->json()['country'];

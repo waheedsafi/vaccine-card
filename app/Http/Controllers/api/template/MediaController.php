@@ -21,17 +21,6 @@ class MediaController extends Controller
         }
         return response()->file($path);
     }
-    public function ngoMediadownload(Request $request)
-    {
-        $filePath = $request->input('path');
-        $path = $this->getAppPath('private/' . $filePath);
-        if (!file_exists($path)) {
-            return response()->json([
-                'message' => __('app_translation.not_found'),
-            ], 404, [], JSON_UNESCAPED_UNICODE);
-        }
-        return response()->file($path);
-    }
     public function tempMediadownload(Request $request)
     {
         $filePath = $request->input('path');
@@ -51,6 +40,18 @@ class MediaController extends Controller
         if (!file_exists($path)) {
             return response()->json([
                 'message' => __('app_translation.not_found'),
+            ], 404, [], JSON_UNESCAPED_UNICODE);
+        }
+        return response()->file($path);
+    }
+    public function downloadPublic(Request $request)
+    {
+        $filePath = $request->input('path');
+        $path = public_path() . '/' . $filePath;
+        if (!file_exists($path)) {
+            return response()->json([
+                'message' => __('app_translation.not_found'),
+                'ss' => $path,
             ], 404, [], JSON_UNESCAPED_UNICODE);
         }
         return response()->file($path);
