@@ -43,4 +43,5 @@ return [
     'account_is_block' => 'ستاسو حساب بند شوی دی.',
     'setting_record_not_found' => 'د تنظیماتو ریکارډ ونه موندل شو.',
     'today_visit_not_found' => 'نن ورځ لیدنه ونه موندل شوه.',
+    'vaccine_card_already_exist' => 'د واکسین کارت له مخکې موجود دی.',
 ];

@@ -29,6 +29,7 @@ use App\Traits\Card\VaccineCardTrait;
 use App\Repositories\Storage\StorageRepositoryInterface;
 use App\Http\Requests\app\certificate\PersonStoreRequest;
 use App\Http\Requests\app\certificate\UpdatePersonInfoRequest;
+use App\Models\CardDownloadByUser;
 use App\Repositories\PendingTask\PendingTaskRepositoryInterface;
 
 class CertificateController extends Controller
@@ -623,6 +624,10 @@ class CertificateController extends Controller
             $vaccineCard->download_count += 1;
             $vaccineCard->save();
         }
+        CardDownloadByUser::create([
+            'epi_user_id' => $user->id,
+            'vaccine_card_id' => $vaccineCard->id,
+        ]);
 
         return $path;
         return response()->json([
@@ -669,6 +674,13 @@ class CertificateController extends Controller
             return response()->json([
                 "message" => __("app_translation.payment_number_not_found"),
             ], 404);
+        }
+        $vaccine_card = VaccineCard::where('vaccine_payment_id', $receipt->vaccine_pay_id)->exists();
+
+        if ($vaccine_card) {
+            return response()->json([
+                "message" => __("app_translation.vaccine_card_already_exist"),
+            ], 200);
         }
 
         DB::beginTransaction();

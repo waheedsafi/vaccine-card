@@ -48,5 +48,7 @@ return [
     "not_allowed_different_zone" => "You are not allowed to get different zone payment.",
     "passport_not_found" => "Passport number not found.",
     "file_not_found_reupload" => "File not found or has been currepted upload file again.",
-    "payment_number_not_found" => "The payment number is incorrect, it was not issued by the system."
+    "payment_number_not_found" => "The payment number is incorrect, it was not issued by the system.",
+    "vaccine_card_already_exist" => "Vaccine card already exist.",
+
 ];

@@ -15,6 +15,7 @@ use App\Models\FinanceUser;
 use App\Traits\Reciept\RecieptTrait;
 use App\Models\FinanceUserPasswordChange;
 use App\Models\People;
+use App\Models\ReceiptDownloadByUser;
 use App\Models\ViolationLog;
 use Illuminate\Support\Facades\App;
 
@@ -218,6 +219,10 @@ class CertificatePaymentController extends Controller
             ], 403);
         }
 
+        ReceiptDownloadByUser::create([
+            'finance_user_id' => $user->id,
+            'receipt_id' => $receipt->id,
+        ]);
         // Update download count
         $receipt->increment('download_count');
 

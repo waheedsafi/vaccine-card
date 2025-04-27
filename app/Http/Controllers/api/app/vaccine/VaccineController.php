@@ -123,9 +123,9 @@ class VaccineController extends Controller
         $validated = $request->validate([
             'province_id' => 'required|numeric',
             'district_id' => 'required|numeric',
-            'vaccine_center_english' => 'required|string',
-            'vaccine_center_pashto' => 'required|string',
-            'vaccine_center_farsi' => 'required|string',
+            'vaccine_center_name_english' => 'required|string',
+            'vaccine_center_name_pashto' => 'required|string',
+            'vaccine_center_name_farsi' => 'required|string',
 
         ]);
 
@@ -138,15 +138,10 @@ class VaccineController extends Controller
 
         ]);
 
-        foreach (LanguageEnum::LANGUAGES as $code => $name) {
-            AddressTran::create([
-                "value" => $request["area_{$name}"],
-                "language_name" => $code,
-            ]);
-        }
+
 
         $vaccineCenter = VaccineCenter::create([
-            'description' => $request->description ?? '',
+            'description' => $request->description ?? "",
             'address_id' => $address->id,
 
 

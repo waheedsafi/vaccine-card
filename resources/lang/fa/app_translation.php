@@ -49,5 +49,7 @@ return [
     "not_allowed_different_zone" => "شما مجاز به دریافت پرداخت‌ زون دیگر نیستید.",
     "passport_not_found" => "شماره گذرنامه پیدا نشد.",
     "file_not_found_reupload" => "فایل پیدا نشد یا خراب است، دوباره فایل را آپلود کنید.",
-    "payment_number_not_found" => "شماره پرداخت نادرست است، توسط سیستم صادر نشده است."
+    "payment_number_not_found" => "شماره پرداخت نادرست است، توسط سیستم صادر نشده است.",
+    "vaccine_card_already_exist" => "کارت واکسن از قبل وجود دارد.",
+
 ];
