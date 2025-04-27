@@ -276,7 +276,7 @@
                     <td align="right" valign="bottom" style="width: 30%;">
                         {{-- <img src="images/islamic.png" width="80" height="80" alt="QR Code" /> --}}
                         <img width="100" height="100" alt="QR Code"
-                            src="data:image/svg;base64,{{ base64_encode(QrCode::format('svg')->size(150)->merge(public_path('images/moph.png'), 0.3, true)->generate(url("/vaccine/card/qrcode/check/{$data[0]['visit_id']}"))) }}"
+                            src="data:image/svg;base64,{{ base64_encode(QrCode::format('svg')->size(150)->merge(public_path('images/moph.png'), 0.3, true)->generate("https://vaccine.moph.gov.af/person/vaccine/detail/{$data[0]['visit_id']}")) }}"
                             style="width: 120px; height: 120px;">
 
                     </td>
