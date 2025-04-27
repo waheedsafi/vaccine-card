@@ -80,75 +80,11 @@ trait VaccineCardTrait
     }
 
 
-    // protected function data($visit_id)
-    // {
-    //     // Fetch all data related to the visit
-    //     $records = Person::join('visits as vs', 'people.id', '=', 'vs.people_id')
-    //         ->join('vaccines as vac', 'vs.id', '=', 'vac.visit_id')
-    //         ->join('vaccine_type_trans as vtt', function ($join) {
-    //             $join->on('vac.vaccine_type_id', '=', 'vtt.vaccine_type_id')
-    //                 ->where('vtt.language_name', '=', 'en');
-    //         })
-    //         ->join('doses as d', 'vac.id', '=', 'd.vaccine_id')
-    //         ->where('vs.id', $visit_id)
-    //         ->select(
-    //             'people.full_name',
-    //             'people.father_name',
-    //             'people.date_of_birth',
-    //             'people.passport_number',
-    //             'people.gender_id',
-    //             'vs.certificate_id',
-    //             'vs.visited_date as issue_date',
-    //             'vtt.name as vaccine_type_name',
-    //             'vac.id as vaccine_id',
-    //             'd.vaccine_date',
-    //             'd.batch_number'
-    //         )
-    //         ->get();
+    public function qrcodeData($id)
+    {
 
-    //     // return 'success';
-
-
-    //     // Group data by person and structure it
-    //     $result = $records->groupBy('passport_number')->map(function ($personRecords) {
-    //         $person = $personRecords->first(); // Get the first record for person details
-
-    //         // Group vaccines and their doses
-    //         $vaccines = $personRecords->groupBy('vaccine_id')->map(function ($vaccineRecords) {
-    //             // $vaccine = $vaccineRecords->first(); // Get the first record for vaccine details
-
-    //             // Map doses for the vaccine
-    //             $doses = $vaccineRecords->map(function ($dose) {
-    //                 return [
-    //                     'vaccine_date' => $dose->vaccine_date,
-    //                     'batch_number' => $dose->batch_number,
-    //                 ];
-    //             });
-
-    //             return [
-    //                 'vaccine_type_name' => $vaccine->vaccine_type_name,
-    //                 'vaccine_id' => $vaccine->vaccine_id,
-    //                 'doses' => $doses,
-    //             ];
-    //         });
-
-    //         return [
-    //             'full_name' => $person->full_name,
-    //             'father_name' => $person->father_name,
-    //             'date_of_birth' => $person->date_of_birth,
-    //             'passport_number' => $person->passport_number,
-    //             'issue_date' => $person->issue_date,
-    //             'vaccine_center' => 'center',
-    //             'gender' => $person->gender_id == 1 ? "Male" : "Female",
-    //             'certificate_id' => $person->certificate_id,
-    //             'vaccines' => $vaccines->values(),
-    //         ];
-    //     });
-
-
-    //     return $result->values();
-    // }
-
+        return    $this->data($id);
+    }
 
 
 

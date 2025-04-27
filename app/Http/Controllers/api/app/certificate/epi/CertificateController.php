@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers\api\app\certificate\epi;
 
-use Carbon\Carbon;
 use App\Models\Dose;
 use App\Models\Audit;
 use App\Models\Visit;
 use App\Models\People;
 use App\Models\Address;
 use App\Models\EpiUser;
+use App\Models\Reciept;
 use App\Models\Vaccine;
 use App\Models\Document;
 use App\Enums\NidTypeEnum;
@@ -18,8 +18,10 @@ use App\Enums\CheckListEnum;
 use App\Models\ViolationLog;
 use Illuminate\Http\Request;
 use App\Models\VaccinePayment;
+use Illuminate\Support\Carbon;
 use App\Enums\CheckListTypeEnum;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\App;
 use App\Http\Controllers\Controller;
 use App\Models\CardRecieptDocuments;
 use App\Models\EpiUserPasswordChange;
@@ -27,9 +29,7 @@ use App\Traits\Card\VaccineCardTrait;
 use App\Repositories\Storage\StorageRepositoryInterface;
 use App\Http\Requests\app\certificate\PersonStoreRequest;
 use App\Http\Requests\app\certificate\UpdatePersonInfoRequest;
-use App\Models\Reciept;
 use App\Repositories\PendingTask\PendingTaskRepositoryInterface;
-use Illuminate\Support\Facades\App;
 
 class CertificateController extends Controller
 {
@@ -190,7 +190,7 @@ class CertificateController extends Controller
             'passport_number' => $validatedData['passport_number'],
             'full_name' => $validatedData['full_name'],
             'father_name' => $validatedData['father_name'],
-            'date_of_birth' => $validatedData['date_of_birth'],
+            'date_of_birth' => Carbon::parse($validatedData['date_of_birth'])->toDateString(),
             'phone' => $request->contact,
             'nid_type_id' => NidTypeEnum::passport->value,
             'gender_id' => $validatedData['gender_id'],
@@ -217,7 +217,7 @@ class CertificateController extends Controller
         foreach ($validatedData["vaccines"] as $vaccineData) {
             $vaccine = Vaccine::create([
                 'registration_number' => $vaccineData['registration_number'],
-                'registration_date' => $vaccineData['registration_date'],
+                'registration_date' => Carbon::parse($vaccineData['registration_date'])->toDateString(), // 👈 Only date
                 'volume' => $vaccineData['volume'],
                 'page' => $vaccineData['page'],
                 'vaccine_center_id' => $vaccineData['vaccine_center_id'],
@@ -235,7 +235,7 @@ class CertificateController extends Controller
                     'vaccine_id' => $vaccine->id,
                     'dose' => $doseData['dose'],
                     'batch_number' => $doseData['batch_number'],
-                    'vaccine_date' => $doseData['vaccine_date'],
+                    'vaccine_date' => Carbon::parse($doseData['vaccine_date'])->toDateString(),
                     'epi_user_id' => $request->user()->id,
                 ]);
             }
