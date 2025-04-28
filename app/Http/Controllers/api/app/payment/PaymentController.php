@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\api\app\payment;
 
+use App\Enums\StatusTypeEnum;
 use App\Http\Controllers\Controller;
 use App\Models\SystemPayment;
 use Illuminate\Http\Request;
@@ -16,7 +17,7 @@ class PaymentController extends Controller
         // 1. Create
         $system_payments = DB::table('system_payments as sp')
             ->join('finance_users as fu', 'fu.id', '=', 'sp.finance_user_id')
-            ->join('currency_trans as ct', function ($join) use (&$locale) {
+            ->leftJoin('currency_trans as ct', function ($join) use (&$locale) {
                 $join->on('ct.currency_id', '=', 'sp.currancy_id')
                     ->where('ct.language_name', $locale);
             })
@@ -33,6 +34,7 @@ class PaymentController extends Controller
                 'pst.name as payment_status',
                 'sp.created_at',
             )
+            ->orderBy('sp.id', 'desc')
             ->get();
 
         return response()->json(
@@ -48,29 +50,42 @@ class PaymentController extends Controller
     {
         $request->validate([
             'payment_status_id' => 'required|exists:payment_statuses,id',
-            'currancy_id' => 'required|exists:currencies,id',
-            'amount' => 'required|numeric',
         ]);
-
+        if ($request->payment_status_id == StatusTypeEnum::payment->value) {
+            $request->validate([
+                'payment_status' => 'required',
+                'currency_id' => 'required|exists:currencies,id',
+                'currency' => 'required',
+                'amount' => 'required|numeric',
+            ]);
+        }
         $user = $request->user();
-
         SystemPayment::query()->update([ // <-- fixed this line
             'active' => false,
         ]);
 
-        SystemPayment::create([
+        $systemPayment = SystemPayment::create([
             'payment_status_id' => $request->payment_status_id,
             'finance_user_id' => $user->id,
-            'currancy_id' => $request->currancy_id,
+            'currancy_id' => $request->currency_id,
             'amount' => $request->amount,
             'active' => true,
         ]);
 
+        $authUser = $request->user();
         return response()->json(
             [
-                'message' => __('app_translation.success'),
+                'system_payment' => [
+                    "id" => $systemPayment->id,
+                    "active" => $systemPayment->active,
+                    "finance_user" => $authUser->username,
+                    "amount" => $request->payment_status_id == StatusTypeEnum::payment->value ? $request->amount : 0,
+                    "currency" => $request->payment_status_id == StatusTypeEnum::payment->value ? $request->currency : null,
+                    "payment_status" => $request->payment_status,
+                    "created_at" => $systemPayment->created_at
+                ],
             ],
-            201,
+            200,
             [],
             JSON_UNESCAPED_UNICODE
         );
