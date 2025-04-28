@@ -11,4 +11,6 @@ Route::prefix('v1')->group(function () {
     Route::get('/genders', [ApplicationController::class, "genders"]);
     Route::post('/user/validate/email/contact', [ApplicationController::class, "validateEmailContact"]);
     Route::get('/nationalities', [ApplicationController::class, "nationalities"]);
+    Route::get('/currencies', [ApplicationController::class, "currencies"]);
+    Route::get('/payment/statuses', [ApplicationController::class, "paymentStatuses"]);
 });

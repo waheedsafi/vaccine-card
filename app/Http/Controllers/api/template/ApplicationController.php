@@ -10,13 +10,17 @@ use App\Models\Country;
 use App\Models\District;
 use App\Models\Province;
 use App\Enums\LanguageEnum;
+use App\Enums\StatusTypeEnum;
 use App\Models\NidTypeTrans;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
+use App\Models\Currency;
+use App\Models\CurrencyTran;
 use App\Models\Nationality;
 use App\Models\NationalityTrans;
+use App\Models\PaymentStatusTran;
 
 class ApplicationController extends Controller
 {
@@ -107,6 +111,36 @@ class ApplicationController extends Controller
 
         return  response()->json(
             $nationality,
+            200,
+            [],
+            JSON_UNESCAPED_UNICODE
+        );
+    }
+    public function currencies()
+    {
+        $locale = App::getLocale();
+        $currency = CurrencyTran::select('currency_id as id', 'name')
+            ->where('language_name', $locale)
+            ->get();
+
+        return  response()->json(
+            $currency,
+            200,
+            [],
+            JSON_UNESCAPED_UNICODE
+        );
+    }
+    public function paymentStatuses()
+    {
+        $locale = App::getLocale();
+        $include = [StatusTypeEnum::no_payment->value, StatusTypeEnum::payment->value];
+        $paymentStatuses = PaymentStatusTran::whereIn('payment_status_id', $include)
+            ->select('payment_status_id as id', 'name')
+            ->where('language_name', $locale)
+            ->get();
+
+        return  response()->json(
+            $paymentStatuses,
             200,
             [],
             JSON_UNESCAPED_UNICODE
