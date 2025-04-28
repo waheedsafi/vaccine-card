@@ -2,14 +2,8 @@
 
 namespace App\Http\Controllers\api\template;
 
-use Exception;
-use App\Models\Translate;
-use App\Enums\LanguageEnum;
-use App\Models\DestinationType;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\template\destination\DestinationTypeStoreRequest;
 use Illuminate\Support\Facades\DB;
 
 class DestinationTypeController extends Controller

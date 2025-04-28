@@ -12,7 +12,6 @@ use App\Enums\CheckListEnum;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use App\Enums\CheckListTypeEnum;
-use App\Enums\PermissionEnum;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\App;
 use App\Http\Controllers\Controller;
@@ -405,7 +404,7 @@ class EpiUserController extends Controller
             $user->province_id = $request->province_id;
             $user->gender_id = $request->gender_id;
             $user->zone_id = $request->zone_id;
-            $user->status = $request->status == true;
+            $user->status = $request->status == 'true';
             $user->save();
 
             DB::commit();
