@@ -42,4 +42,37 @@ class PaymentController extends Controller
             JSON_UNESCAPED_UNICODE
         );
     }
+
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'payment_status_id' => 'required|exists:payment_statuses,id',
+            'currancy_id' => 'required|exists:currencies,id',
+            'amount' => 'required|numeric',
+        ]);
+
+        $user = $request->user();
+
+        SystemPayment::query()->update([ // <-- fixed this line
+            'active' => false,
+        ]);
+
+        SystemPayment::create([
+            'payment_status_id' => $request->payment_status_id,
+            'finance_user_id' => $user->id,
+            'currancy_id' => $request->currancy_id,
+            'amount' => $request->amount,
+            'active' => true,
+        ]);
+
+        return response()->json(
+            [
+                'message' => __('app_translation.success'),
+            ],
+            201,
+            [],
+            JSON_UNESCAPED_UNICODE
+        );
+    }
 }
