@@ -7,7 +7,6 @@ use App\Models\User;
 use App\Models\Email;
 use App\Enums\RoleEnum;
 use App\Enums\ZoneEnum;
-use App\Models\Contact;
 use App\Models\EpiUser;
 use App\Models\FinanceUser;
 use App\Models\ModelJob;
@@ -40,7 +39,7 @@ class JobAndUserSeeder extends Seeder
         ]);
         $jobs = [
             'Finance' => [
-                'Super Admin' => [
+                'Senior Financial Manager' => [
                     'farsi' => 'مدیر ارشد مالی',
                     'pashto' => 'د مالي عالي مدیر',
                 ],
@@ -68,25 +67,25 @@ class JobAndUserSeeder extends Seeder
                 ],
             ],
         ];
-        
+
         foreach ($jobs as $department => $roles) {
             foreach ($roles as $role => $translations) {
                 $job = ModelJob::factory()->create([]);
-        
+
                 // Default (English)
                 ModelJobTrans::factory()->create([
                     'value' => "$department $role",
                     'model_job_id' => $job->id,
                     'language_name' => LanguageEnum::default->value,
                 ]);
-        
+
                 // Farsi
                 ModelJobTrans::factory()->create([
                     'value' => $translations['farsi'],
                     'model_job_id' => $job->id,
                     'language_name' => LanguageEnum::farsi->value,
                 ]);
-        
+
                 // Pashto
                 ModelJobTrans::factory()->create([
                     'value' => $translations['pashto'],
@@ -95,7 +94,7 @@ class JobAndUserSeeder extends Seeder
                 ]);
             }
         }
-        
+
 
 
 

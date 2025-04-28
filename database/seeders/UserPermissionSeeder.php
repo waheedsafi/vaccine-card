@@ -210,29 +210,65 @@ class UserPermissionSeeder extends Seeder
 
     public function addEpiConfigurationubPermissions($userPermission)
     {
-        foreach (SubPermissionEnum::CONFIGURATIONS as $id => $role) {
-            EpiPermissionSub::factory()->create([
-                "edit" => true,
-                "delete" => true,
-                "add" => true,
-                "view" => true,
-                "epi_permission_id" => $userPermission->id,
-                "sub_permission_id" => $id,
-            ]);
-        }
+        EpiPermissionSub::factory()->create([
+            "edit" => true,
+            "delete" => true,
+            "add" => true,
+            "view" => true,
+            "epi_permission_id" => $userPermission->id,
+            "sub_permission_id" => SubPermissionEnum::configuration_job,
+        ]);
+        EpiPermissionSub::factory()->create([
+            "edit" => true,
+            "delete" => true,
+            "add" => true,
+            "view" => true,
+            "epi_permission_id" => $userPermission->id,
+            "sub_permission_id" => SubPermissionEnum::configuration_destination,
+        ]);
+        EpiPermissionSub::factory()->create([
+            "edit" => true,
+            "delete" => true,
+            "add" => true,
+            "view" => true,
+            "epi_permission_id" => $userPermission->id,
+            "sub_permission_id" => SubPermissionEnum::configuration_vaccine_center,
+        ]);
+        EpiPermissionSub::factory()->create([
+            "edit" => true,
+            "delete" => true,
+            "add" => true,
+            "view" => true,
+            "epi_permission_id" => $userPermission->id,
+            "sub_permission_id" => SubPermissionEnum::configuration_vaccine_type,
+        ]);
     }
     public function addFinanceConfigurationsSubPermissions($userPermission)
     {
-        foreach (SubPermissionEnum::CONFIGURATIONS as $id => $role) {
-            FinancePermissionSub::factory()->create([
-                "edit" => true,
-                "delete" => true,
-                "add" => true,
-                "view" => true,
-                "finance_permission_id" => $userPermission->id,
-                "sub_permission_id" => $id,
-            ]);
-        }
+        FinancePermissionSub::factory()->create([
+            "edit" => true,
+            "delete" => true,
+            "add" => true,
+            "view" => true,
+            "finance_permission_id" => $userPermission->id,
+            "sub_permission_id" => SubPermissionEnum::configuration_job,
+        ]);
+        FinancePermissionSub::factory()->create([
+            "edit" => true,
+            "delete" => true,
+            "add" => true,
+            "view" => true,
+            "finance_permission_id" => $userPermission->id,
+            "sub_permission_id" => SubPermissionEnum::configuration_destination,
+        ]);
+        FinancePermissionSub::factory()->create([
+            "edit" => true,
+            "delete" => true,
+            "add" => true,
+            "view" => true,
+            "finance_permission_id" => $userPermission->id,
+            "sub_permission_id" => SubPermissionEnum::configuration_payment,
+        ]);
     }
 
     public function addEpiActivitySubPermissions($userPermission)

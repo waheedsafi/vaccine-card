@@ -35,7 +35,22 @@ class RolePermissionSeeder extends Seeder
             "role" => RoleEnum::epi_super,
             "permission" => "configurations"
         ]);
-        $this->rolePermissionSubSetting($rolePer->id);
+        RolePermissionSub::factory()->create([
+            "role_permission_id" => $rolePer->id,
+            "sub_permission_id" => SubPermissionEnum::configuration_job
+        ]);
+        RolePermissionSub::factory()->create([
+            "role_permission_id" => $rolePer->id,
+            "sub_permission_id" => SubPermissionEnum::configuration_destination
+        ]);
+        RolePermissionSub::factory()->create([
+            "role_permission_id" => $rolePer->id,
+            "sub_permission_id" => SubPermissionEnum::configuration_vaccine_type
+        ]);
+        RolePermissionSub::factory()->create([
+            "role_permission_id" => $rolePer->id,
+            "sub_permission_id" => SubPermissionEnum::configuration_vaccine_center
+        ]);
         RolePermission::factory()->create([
             "role" => RoleEnum::epi_super,
             "permission" => "reports"
@@ -57,7 +72,22 @@ class RolePermissionSeeder extends Seeder
             "role" => RoleEnum::epi_admin,
             "permission" => "configurations"
         ]);
-        $this->rolePermissionSubSetting($rolePer->id);
+        RolePermissionSub::factory()->create([
+            "role_permission_id" => $rolePer->id,
+            "sub_permission_id" => SubPermissionEnum::configuration_job
+        ]);
+        RolePermissionSub::factory()->create([
+            "role_permission_id" => $rolePer->id,
+            "sub_permission_id" => SubPermissionEnum::configuration_destination
+        ]);
+        RolePermissionSub::factory()->create([
+            "role_permission_id" => $rolePer->id,
+            "sub_permission_id" => SubPermissionEnum::configuration_vaccine_type
+        ]);
+        RolePermissionSub::factory()->create([
+            "role_permission_id" => $rolePer->id,
+            "sub_permission_id" => SubPermissionEnum::configuration_vaccine_center
+        ]);
         RolePermission::factory()->create([
             "role" => RoleEnum::epi_admin,
             "permission" => "reports"
@@ -87,7 +117,18 @@ class RolePermissionSeeder extends Seeder
             "role" => RoleEnum::finance_super,
             "permission" => "configurations"
         ]);
-        $this->rolePermissionSubSetting($rolePer->id);
+        RolePermissionSub::factory()->create([
+            "role_permission_id" => $rolePer->id,
+            "sub_permission_id" => SubPermissionEnum::configuration_job
+        ]);
+        RolePermissionSub::factory()->create([
+            "role_permission_id" => $rolePer->id,
+            "sub_permission_id" => SubPermissionEnum::configuration_destination
+        ]);
+        RolePermissionSub::factory()->create([
+            "role_permission_id" => $rolePer->id,
+            "sub_permission_id" => SubPermissionEnum::configuration_payment
+        ]);
         RolePermission::factory()->create([
             "role" => RoleEnum::finance_super,
             "permission" => "reports"
@@ -109,7 +150,18 @@ class RolePermissionSeeder extends Seeder
             "role" => RoleEnum::finance_admin,
             "permission" => "configurations"
         ]);
-        $this->rolePermissionSubSetting($rolePer->id);
+        RolePermissionSub::factory()->create([
+            "role_permission_id" => $rolePer->id,
+            "sub_permission_id" => SubPermissionEnum::configuration_job
+        ]);
+        RolePermissionSub::factory()->create([
+            "role_permission_id" => $rolePer->id,
+            "sub_permission_id" => SubPermissionEnum::configuration_destination
+        ]);
+        RolePermissionSub::factory()->create([
+            "role_permission_id" => $rolePer->id,
+            "sub_permission_id" => SubPermissionEnum::configuration_payment
+        ]);
         RolePermission::factory()->create([
             "role" => RoleEnum::finance_admin,
             "permission" => "reports"
@@ -143,8 +195,6 @@ class RolePermissionSeeder extends Seeder
             "role" => RoleEnum::debugger,
             "permission" => "configurations"
         ]);
-
-        $this->rolePermissionSubSetting($rolePer->id);
     }
 
     public function epiRolePermissionSubUser($role_permission_id)
@@ -209,15 +259,6 @@ class RolePermissionSeeder extends Seeder
             "role_permission_id" => $role_permission_id,
             "sub_permission_id" => SubPermissionEnum::user_issued_certificate_payment
         ]);
-    }
-    public function rolePermissionSubSetting($role_permission_id)
-    {
-        foreach (SubPermissionEnum::CONFIGURATIONS as $id => $role) {
-            RolePermissionSub::factory()->create([
-                "role_permission_id" => $role_permission_id,
-                "sub_permission_id" => $id
-            ]);
-        }
     }
 
     public function rolePermissionSubActivity($role_permission_id)

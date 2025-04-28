@@ -38,11 +38,13 @@ enum SubPermissionEnum: int
     case configuration_destination = 22;
     case configuration_vaccine_type = 23;
     case configuration_vaccine_center = 24;
+    case configuration_payment = 25;
     public const CONFIGURATIONS = [
         21 => "job",
         22 => "destination",
         23 => "vaccine_type",
         24 => "vaccine_center",
+        25 => "payment",
     ];
         // Certificate Payment
     case certificate_payment_info = 31;
